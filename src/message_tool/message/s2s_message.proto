@@ -1,0 +1,39 @@
+syntax = "proto2";
+package S2SMessage;
+
+// add by stefanchen 
+// id : msg + rsp/req + function 
+
+enum server_message_id
+{
+    msg_invalid = 0;
+}
+
+enum server_id
+{
+    SID_ESG = 1;   // 外网关（client <-> server 客户端与服务器直接门户，建议会话，将客户端消息转发到内外服务器）
+    SID_ISG = 2;   // 内网关（暂时由world负责，不用）
+    SID_DB = 3;    // db服 (负责数据库增删查改)
+    SID_BigWorld = 4; // 世界服 (中转各服务器消息)
+    SID_Login = 5; // 登录服 (负责玩家账号、第三方登陆[微信、公众号、QQ等]...)
+    SID_SmallWorld = 6; // 小世界服 (第三方小程序、H5转发、系统救济金等游戏逻辑外职责功能)))
+    SID_DBProxy = 7; // db代理服(缓存db操作，队列定时交付操作，缓解db服务器压力))
+    SID_Game = 8;   //游戏服（可根据游戏设计任意扩展逻辑）
+}
+
+// route c2s消息路由
+message c2s_msg_route
+{
+    required int32 operid = 1; // 分发服务器操作消息id
+    required bytes data = 2;   // 分发服务器消息内容(第2层以下消息) 
+}
+
+// s2s 服务器间 基础消息
+message s2sbasemessage
+{
+    required int32 srcid = 1;   // 消息源服
+    required int32 dstid = 2;   // 目的服
+    required bytes data = 3;    // 消息数据
+}
+
+
