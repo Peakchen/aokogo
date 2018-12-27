@@ -20,8 +20,9 @@ import(
 )
 
 const(
-	szLoginServerHost  string = "172.0.0.1:17000" 
-	szExternalServerHost  string = "172.0.0.1:18000" 
+	LoginServerHost  string = "172.0.0.1:17000" 
+	ExternalServerHost  string = "172.0.0.1:18000"
+	InnerServerHost  string = "172.0.0.1:19000"
 )
 
 type HandlerFunc func(http.ResponseWriter, *http.Request)
@@ -33,3 +34,12 @@ func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request){
 type HandlerServMux struct{
 	muxhandler* http.ServeMux
 }
+
+//message format
+/*
+	Session string/int64
+	MainID	int32
+	SubID	int32
+	message proto.Message
+*/
+

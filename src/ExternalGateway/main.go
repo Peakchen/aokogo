@@ -13,15 +13,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package main
 
 import(
-	"flag"
-	"common/tcpsockNet"
+	"runtime"
+	"fmt"
 )
 
-var addr = flag.String("addr", "localhost:17000", "http service address")
+func init(){
+	runtime.GOMAXPROCS(1)
+}
 
 func main(){
-	tcpsockNet.StartTcpServer(*addr)
+	if true {
+		fmt.Println("[ExternalGateWay][main] start.")
+	}
+
+	
 }

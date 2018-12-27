@@ -20,19 +20,52 @@ import(
 	"net"
 	"os"
 	"fmt"
+	"sync"
 )
 
-func startTcpServer(addr string){
+type TcpService struct{
+	sw  	sync.WaitGroup
+	host   	string
+	listener *net.TCPListener
+}
+
+func NewTcpServer(addr string)*TcpService{
+	return &TcpService{
+		host: addr,
+	}
+}
+
+func (self *TcpService) StartTcpServer(){
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
+	self.listener = listener
 
-	defer listener.Close()
+	self.sw.Add(1)
+	go self.acceptLoop()
+	self.sw.Wait()
+}
 
-	var tsession = &tcpsession{send: make(chan []byte, 4096)}
-	go tsession.recvmessage()
-	go tsession.sendmessage()
+func (self *TcpService) acceptLoop(){
+	defer self.sw.Done()
+	for{
+		c, err := self.listener.AcceptTCP()
+		if err != nil {
+			fmt.Errorf("[TcpService][acceptLoop] can not accept tcp .")
+		}
+
+		session := NewSession(self.host, c)
+		self.handleSession(session)
+	}
+}
+
+func (self *TcpService) handleSession(s *TcpSession){
+	self.sw.Add(1)
+	go s.Recvmessage(&self.sw)
+	self.sw.Add(1)
+	go s.Sendmessage(&self.sw)
+	self.sw.Wait()
 }
 
 func checkError(err error) {

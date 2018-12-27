@@ -13,13 +13,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package main
 
-func init(){
-
-}
+import(
+	"flag"
+	"common/tcpsockNet"
+	"common/define"
+)
 
 func main(){
-
+	newServer := tcpsockNet.NewTcpServer(define.InnerServerHost)
+	newServer.StartTcpServer()
 }

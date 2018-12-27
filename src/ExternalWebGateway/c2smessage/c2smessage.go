@@ -23,10 +23,6 @@ import(
 	"log"
 )
 
-func init(){
-	C2SMessage.Register(int32(C2SMessage.MessageRoute_R_SID_ESG), OnC2SDispatchMessage)
-}
-
 /* login game by account and passwd
 */
 func OnC2SDispatchMessage(basemsg *C2SMessage.C2Sbasemessgae, c* websocket.Conn){
@@ -43,4 +39,8 @@ func OnC2SDispatchMessage(basemsg *C2SMessage.C2Sbasemessgae, c* websocket.Conn)
 	case S2SMessage.ServerId_SID_SmallWorld:
 
 	}
+}
+
+func init(){
+	C2SMessage.Register(int32(C2SMessage.MessageRoute_R_SID_ESG), OnC2SDispatchMessage)
 }

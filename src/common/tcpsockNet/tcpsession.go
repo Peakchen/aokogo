@@ -21,15 +21,16 @@ import(
 	"time"
 	"log"
 	"common/S2SMessage"
+	"sync"
 )
 
-type tcpsession struct{
+type TcpSession struct{
 	host 	string
 	isAlive bool
 	// The net connection.
 	conn 	net.Conn
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send 	chan []byte
 }
 
 const (
@@ -46,7 +47,7 @@ const (
 	maxMessageSize = 1024
 )
 
-func (c* tcpsession) connect(){
+func (c* TcpSession) connect(){
 	if !c.isAlive {
 		var err error
 		var server_host string = c.host
@@ -60,15 +61,23 @@ func (c* tcpsession) connect(){
 
 }
 
-func (c* tcpsession) sendmessage(){
+func NewSession(addr string, c net.Conn)*TcpSession{
+	return &TcpSession{
+		host: addr,
+		conn: c,
+		send: make(chan []byte, 4096),
+	}
+}
+
+func (c* TcpSession) Sendmessage(sw *sync.WaitGroup){
 	//ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		//ticker.Stop()
 		c.conn.Close()
+		sw.Done()
 	}()
 
 	for {
-
 		if !c.isAlive {
 			c.connect()
 		}
@@ -93,9 +102,10 @@ func (c* tcpsession) sendmessage(){
 	}
 }
 
-func (c* tcpsession) recvmessage(){
+func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
 	defer func() {
 		c.conn.Close()
+		sw.Done()
 	}()
 
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
