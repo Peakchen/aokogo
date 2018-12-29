@@ -23,12 +23,11 @@ var (
 )
 
 func init(){
+	runtime.GOMAXPROCS(1)
 	log.Println("init login server.")
 }
 
 func main()  {
-	runtime.GOMAXPROCS(1)
-
 	log.Println("start login server.")
 	flag.Parse()
 	

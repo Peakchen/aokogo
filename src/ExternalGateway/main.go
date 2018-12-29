@@ -19,6 +19,7 @@ package main
 import(
 	"runtime"
 	"fmt"
+	"tcpNet"
 )
 
 func init(){
@@ -30,5 +31,6 @@ func main(){
 		fmt.Println("[ExternalGateWay][main] start.")
 	}
 
-	
+	newExternalServer := tcpNet.NewTcpServer(define.ExternalServerHost)
+	newExternalServer.StartTcpServer()
 }

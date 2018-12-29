@@ -17,11 +17,11 @@ package main
 
 import(
 	"flag"
-	"common/tcpsockNet"
+	"common/tcpNet"
 	"common/define"
 )
 
 func main(){
-	newServer := tcpsockNet.NewTcpServer(define.InnerServerHost)
+	newServer := tcpNet.NewTcpServer(define.InnerServerHost)
 	newServer.StartTcpServer()
 }

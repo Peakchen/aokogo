@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package tcpsockNet
+package tcpNet
 
 import(
 	"net"
@@ -23,19 +23,19 @@ import(
 	"sync"
 )
 
-type TcpService struct{
+type TcpServer struct{
 	sw  	sync.WaitGroup
 	host   	string
 	listener *net.TCPListener
 }
 
-func NewTcpServer(addr string)*TcpService{
-	return &TcpService{
+func NewTcpServer(addr string)*TcpServer{
+	return &TcpServer{
 		host: addr,
 	}
 }
 
-func (self *TcpService) StartTcpServer(){
+func (self *TcpServer) StartTcpServer(){
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
@@ -47,12 +47,12 @@ func (self *TcpService) StartTcpServer(){
 	self.sw.Wait()
 }
 
-func (self *TcpService) acceptLoop(){
+func (self *TcpServer) acceptLoop(){
 	defer self.sw.Done()
 	for{
 		c, err := self.listener.AcceptTCP()
 		if err != nil {
-			fmt.Errorf("[TcpService][acceptLoop] can not accept tcp .")
+			fmt.Errorf("[TcpServer][acceptLoop] can not accept tcp .")
 		}
 
 		session := NewSession(self.host, c)
@@ -60,7 +60,7 @@ func (self *TcpService) acceptLoop(){
 	}
 }
 
-func (self *TcpService) handleSession(s *TcpSession){
+func (self *TcpServer) handleSession(s *TcpSession){
 	self.sw.Add(1)
 	go s.Recvmessage(&self.sw)
 	self.sw.Add(1)

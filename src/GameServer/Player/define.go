@@ -4,7 +4,15 @@ import(
 	//"Pro/Aoko/net"
 )
 
-type playdata struct{
-	ldbid int64
-	//s	*net.session
+const (
+	
+)
+
+type Playdata struct{
+	DBID int64
+	Name string
+	Level int64
+	Vip int64
+	Coin int64
+	// add ..
 }

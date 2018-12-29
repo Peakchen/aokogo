@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package tcpsockNet
+package tcpNet
 
 import(
 	"net"
@@ -44,7 +44,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 1024
+	maxMessageSize = 4096
 )
 
 func (c* TcpSession) connect(){
