@@ -36,7 +36,7 @@ func NewTcpServer(addr string)*TcpServer{
 }
 
 func (self *TcpServer) StartTcpServer(){
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)

@@ -22,6 +22,7 @@ import(
 	"log"
 	"common/S2SMessage"
 	"sync"
+	"fmt"
 )
 
 type TcpSession struct{
@@ -31,6 +32,8 @@ type TcpSession struct{
 	conn 	net.Conn
 	// Buffered channel of outbound messages.
 	send 	chan []byte
+	// send/recv 
+	
 }
 
 const (
@@ -116,6 +119,8 @@ func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
 			log.Printf("error: %v", err)
 			break
 		}
-		S2SMessage.DispatchMessage(buff[0:len], c.conn)
+
+		fmt.Printf("recv mesg: %v.\n", string(buff))
+		S2SMessage.DispatchMessage(buff[:len], c.conn)
 	}
 }

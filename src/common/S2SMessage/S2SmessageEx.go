@@ -18,7 +18,7 @@ package S2SMessage
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"log"
 	"net"
 )

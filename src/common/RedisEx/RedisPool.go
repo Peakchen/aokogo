@@ -17,7 +17,6 @@
 package RedisEx
 
 import(
-	"github.com/garyburd/redigo/redis"
 	"log"
 	"time"
 )

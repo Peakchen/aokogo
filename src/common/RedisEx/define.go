@@ -66,3 +66,7 @@ const(
 	Sec_fifty = 50*time.Second
 	Sec_sixty = 60*time.Second
 )
+
+const (
+	Addr string = ":6379"
+)

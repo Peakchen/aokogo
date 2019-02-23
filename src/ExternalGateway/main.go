@@ -19,7 +19,8 @@ package main
 import(
 	"runtime"
 	"fmt"
-	"tcpNet"
+	"common/tcpNet"
+	"common/define"
 )
 
 func init(){

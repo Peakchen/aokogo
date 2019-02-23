@@ -18,7 +18,7 @@ package RedisEx
 
 import(
 	"common/utlsImp"
-	
+	"github.com/garyburd/redigo/redis"
 )
 
 var(
@@ -35,3 +35,30 @@ func SetRedisInfo(nPort int32, szServerHost string, szUUID string){
 	m_RedisInfo.szServerUUID = szUUID 
 }
 
+func DialDefaultServer() (redis.Conn, error) {
+	c, err := redis.Dial("tcp", Addr, redis.DialReadTimeout(1*time.Second), redis.DialWriteTimeout(1*time.Second))
+	if err != nil {
+		return nil, err
+	}
+	
+	c.Do("FLUSHDB")
+	return c, nil
+}
+
+type RedisITF struct {
+
+}
+
+type RedisMgr struct {
+	conn *redis.Conn
+}
+
+func (self *RedisMgr) Insert(data interface{}, key string){
+	if _, err := self.conn.Do("HSET", key, data); err != nil{
+
+	}
+}
+
+func (self *RedisMgr) Update(data interface{}, key string){
+
+}
