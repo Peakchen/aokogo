@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 package C2SMessage;
 
 // add by stefanchen 
@@ -30,20 +30,20 @@ enum message_route
 }
 
 // c2s 基础消息
-message c2sbasemessgae
+message C2sbasemessgae
 {
-    required int32 baseid = 1; // 初始消息id
-    required int32 sid = 2;    // 分发服务器节点
-    required bytes data = 3;   // 分发服务器消息内容(第2层以下消息) 
+    int32 Baseid = 1; // 初始消息id
+    int32 Sid = 2;    // 分发服务器节点
+    bytes Data = 3;   // 分发服务器消息内容(第2层以下消息) 
 }
 
-message requestlogin
+message Requestlogin
 {
-    required int32 dbid = 1;
+    int32 DBID = 1;
 }
 
-message requestWechatlogin
+message RequestWechatlogin
 {
-    required int32 openid = 1;
-    required int32 assesstoken = 2;
+    int32 Openid = 1;
+    int32 Assesstoken = 2;
 }
