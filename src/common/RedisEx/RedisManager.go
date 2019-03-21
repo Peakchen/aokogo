@@ -55,7 +55,7 @@ type RedisMgr struct {
 
 func (self *RedisMgr) Insert(data interface{}, key string){
 	if _, err := self.conn.Do("HSET", key, data); err != nil{
-
+		
 	}
 }
 

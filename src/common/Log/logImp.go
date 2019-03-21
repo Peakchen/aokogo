@@ -28,7 +28,7 @@ func NewLog(filename string){
 	GLogObj.filename = RealFileName
 }
 
-func LogError(format string, args ...interface{}){
+func Error(format string, args ...interface{}){
 	if len(format) == 0{
 		return
 	} 
@@ -36,7 +36,7 @@ func LogError(format string, args ...interface{}){
 	WriteLog("[Error]", format, args)
 }
 
-func LogInfo(format string, args ...interface{}){
+func Info(format string, args ...interface{}){
 	if len(format) == 0{
 		return
 	} 
@@ -44,7 +44,7 @@ func LogInfo(format string, args ...interface{}){
 	WriteLog("[Info]", format, args)
 }
 
-func LogPanic(format string, args ...interface{}){
+func Panic(format string, args ...interface{}){
 	logStr := fmt.Sprintf("%v", debug.Stack())
 	GLogObj.filehandle.WriteString(logStr)
 	EndLog()
