@@ -25,40 +25,75 @@ var(
 	m_RedisInfo = &RedisInfo{nServerPort: 443, szRedisServerHost:":6379", szServerUUID: utlsImp.GetUUID()  }
 )
 
-func GetRedisInfo() *RedisInfo{
-	return m_RedisInfo
+type RedisServer struct {
+	ConnAddr string 
+	Page int32
+	Passwd string
+	Conn redis.Conn
 }
 
-func SetRedisInfo(nPort int32, szServerHost string, szUUID string){
-	m_RedisInfo.nServerPort = nPort
-	m_RedisInfo.szRedisServerHost = szServerHost
-	m_RedisInfo.szServerUUID = szUUID 
+func NewRedisServer(ConnAddr string, Page int32, Passwd string) *RedisServer{
+	Rs := &RedisServer{
+		ConnAddr: 	ConnAddr,
+		Page: 		Page,
+		Passwd:		Passwd,
+	}
+
+	Rs.DialDefaultServer()
+	return Rs
 }
 
-func DialDefaultServer() (redis.Conn, error) {
-	c, err := redis.Dial("tcp", Addr, redis.DialReadTimeout(1*time.Second), redis.DialWriteTimeout(1*time.Second))
+func (self *RedisServer) DialDefaultServer() (error) {
+	var err error 
+	self.Conn, err = redis.Dial("tcp", self.ConnAddr, redis.DialReadTimeout(1*time.Second), redis.DialWriteTimeout(1*time.Second))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	
-	c.Do("FLUSHDB")
-	return c, nil
+	self.Conn.Do("FLUSHDB")
+	return nil
 }
 
-type RedisITF struct {
-
+func MakeRedisModel(Identify, MainModel, SubModel string)string {
+	return MainModel+"."+SubModel+"."+Identify
 }
 
-type RedisMgr struct {
-	conn *redis.Conn
+func (self *RedisServer) Insert(Identify, MainModel, SubModel string, data interface{}){
+	self.Update(Identify, MainModel, SubModel, data)
 }
 
-func (self *RedisMgr) Insert(data interface{}, key string){
-	if _, err := self.conn.Do("HSET", key, data); err != nil{
-		
+func (self *RedisServer) Update(Identify, MainModel, SubModel string, Input interface{}){
+	RedisKey := MakeRedisModel(Identify, MainModel, SubModel)
+	BMarlData, err := bson.Marshal(Input)
+	if err != nil {
+		Log.Error("", err)
+	}
+
+	Ret, err1 := self.conn.Do("SETNX", RedisKey, BMarlData);
+	if err != nil{
+		Log.Error("[Update] Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, MainModel, SubModel, err)
+		return
+	}
+
+	if Ret == 0 {
+		if _, err2 := self.conn.Do("SET", RedisKey, BMarlData); err != nil{
+			Log.Error("[Update] Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, MainModel, SubModel, Input)
+			return
+		}
 	}
 }
 
-func (self *RedisMgr) Update(data interface{}, key string){
+func (self *RedisServer) Query(Identify, MainModel, SubModel string, Output interface{}){
+	RedisKey := MakeRedisModel(Identify, MainModel, SubModel)
+	data, err := self.conn.Do("GET", RedisKey)
+	if err != nil{
+		Log.Error("[Query] Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, MainModel, SubModel, data)
+		return
+	}
 
+	BUmalErr := bson.Unmarshal(data.([]byte), Output)
+	if BUmalErr != nil {
+		Log.Error("[Query] can not bson Unmarshal get data to Output.")
+		return
+	}
 }
