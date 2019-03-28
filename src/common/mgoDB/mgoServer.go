@@ -4,6 +4,7 @@ import (
 	"github.com/globalsign/mgo"
 	"common/Log"
 	"time"
+	"github.com/globalsign/mgo/bson"
 )
 
 type TDBServer struct {
@@ -77,14 +78,35 @@ func (self *TDBServer) FlushDB(){
 	
 }
 
-func (self *TDBServer) QueryOne(Model string, InParam interface{}, OutParam interface{}){
-	
+func MakeDBModel(Identify, MainModel, SubModel string)string {
+	return MainModel+"."+SubModel+"."+Identify
 }
 
-func (self *TDBServer) QuerySome(Model string, InParam interface{}, OutParam interface{}){
+func (self *TDBServer) QueryOne(Identify, MainModel, SubModel string, OutParam interface{}){
+	//DBModel := MakeDBModel(Identify, MainModel, SubModel)
+	collection := self.sess.DB(MainModel).C(SubModel)
+	err := collection.Find(bson.M{"_id": Identify}).One(&OutParam)
+	if err != nil {
+		Log.Error("[QueryOne] Identify: %v, MainModel: %v, SubModel: %v.\n", Identify, MainModel, SubModel)
+		return
+	}
 
 }
 
-func (self *TDBServer) SaveOne(Model string, InParam interface{}, OutParam interface{}){
+func (self *TDBServer) QuerySome(Identify, MainModel, SubModel string, OutParam interface{}){
+	collection := self.sess.DB(MainModel).C(SubModel)
+	err := collection.Find(bson.M{"_id": Identify}).All(&OutParam)
+	if err != nil {
+		Log.Error("[QuerySome] Identify: %v, MainModel: %v, SubModel: %v.\n", Identify, MainModel, SubModel)
+		return
+	}
+}
 
+func (self *TDBServer) SaveOne(Identify, MainModel, SubModel string,  InParam interface{}){
+	collection := self.sess.DB(MainModel).C(SubModel)
+	err := collection.Update(bson.M{"_id": Identify}, &InParam)
+	if err != nil {
+		Log.Error("[SaveOne] Identify: %v, MainModel: %v, SubModel: %v.\n", Identify, MainModel, SubModel)
+		return
+	}
 }
