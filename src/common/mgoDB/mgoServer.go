@@ -22,7 +22,7 @@ func Create(Username, Passwd, host string)*TDBServer{
 	return dbsess
 }
 
-func (self *TDBServer) NewMgoSession(){
+func (self *TDBServer) NewMgoServer(){
 	MdialInfo := &mgo.DialInfo{
 		Addrs: []string{self.ServiceHost},
 		Username: self.UserName,
@@ -51,9 +51,9 @@ func (self *TDBServer) Stop(){
 	}
 }
 
-func (self *TDBServer) GetSession()*mgo.Session{
+func (self *TDBServer) GetDB()*mgo.Session{
 	if self.sess == nil {
-		self.NewMgoSession()
+		self.NewMgoServer()
 	}
 
 	return self.sess.Clone()

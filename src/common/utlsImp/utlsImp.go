@@ -24,6 +24,10 @@ import(
 	"encoding/base64"
 	"io"
 	"fmt"
+	"hash/fnv"
+	"time"
+	mrand "math/rand"
+	"net"
 )
 
 //get new uuid
@@ -83,3 +87,41 @@ func decrypt(key []byte, cryptoText string) (string, error) {
 	return fmt.Sprintf("%s", ciphertext), nil
 }
 
+// get current computer mac addr.
+func GetMacAddrs() string {
+	netInterfaces, err := net.Interfaces()
+	if err != nil {
+		return ""
+	}
+
+	for _, netInterface := range netInterfaces {
+		macAddr := netInterface.HardwareAddr.String()
+		if len(macAddr) > 0 {
+			return macAddr
+		}
+	}
+
+	return ""
+}
+
+// hash output uint32
+func HashNonEncryption(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
+}
+
+// add mac and time.now() as seed
+func GetHashSeed() int64 {
+	mac_adr := GetMacAddrs()
+	if len(mac_adr) == 0 {
+		return time.Now().UnixNano()
+	}
+
+	t := time.Now().UnixNano() // int64
+	return int64(HashNonEncryption(fmt.Sprintf("%d %s", t, mac_adr)))
+}
+
+func init(){
+	mrand.Seed(GetHashSeed())
+}
