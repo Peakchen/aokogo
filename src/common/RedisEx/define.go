@@ -67,6 +67,9 @@ const(
 	Sec_sixty = 60*time.Second
 )
 
+type REDIS_INT32 int32
+
 const (
-	Addr string = ":6379"
+	REDIS_SET_DEADLINE REDIS_INT32 = 600 //s
+	
 )

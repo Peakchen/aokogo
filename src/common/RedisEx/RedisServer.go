@@ -27,15 +27,15 @@ var(
 
 type RedisServer struct {
 	ConnAddr string 
-	Page int32
+	DBIndex int32
 	Passwd string
-	Conn redis.Conn
+	Conn* redis.Pool
 }
 
-func NewRedisServer(ConnAddr string, Page int32, Passwd string) *RedisServer{
+func NewRedisServer(ConnAddr string, DBIndex int32, Passwd string) *RedisServer{
 	Rs := &RedisServer{
 		ConnAddr: 	ConnAddr,
-		Page: 		Page,
+		DBIndex: 	DBIndex,
 		Passwd:		Passwd,
 	}
 
@@ -44,10 +44,12 @@ func NewRedisServer(ConnAddr string, Page int32, Passwd string) *RedisServer{
 }
 
 func (self *RedisServer) DialDefaultServer() (error) {
-	var err error 
-	self.Conn, err = redis.Dial("tcp", self.ConnAddr, redis.DialReadTimeout(1*time.Second), redis.DialWriteTimeout(1*time.Second))
-	if err != nil {
-		return err
+	self.Conn = &redis.Pool{
+		MaxIdle: 		IDle_three,
+		IdleTimeout:	IDleTimeOut_four_min,
+		Dial: func()(redis.Conn, error) {
+			return redis.Dial("tcp", self.ConnAddr, redis.DialDatabase(self.DBIndex), rediss.DialPassword(self.Passwd), redis.DialReadTimeout(1*time.Second), redis.DialWriteTimeout(1*time.Second))
+		},
 	}
 	
 	self.Conn.Do("FLUSHDB")
@@ -69,14 +71,15 @@ func (self *RedisServer) Update(Identify, MainModel, SubModel string, Input inte
 		Log.Error("", err)
 	}
 
-	Ret, err1 := self.conn.Do("SETNX", RedisKey, BMarlData);
+	var ExpendCmd = []interface{BMarlData, "EX", REDIS_SET_DEADLINE}
+	Ret, err1 := self.conn.Do("SETNX", RedisKey, ExpendCmd...);
 	if err != nil{
 		Log.Error("[Update] Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, MainModel, SubModel, err)
 		return
 	}
 
 	if Ret == 0 {
-		if _, err2 := self.conn.Do("SET", RedisKey, BMarlData); err != nil{
+		if _, err2 := self.conn.Do("SET", RedisKey, ExpendCmd...); err != nil{
 			Log.Error("[Update] Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, MainModel, SubModel, Input)
 			return
 		}
