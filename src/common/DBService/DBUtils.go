@@ -1,3 +1,4 @@
+package DBService
 /*
 * CopyRight(C) StefanChen e-mail:2572915286@qq.com
 *
@@ -14,5 +15,17 @@
 * limitations under the License.
 */
 
-package RedisEx
+import (
+	"common/RedisService"
+	"common/MgoService"
+)
 
+func A_DataGet(DBKey string, Out interface{}){
+	// check redis can get db data, if not exist, then from mogo.
+	
+}	
+
+func A_DataSet(DBKey string, In interface{}){
+	// check save data to redis cache or db persistence.
+
+}

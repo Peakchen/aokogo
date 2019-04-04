@@ -1,4 +1,4 @@
-package mgoDB
+package MgoService
 
 import (
 	"github.com/globalsign/mgo"
@@ -7,23 +7,24 @@ import (
 	"github.com/globalsign/mgo/bson"
 )
 
-type TDBServer struct {
+type MgoConn struct {
 	sess *mgo.Session
 	UserName string
 	Passwd string
 	ServiceHost string
 }
 
-func Create(Username, Passwd, host string)*TDBServer{
-	dbsess := &TDBServer{}
+func NewMgoConn(Username, Passwd, Host string)*MgoConn{
+	dbsess := &MgoConn{}
 	dbsess.UserName = Username
 	dbsess.Passwd = Passwd
-	dbsess.ServiceHost = host
+	dbsess.ServiceHost = Host
 
+	dbsess.NewDial()
 	return dbsess
 }
 
-func (self *TDBServer) NewMgoServer(){
+func (self *MgoConn) NewDial(){
 	MdialInfo := &mgo.DialInfo{
 		Addrs: []string{self.ServiceHost},
 		Username: self.UserName,
@@ -46,21 +47,21 @@ func (self *TDBServer) NewMgoServer(){
 	return
 }
 
-func (self *TDBServer) Stop(){
+func (self *MgoConn) Stop(){
 	if self.sess != nil {
 		self.sess.Close()
 	}
 }
 
-func (self *TDBServer) GetDB()*mgo.Session{
+func (self *MgoConn) GetDB()*mgo.Session{
 	if self.sess == nil {
-		self.NewMgoServer()
+		self.NewMgoConn()
 	}
 
 	return self.sess.Clone()
 }
 
-func (self *TDBServer) OnTimer2FlushDB(){
+func (self *MgoConn) OnTimer2FlushDB(){
 	reach := time.NewTicker(100*time.Millisecond)
 	for {
 		select{
@@ -74,7 +75,7 @@ func (self *TDBServer) OnTimer2FlushDB(){
 	}
 }
 
-func (self *TDBServer) FlushDB(){
+func (self *MgoConn) FlushDB(){
 	
 }
 
@@ -82,7 +83,7 @@ func MakeDBModel(Identify, MainModel, SubModel string)string {
 	return MainModel+"."+SubModel+"."+Identify
 }
 
-func (self *TDBServer) QueryOne(Identify, MainModel, SubModel string, OutParam interface{}){
+func (self *MgoConn) QueryOne(Identify, MainModel, SubModel string, OutParam interface{}){
 	//DBModel := MakeDBModel(Identify, MainModel, SubModel)
 	collection := self.sess.DB(MainModel).C(SubModel)
 	err := collection.Find(bson.M{"_id": Identify}).One(&OutParam)
@@ -93,7 +94,7 @@ func (self *TDBServer) QueryOne(Identify, MainModel, SubModel string, OutParam i
 
 }
 
-func (self *TDBServer) QuerySome(Identify, MainModel, SubModel string, OutParam interface{}){
+func (self *MgoConn) QuerySome(Identify, MainModel, SubModel string, OutParam interface{}){
 	collection := self.sess.DB(MainModel).C(SubModel)
 	err := collection.Find(bson.M{"_id": Identify}).All(&OutParam)
 	if err != nil {
@@ -102,7 +103,7 @@ func (self *TDBServer) QuerySome(Identify, MainModel, SubModel string, OutParam 
 	}
 }
 
-func (self *TDBServer) SaveOne(Identify, MainModel, SubModel string,  InParam interface{}){
+func (self *MgoConn) SaveOne(Identify, MainModel, SubModel string,  InParam interface{}){
 	collection := self.sess.DB(MainModel).C(SubModel)
 	err := collection.Update(bson.M{"_id": Identify}, &InParam)
 	if err != nil {

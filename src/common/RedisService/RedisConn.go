@@ -14,41 +14,42 @@
 * limitations under the License.
 */
 
-package RedisEx
+package RedisService
 
 import(
 	"common/utlsImp"
 	"github.com/garyburd/redigo/redis"
 )
 
-var(
-	m_RedisInfo = &RedisInfo{nServerPort: 443, szRedisServerHost:":6379", szServerUUID: utlsImp.GetUUID()  }
-)
-
-type RedisServer struct {
+type RedisConn struct {
 	ConnAddr string 
 	DBIndex int32
 	Passwd string
 	Conn* redis.Pool
 }
 
-func NewRedisServer(ConnAddr string, DBIndex int32, Passwd string) *RedisServer{
-	Rs := &RedisServer{
+func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *RedisConn{
+	Rs := &RedisConn{
 		ConnAddr: 	ConnAddr,
 		DBIndex: 	DBIndex,
 		Passwd:		Passwd,
 	}
 
-	Rs.DialDefaultServer()
+	Rs.NewDial()
 	return Rs
 }
 
-func (self *RedisServer) DialDefaultServer() (error) {
+func (self *RedisConn) NewDial() (error) {
 	self.Conn = &redis.Pool{
 		MaxIdle: 		IDle_three,
 		IdleTimeout:	IDleTimeOut_four_min,
 		Dial: func()(redis.Conn, error) {
-			return redis.Dial("tcp", self.ConnAddr, redis.DialDatabase(self.DBIndex), rediss.DialPassword(self.Passwd), redis.DialReadTimeout(1*time.Second), redis.DialWriteTimeout(1*time.Second))
+			return redis.Dial("tcp", 
+						self.ConnAddr, 
+						redis.DialDatabase(self.DBIndex), 
+						redis.DialPassword(self.Passwd), 
+						redis.DialReadTimeout(1*time.Second), 
+						redis.DialWriteTimeout(1*time.Second))
 		},
 	}
 	
@@ -60,43 +61,48 @@ func MakeRedisModel(Identify, MainModel, SubModel string)string {
 	return MainModel+"."+SubModel+"."+Identify
 }
 
-func (self *RedisServer) Insert(Identify, MainModel, SubModel string, data interface{}){
-	self.Update(Identify, MainModel, SubModel, data)
+func (self *RedisConn) Insert(Identify, MainModel, SubModel string, data interface{})bool{
+	return self.Update(Identify, MainModel, SubModel, data)
 }
 
-func (self *RedisServer) Update(Identify, MainModel, SubModel string, Input interface{}){
+func (self *RedisConn) Update(Identify, MainModel, SubModel string, Input interface{})bool{
 	RedisKey := MakeRedisModel(Identify, MainModel, SubModel)
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
-		Log.Error("", err)
+		Log.Error("bson.Marshal err: ", err)
+		return false
 	}
 
 	var ExpendCmd = []interface{BMarlData, "EX", REDIS_SET_DEADLINE}
-	Ret, err1 := self.conn.Do("SETNX", RedisKey, ExpendCmd...);
+	Ret, err1 := self.Conn.Do("SETNX", RedisKey, ExpendCmd...);
 	if err != nil{
 		Log.Error("[Update] Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, MainModel, SubModel, err)
-		return
+		return false
 	}
 
 	if Ret == 0 {
-		if _, err2 := self.conn.Do("SET", RedisKey, ExpendCmd...); err != nil{
+		if _, err2 := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil{
 			Log.Error("[Update] Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, MainModel, SubModel, Input)
-			return
+			return false
 		}
 	}
+
+	return true
 }
 
-func (self *RedisServer) Query(Identify, MainModel, SubModel string, Output interface{}){
+func (self *RedisConn) Query(Identify, MainModel, SubModel string, Output interface{})bool{
 	RedisKey := MakeRedisModel(Identify, MainModel, SubModel)
-	data, err := self.conn.Do("GET", RedisKey)
+	data, err := self.Conn.Do("GET", RedisKey)
 	if err != nil{
 		Log.Error("[Query] Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, MainModel, SubModel, data)
-		return
+		return false
 	}
 
 	BUmalErr := bson.Unmarshal(data.([]byte), Output)
 	if BUmalErr != nil {
 		Log.Error("[Query] can not bson Unmarshal get data to Output.")
-		return
+		return false
 	}
+
+	return true
 }

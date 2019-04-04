@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package RedisEx
+package RedisService
 
 import(
 	"time"
