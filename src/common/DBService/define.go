@@ -25,3 +25,7 @@ const (
 	ED_SYNC_DB EDataUpdateType = 1
 	ED_SYNC_REDIS EDataUpdateType = 2
 )
+
+const (
+	EDB_DATA_SAVE_INTERVAL int32 = 5*60
+)
