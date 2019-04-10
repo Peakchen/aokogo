@@ -5,10 +5,11 @@ import (
 	"common/Log"
 	"time"
 	"github.com/globalsign/mgo/bson"
+	"common/RedisService"
 )
 
 type MgoConn struct {
-	sess *mgo.Session
+	session *mgo.Session
 	UserName string
 	Passwd string
 	ServiceHost string
@@ -43,22 +44,22 @@ func (self *MgoConn) NewDial(){
 	}
 	
 	session.SetMode(mgo.Monotonic,true)
-	self.sess = session
+	self.session = session
 	return
 }
 
 func (self *MgoConn) Stop(){
-	if self.sess != nil {
-		self.sess.Close()
+	if self.session != nil {
+		self.session.Close()
 	}
 }
 
 func (self *MgoConn) GetDB()*mgo.Session{
-	if self.sess == nil {
+	if self.session == nil {
 		self.NewMgoConn()
 	}
 
-	return self.sess.Clone()
+	return self.session.Clone()
 }
 
 func (self *MgoConn) OnTimer2FlushDB(){
@@ -83,31 +84,37 @@ func MakeDBModel(Identify, MainModel, SubModel string)string {
 	return MainModel+"."+SubModel+"."+Identify
 }
 
-func (self *MgoConn) QueryOne(Identify, MainModel, SubModel string, OutParam interface{}){
-	//DBModel := MakeDBModel(Identify, MainModel, SubModel)
-	collection := self.sess.DB(MainModel).C(SubModel)
-	err := collection.Find(bson.M{"_id": Identify}).One(&OutParam)
+func (self *MgoConn) QueryOne(OutParam IDBCache)(err error){
+	collection := self.session.DB(OutParam.MainModel()).C(OutParam.SubModel())
+	err = collection.Find(bson.M{"_id": OutParam.CacheKey()}).One(&OutParam)
 	if err != nil {
-		Log.Error("[QueryOne] Identify: %v, MainModel: %v, SubModel: %v.\n", Identify, MainModel, SubModel)
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.CacheKey(), OutParam.MainModel(), OutParam.SubModel(), err)
+		Log.Error("[QueryOne] err: %v.\n", err)
 		return
 	}
-
+	return
 }
 
-func (self *MgoConn) QuerySome(Identify, MainModel, SubModel string, OutParam interface{}){
-	collection := self.sess.DB(MainModel).C(SubModel)
-	err := collection.Find(bson.M{"_id": Identify}).All(&OutParam)
+func (self *MgoConn) QuerySome(OutParam IDBCache)(err error){
+	collection := self.session.DB(OutParam.MainModel()).C(OutParam.SubModel())
+	err = collection.Find(bson.M{"_id": OutParam.CacheKey()}).All(&OutParam)
 	if err != nil {
-		Log.Error("[QuerySome] Identify: %v, MainModel: %v, SubModel: %v.\n", Identify, MainModel, SubModel)
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.CacheKey(), OutParam.MainModel(), OutParam.SubModel(), err)
+		Log.Error("[QuerySome] err: %v.\n", err)
 		return
 	}
+	return
 }
 
-func (self *MgoConn) SaveOne(Identify, MainModel, SubModel string,  InParam interface{}){
-	collection := self.sess.DB(MainModel).C(SubModel)
-	err := collection.Update(bson.M{"_id": Identify}, &InParam)
+func (self *MgoConn) SaveOne(InParam IDBCache)(err error){
+	collection := self.session.DB(InParam.MainModel()).C(InParam.SubModel())
+	operAction := bson.M{"$set": bson.M{InParam.SubModel(): InParam}}
+	err = collection.Update(bson.M{"_id": InParam.CacheKey()}, operAction)
 	if err != nil {
-		Log.Error("[SaveOne] Identify: %v, MainModel: %v, SubModel: %v.\n", Identify, MainModel, SubModel)
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", InParam.CacheKey(), InParam.MainModel(), InParam.SubModel(), err)
+		Log.Error("[SaveOne] err: %v.\n", err)
 		return
 	}
+
+	return
 }

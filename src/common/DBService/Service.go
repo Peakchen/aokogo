@@ -8,16 +8,17 @@ import (
 type TDBProvider struct {
 	rconn 	*RedisService.RedisConn
 	mconn   *MgoService.MgoConn
+	ServerModel EServerModel 
 }
 
 func (self *TDBProvider) StartDBService(RedisCfg *TRedisConfig, MgoCfg *TMgoConfig){
 	self.rconn = RedisService.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
 	self.mconn = MgoService.NewMgoConn(MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
 
-	go self.OnTimeSyncDBHard()
+	go self.LoopSyncDBHard()
 }
 
-func (self *TDBProvider) OnTimeSyncDBHard(){
+func (self *TDBProvider) LoopSyncDBHard(){
 	ticker := time.NewTicker(time.Duration(EDB_DATA_SAVE_INTERVAL)*timer.second)
 	for{
 		select {
@@ -32,10 +33,14 @@ func (self *TDBProvider) OnTimeSyncDBHard(){
 
 func (self.TDBProvider) SyncDBHard(){
 	if self.rconn != nil {
-		
+		// TODO: Presist redis... 
+
 	}
 
 	if self.mconn != nil {
-
+		// TODO: Presist mgo... 
+		
 	}
 }
+
+
