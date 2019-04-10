@@ -31,15 +31,26 @@ func (self *TDBProvider) LoopSyncDBHard(){
 	}
 }
 
-func (self.TDBProvider) SyncDBHard(){
-	if self.rconn != nil {
-		// TODO: Presist redis... 
-
+func (self *TDBProvider) SyncDBHard(){
+	// TODO: Presist redis... 
+	if self.rconn == nil {
+		return
 	}
 
-	if self.mconn != nil {
-		// TODO: Presist mgo... 
-		
+	DBKey := ":"+self.ServerModel+"_Update_Oper"
+	Members, err := self.rconn.Conn.Do("SMEMBERS", DBKey)
+	if err != nil {
+		Log.Error("DBProvider get redis ", err)
+		return
+	}
+
+	// TODO: Presist mgo... 
+	if self.mconn == nil {
+		return
+	}
+
+	for _, item := range Members.(IDBCache) {
+		self.mconn.SaveOne(item)	
 	}
 }
 
