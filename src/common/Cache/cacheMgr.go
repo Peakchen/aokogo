@@ -24,7 +24,8 @@ type TCacheMgr struct {
 	ctx 	context.Context
 	cancel	context.CancelFunc
 	s       *TcpSession
-	src     int32
+	srcSvr  int32
+	dstSvr  int32
 	// add cache obj ...
 }
 
@@ -35,13 +36,14 @@ func (self *TCacheMgr) connect(){
 		return
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
-	self.s = NewSession(ConstBigWordHost, c, self.ctx)
+	self.s = NewSession(ConstBigWordHost, c, self.ctx, self.src, )
 	self.s.HandleSession()
 }
 
-func (self *TCacheMgr) run(srcSev int32){
+func (self *TCacheMgr) run(srcSev, dstSvr int32){
 	self.ctx, self.cancel = context.WithCancel(context.Background())
-	self.src = srcSev
+	self.srcSvr = srcSev
+	self.dstSvr = dstSvr
 	self.wg.Add(1)
 	self.c = &TCache{}
 	self.c.init(ConstCacheOverTime, self.ctx)
@@ -65,7 +67,7 @@ func (self *TCacheMgr)loopc(){
 		case <-t.C:
 			//begin request data from bigword server.
 			s := &S2SBaseMessage{
-				Srcid: self.src,
+				Srcid: self.srcSvr,
 				Dstid: int32(ServerId_SID_BigWorld),
 			}
 			msg, err := proto.Marshal(s)

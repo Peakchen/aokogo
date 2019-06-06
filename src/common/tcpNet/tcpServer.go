@@ -63,11 +63,15 @@ type TcpServer struct{
 	listener *net.TCPListener
 	ctx 	context.Context
 	cancel	context.CancelFunc
+	srcSvr  int32
+	dstSvr  int32
 }
 
-func NewTcpServer(addr string)*TcpServer{
+func NewTcpServer(addr string, srcSvr, dstSvr int32)*TcpServer{
 	return &TcpServer{
 		host: addr,
+		srcSvr: srcSvr,
+		dstSvr: dstSvr,
 	}
 }
 
@@ -92,7 +96,7 @@ func (self *TcpServer) loop(){
 			fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
 		}
 
-		session := NewSession(self.host, c, self.ctx)
+		session := NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr)
 		session.HandleSession()
 	}
 }

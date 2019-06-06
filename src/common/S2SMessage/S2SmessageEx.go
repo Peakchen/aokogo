@@ -54,10 +54,12 @@ import (
 	"github.com/golang/protobuf/proto"
 	"log"
 	"net"
+	//"strconv"
+	. "common/Define"
 )
 
 type S2SDispatchMHandler func(msg []byte, c net.Conn)
-type C2SRoutehandler func(msg *C2SMsgRoute, c* websocket.Conn)
+type C2SRoutehandler func(msg *CS_MsgRoute_Req, c* websocket.Conn)
 
 var(
 	messageHandler  map[int32] C2SRoutehandler
@@ -74,7 +76,7 @@ func S2SDispatchMRegister(id int32, handler S2SDispatchMHandler){
 
 func DispatchClientMessage(msg []byte, c* websocket.Conn){
 
-	var msg_base = &C2SMsgRoute{}
+	var msg_base = &CS_MsgRoute_Req{}
 	var pm = proto.Unmarshal(msg, msg_base)
 	if pm == nil {
 		log.Fatal("unmarshal message fail.")
@@ -86,24 +88,44 @@ func DispatchClientMessage(msg []byte, c* websocket.Conn){
 		cb(msg_base, c)
 	}
 }
-
-func DispatchMessage(msg []byte, c net.Conn){
-
-	var msg_base = &C2SMsgRoute{}
-	var pm = proto.Unmarshal(msg, msg_base)
-	if pm == nil {
-		log.Fatal("unmarshal message fail.")
-		return
-	}
-
+// message dispatch route.
+func DispatchMessage(msg []byte, c net.Conn, srcSvr, dstSvr int32){
+	// var msg_base = &C2SMsgRoute{}
+	// var pm = proto.Unmarshal(msg, msg_base)
+	// if pm == nil {
+	// 	log.Fatal("unmarshal message fail.")
+	// 	return
+	// }
 	// cb, ok := messageHandler[*msg_base.Operid]
 	// if ok {
 	// 	cb(msg_base, c)
 	// }
+
+	if srcSvr == dstSvr {
+		log.Fatal("source and destination serverid is equal, id: ", dstSvr)
+		return
+	}
+	if srcSvr == int32(ERouteId_ER_Invalid){
+		log.Fatal("source serverid is invalid.",)
+		return
+	}
+	if dstSvr == int32(ERouteId_ER_Invalid){
+		log.Fatal("source serverid is invalid.",)
+		return
+	}
+	if _, ok := ERouteId_name[srcSvr]; !ok {
+		log.Fatal("can not find source serverid: ", srcSvr)
+		return
+	}
+	if _, ok := ERouteId_name[dstSvr]; !ok {
+		log.Fatal("can not find destination serverid: ", dstSvr)
+		return
+	}
+	//strconv.Itoa(int(srcSvr))+strconv.Itoa(int(dstSvr))
+	
 }
 
 func PostMessage(pb proto.Message, c net.Conn){
-	
 	msg, err := proto.Marshal(pb)
 	if err == nil {
 		log.Fatal("Marshal message fail.")

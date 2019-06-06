@@ -14,11 +14,15 @@ type TcpClient struct {
 	cancel	context.CancelFunc
 	host    string
 	s 		*TcpSession
+	srcSvr  int32
+	dstSvr  int32
 }
 
-func NewClient(host string)*TcpClient{
+func NewClient(host string, srcSvr, dstSvr int32)*TcpClient{
 	return &TcpClient{
 		host: host,
+		srcSvr:	srcSvr,
+		dstSvr: dstSvr,
 	}
 }
 
@@ -31,7 +35,7 @@ func (self *TcpClient) Run(){
 	c.(*net.TCPConn).SetNoDelay(true)
 	self.wg.Add(1)
 	self.ctx, self.cancel = context.WithCancel(context.Background())
-	self.s = NewSession(self.host, c, self.ctx)
+	self.s = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr)
 	self.s.HandleSession()
 }
 

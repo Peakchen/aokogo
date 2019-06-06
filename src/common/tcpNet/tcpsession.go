@@ -69,6 +69,10 @@ type TcpSession struct{
 	// send/recv 
 	sw  	sync.WaitGroup
 	ctx 	context.Context
+	// source server or client.
+	srcSvr  int32	
+	// destination  server or client.
+	dstSvr  int32
 }
 
 const (
@@ -99,13 +103,15 @@ func (c* TcpSession) Connect(){
 
 }
 
-func NewSession(addr string, c net.Conn, ctx context.Context)*TcpSession{
+func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int32)*TcpSession{
 	return &TcpSession{
 		host: addr,
 		conn: c,
 		send: make(chan []byte, 4096),
 		isAlive: false,
 		ctx: ctx,
+		srcSvr:	srcSvr,
+		dstSvr: dstSvr,
 	}
 }
 
@@ -170,7 +176,11 @@ func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
 		}
 
 		fmt.Printf("recv mesg: %v.\n", string(buff))
-		S2SMessage.DispatchMessage(buff[:len], c.conn)
+		if self.dstSvr == ER_Client {
+			
+		}else{
+			S2SMessage.DispatchMessage(buff[:len], c.conn, self.srcSvr, self.dstSvr)
+		}
 	}
 }
 
