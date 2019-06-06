@@ -56,6 +56,7 @@ import(
 	"common/S2SMessage"
 	"sync"
 	"fmt"
+	"context"
 )
 
 type TcpSession struct{
@@ -66,7 +67,8 @@ type TcpSession struct{
 	// Buffered channel of outbound messages.
 	send 	chan []byte
 	// send/recv 
-	
+	sw  	sync.WaitGroup
+	ctx 	context.Context
 }
 
 const (
@@ -83,7 +85,7 @@ const (
 	maxMessageSize = 4096
 )
 
-func (c* TcpSession) connect(){
+func (c* TcpSession) Connect(){
 	if !c.isAlive {
 		var err error
 		var server_host string = c.host
@@ -97,12 +99,23 @@ func (c* TcpSession) connect(){
 
 }
 
-func NewSession(addr string, c net.Conn)*TcpSession{
+func NewSession(addr string, c net.Conn, ctx context.Context)*TcpSession{
 	return &TcpSession{
 		host: addr,
 		conn: c,
 		send: make(chan []byte, 4096),
+		isAlive: false,
+		ctx: ctx,
 	}
+}
+
+func (c* TcpSession) exit(){
+	c.conn.Close()
+	c.sw.Wait()
+}
+
+func (c* TcpSession) SetSendCache(data []byte) {
+	c.send <- data
 }
 
 func (c* TcpSession) Sendmessage(sw *sync.WaitGroup){
@@ -115,10 +128,13 @@ func (c* TcpSession) Sendmessage(sw *sync.WaitGroup){
 
 	for {
 		if !c.isAlive {
-			c.connect()
+			c.Connect()
 		}
 
 		select {
+		case <-c.ctx.Done():
+			c.exit()
+			return
 		case message, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
@@ -156,4 +172,11 @@ func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
 		fmt.Printf("recv mesg: %v.\n", string(buff))
 		S2SMessage.DispatchMessage(buff[:len], c.conn)
 	}
+}
+
+func (c *TcpSession) HandleSession(){
+	c.sw.Add(1)
+	go c.Recvmessage(&c.sw)
+	c.sw.Add(1)
+	go c.Sendmessage(&c.sw)
 }

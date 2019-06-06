@@ -54,12 +54,15 @@ import(
 	"os"
 	"fmt"
 	"sync"
+	"context"
 )
 
 type TcpServer struct{
 	sw  	sync.WaitGroup
 	host   	string
 	listener *net.TCPListener
+	ctx 	context.Context
+	cancel	context.CancelFunc
 }
 
 func NewTcpServer(addr string)*TcpServer{
@@ -74,30 +77,28 @@ func (self *TcpServer) StartTcpServer(){
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 	self.listener = listener
+	self.ctx, self.cancel = context.WithCancel(context.Background())
 
 	self.sw.Add(1)
-	go self.acceptLoop()
+	go self.loop()
 	self.sw.Wait()
 }
 
-func (self *TcpServer) acceptLoop(){
+func (self *TcpServer) loop(){
 	defer self.sw.Done()
 	for{
 		c, err := self.listener.AcceptTCP()
 		if err != nil {
-			fmt.Errorf("[TcpServer][acceptLoop] can not accept tcp .")
+			fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
 		}
 
-		session := NewSession(self.host, c)
-		self.handleSession(session)
+		session := NewSession(self.host, c, self.ctx)
+		session.HandleSession()
 	}
 }
 
-func (self *TcpServer) handleSession(s *TcpSession){
-	self.sw.Add(1)
-	go s.Recvmessage(&self.sw)
-	self.sw.Add(1)
-	go s.Sendmessage(&self.sw)
+func (self *TcpServer) Exit(){
+	self.cancel()
 	self.sw.Wait()
 }
 

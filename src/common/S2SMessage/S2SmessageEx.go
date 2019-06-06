@@ -81,7 +81,7 @@ func DispatchClientMessage(msg []byte, c* websocket.Conn){
 		return
 	}
 
-	cb, ok := messageHandler[*msg_base.Operid]
+	cb, ok := messageHandler[msg_base.Operid]
 	if ok {
 		cb(msg_base, c)
 	}

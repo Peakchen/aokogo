@@ -19,6 +19,7 @@ enum game_message_id
 //路由消息 
 enum message_route
 {
+    R_SID_Invalid = 0;
     R_SID_ESG = 1;   // 外网关（client <-> server 客户端与服务器直接门户，建议会话，将客户端消息转发到内外服务器）
     R_SID_ISG = 2;   // 内网关（暂时由world负责，不用）
     R_SID_DB = 3;    // db服 (负责数据库增删查改)

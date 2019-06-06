@@ -1,16 +1,17 @@
-syntax = "proto2";
+syntax = "proto3";
 package S2SMessage;
 
 // add by stefanchen 
 // id : msg + rsp/req + function 
 
-enum server_message_id
+enum Server_message_id
 {
     msg_invalid = 0;
 }
 
-enum server_id
+enum Server_id
 {
+    SID_Invalid = 0;
     SID_ESG = 1;   // 外网关（client <-> server 客户端与服务器直接门户，建议会话，将客户端消息转发到内外服务器）
     SID_ISG = 2;   // 内网关（暂时由world负责，不用）
     SID_DB = 3;    // db服 (负责数据库增删查改)
@@ -22,18 +23,18 @@ enum server_id
 }
 
 // route c2s消息路由
-message c2s_msg_route
+message C2SMsgRoute
 {
-    required int32 operid = 1; // 分发服务器操作消息id
-    required bytes data = 2;   // 分发服务器消息内容(第2层以下消息) 
+    int32 Operid = 1; // 分发服务器操作消息id
+    bytes Data = 2;   // 分发服务器消息内容(第2层以下消息) 
 }
 
 // s2s 服务器间 基础消息
-message s2sbasemessage
+message S2SBaseMessage
 {
-    required int32 srcid = 1;   // 消息源服
-    required int32 dstid = 2;   // 目的服
-    required bytes data = 3;    // 消息数据
+    int32 Srcid = 1;   // 消息源服
+    int32 Dstid = 2;   // 目的服
+    bytes Data = 3;    // 消息数据
 }
 
 
