@@ -7,7 +7,7 @@ import (
 	"context"
 	"sync"
 	//"time"
-	//. "BigWorld/define"
+	. "BigWorld/bigcache"
 	"net"
 	"github.com/golang/protobuf/proto"
 	. "common/S2SMessage"
@@ -66,16 +66,24 @@ func (self *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
 		return
 	}
 	// do another action...
+	var outparams interface{} = nil
+	self.cacheAction(recv.Data, outparams)
+	if outparams != nil {
+		self.send(recv.Srcid, outparams)
+	}
+}
+
+func (self *TBigWordMgr) cacheAction(data []byte, outparams interface{}){
 	var secDatas = &CacheOperation{}
-	secpack := proto.Unmarshal(recv.Data, secDatas)
+	secpack := proto.Unmarshal(data, secDatas)
 	if secpack != nil {
 		log.Fatal("unmarshal message Data fail.")
 		return
 	}
-	self.send(recv.Srcid, recv.Data)
+	SelectOper("", secDatas, outparams)
 }
 
-func (self *TBigWordMgr) send(srcSvr int32, data []byte){
+func (self *TBigWordMgr) send(srcSvr int32, outparams interface{}){
 	if _, ok := ERouteId_name[srcSvr]; !ok {
 		return
 	}

@@ -23,7 +23,7 @@ func (self *TBigCache) Exit(){
 	self.cancel()
 }
 
-func (self *TBigCache) Set(key, name, data string){
+func (self *TBigCache) Set(key, name string, data interface{}){
 	cid := key+":"+name
 	self.c.Set(cid, data)
 }
@@ -31,4 +31,9 @@ func (self *TBigCache) Set(key, name, data string){
 func (self *TBigCache) Get(key, name string) interface{}{
 	cid := key+":"+name
 	return self.c.Get(cid)
+}
+
+func (self *TBigCache) Del(key, name string) {
+	cid := key+":"+name
+	self.c.Remove(cid)
 }

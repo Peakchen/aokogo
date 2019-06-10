@@ -49,8 +49,8 @@ message SS_BaseMessage_Rsp
 
 message ArrayCache_Repeat
 {
-    string Name = 1; //缓存名
-    string Data = 2; //缓存数据
+    int32   NameId = 1; //缓存名id
+    string  Data = 2; //缓存数据
 }
 
 message SS_BigWordMessage_Ntf

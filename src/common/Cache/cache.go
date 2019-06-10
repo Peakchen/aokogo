@@ -39,6 +39,10 @@ func (self *TCache) Get(key string) interface{}{
 	return val
 }
 
+func (self *TCache) Remove(key string) {
+	self.c.Delete(key)
+}
+
 func (self *TCache) Init(td int64, ctx context.Context) {
 	self.td = td
 	self.ctx = ctx
