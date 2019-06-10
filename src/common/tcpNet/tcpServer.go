@@ -65,13 +65,15 @@ type TcpServer struct{
 	cancel	context.CancelFunc
 	srcSvr  int32
 	dstSvr  int32
+	cb 		MessageCb
 }
 
-func NewTcpServer(addr string, srcSvr, dstSvr int32)*TcpServer{
+func NewTcpServer(addr string, srcSvr, dstSvr int32, cb MessageCb)*TcpServer{
 	return &TcpServer{
-		host: addr,
+		host: 	addr,
 		srcSvr: srcSvr,
 		dstSvr: dstSvr,
+		cb:		cb,
 	}
 }
 
@@ -91,17 +93,24 @@ func (self *TcpServer) StartTcpServer(){
 func (self *TcpServer) loop(){
 	defer self.sw.Done()
 	for{
-		c, err := self.listener.AcceptTCP()
-		if err != nil {
-			fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
+		select {
+		case <-self.ctx.Done():
+			self.Exit()
+			return
+		default:
+			c, err := self.listener.AcceptTCP()
+			if err != nil {
+				fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
+			}
+	
+			session := NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb)
+			session.HandleSession()
 		}
-
-		session := NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr)
-		session.HandleSession()
 	}
 }
 
 func (self *TcpServer) Exit(){
+	self.listener.Close()
 	self.cancel()
 	self.sw.Wait()
 }

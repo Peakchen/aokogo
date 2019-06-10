@@ -6,7 +6,7 @@ package S2SMessage;
 
 enum MessageID
 {
-    CS_Invalid = 0;
+    SS_Invalid = 0;
 
     CS_MsgRoute = 1; 
     SC_MsgRoute = 2;
@@ -23,28 +23,52 @@ enum EMessageErr
 }
 
 // route c2s消息路由
-message CS_MsgRoute_Req
+message SS_MsgRoute_Req
 {
     int32 Operid = 1; // 分发服务器操作消息id
     bytes Data = 2;   // 分发服务器消息内容(第2层以下消息) 
 }
 
-message SC_MsgRoute_Rsp
+message SS_MsgRoute_Rsp
 {
     EMessageErr Ret = 1; //错误码
 }
 
 // 基础消息
-message CS_BaseMessage_Req
+message SS_BaseMessage_Req
 {
     int32 Srcid = 1;   // 消息源服
     int32 Dstid = 2;   // 目的服
     bytes Data = 3;    // 消息数据
 }
 
-message SC_BaseMessage_Rsp
+message SS_BaseMessage_Rsp
 {
     EMessageErr Ret = 1; //错误码
 }
 
+message ArrayCache_Repeat
+{
+    string Name = 1; //缓存名
+    string Data = 2; //缓存数据
+}
 
+message SS_BigWordMessage_Ntf
+{
+    repeated ArrayCache_Repeat Caches = 1; //缓存数据集
+}
+
+enum ECacheOper
+{
+    Invalidoper = 0; //无效id
+    Add = 1; //增加
+    Delete = 2; //删除
+    Update = 3; //修改
+    Select = 4; //查询
+}
+
+message CacheOperation
+{
+    repeated ArrayCache_Repeat Caches = 1; //缓存数据集
+    ECacheOper Oper = 2; //操作id 
+}

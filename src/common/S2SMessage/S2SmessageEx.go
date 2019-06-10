@@ -59,7 +59,7 @@ import (
 )
 
 type S2SDispatchMHandler func(msg []byte, c net.Conn)
-type C2SRoutehandler func(msg *CS_MsgRoute_Req, c* websocket.Conn)
+type C2SRoutehandler func(msg *SS_MsgRoute_Req, c* websocket.Conn)
 
 var(
 	messageHandler  map[int32] C2SRoutehandler
@@ -76,7 +76,7 @@ func S2SDispatchMRegister(id int32, handler S2SDispatchMHandler){
 
 func DispatchClientMessage(msg []byte, c* websocket.Conn){
 
-	var msg_base = &CS_MsgRoute_Req{}
+	var msg_base = &SS_MsgRoute_Req{}
 	var pm = proto.Unmarshal(msg, msg_base)
 	if pm == nil {
 		log.Fatal("unmarshal message fail.")

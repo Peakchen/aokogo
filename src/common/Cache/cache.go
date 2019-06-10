@@ -22,7 +22,7 @@ type TCache struct {
 	ctx 	context.Context
 }
 
-func (self *TCache) set(key string, data interface{}) {
+func (self *TCache) Set(key string, data interface{}) {
 	d := &TData{
 		key: 		key,
 		deadtime: 	time.Now().Unix()+self.td,
@@ -31,7 +31,7 @@ func (self *TCache) set(key string, data interface{}) {
 	self.c.Store(key, data)
 }
 
-func (self *TCache) get(key string) interface{}{
+func (self *TCache) Get(key string) interface{}{
 	val, ok := self.c.Load(key)
 	if !ok {
 		return nil
@@ -39,7 +39,7 @@ func (self *TCache) get(key string) interface{}{
 	return val
 }
 
-func (self *TCache) init(td int64, ctx context.Context) {
+func (self *TCache) Init(td int64, ctx context.Context) {
 	self.td = td
 	self.ctx = ctx
 	if self.cl == nil {
@@ -47,7 +47,7 @@ func (self *TCache) init(td int64, ctx context.Context) {
 	}
 }
 
-func (self *TCache) run(){
+func (self *TCache) Run(){
 	self.wg.Add(1)
 	go self.loopcheck()
 }

@@ -14,6 +14,7 @@ import (
 	"fmt"
 	. "common/tcpNet"
 	."common/S2SMessage"
+	. "common/Define"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -26,28 +27,37 @@ type TCacheMgr struct {
 	s       *TcpSession
 	srcSvr  int32
 	dstSvr  int32
+	sessAlive bool
+	cb 		MessageCb
 	// add cache obj ...
 }
 
-func (self *TCacheMgr) connect(){
+func (self *TCacheMgr) connect()error{
 	c, err := net.Dial("tcp", ConstBigWordHost)
 	if err != nil {
 		fmt.Println("net dial err: ", err)
-		return
+		return err
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
-	self.s = NewSession(ConstBigWordHost, c, self.ctx, self.src, )
+	self.s = NewSession(ConstBigWordHost, c, self.ctx, self.srcSvr, self.dstSvr, self.cb)
 	self.s.HandleSession()
+	self.sessAlive = true
+	return nil
 }
 
-func (self *TCacheMgr) run(srcSev, dstSvr int32){
+func (self *TCacheMgr) run(srcSev, dstSvr int32, cb MessageCb){
 	self.ctx, self.cancel = context.WithCancel(context.Background())
 	self.srcSvr = srcSev
 	self.dstSvr = dstSvr
-	self.wg.Add(1)
+	self.cb = cb
+	
 	self.c = &TCache{}
-	self.c.init(ConstCacheOverTime, self.ctx)
-	self.c.run()
+	self.c.Init(ConstCacheOverTime, self.ctx)
+	self.c.Run()
+	self.connect()
+
+	self.wg.Add(1)
+	go self.loopc()
 	// add ...
 }
 
@@ -66,16 +76,20 @@ func (self *TCacheMgr)loopc(){
 			return
 		case <-t.C:
 			//begin request data from bigword server.
-			s := &S2SBaseMessage{
+			msg := &SS_BaseMessage_Req{
 				Srcid: self.srcSvr,
-				Dstid: int32(ServerId_SID_BigWorld),
+				Dstid: int32(ERouteId_ER_BigWorld),
 			}
-			msg, err := proto.Marshal(s)
+			data, err := proto.Marshal(msg)
 			if err == nil {
 				fmt.Println("Marshal message fail.")
 				return
 			}
-			self.s.SetSendCache(msg)
+			self.s.SetSendCache(data)
+		default:
+			if !self.sessAlive {
+				self.connect()
+			}
 		}
 	}
 }

@@ -13,5 +13,7 @@ enum ERouteId
     ER_DBProxy = 7; // db代理服(缓存db操作，队列定时交付操作，缓解db服务器压力))
     ER_Game = 8;   //游戏服（可根据游戏设计任意扩展逻辑）
     ER_Client = 9; //客户端
+
+    ER_Max = 10; //最大枚举
 }
 

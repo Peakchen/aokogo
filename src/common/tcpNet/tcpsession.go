@@ -53,11 +53,15 @@ import(
 	"net"
 	"time"
 	"log"
-	"common/S2SMessage"
+	//"common/S2SMessage"
 	"sync"
 	"fmt"
 	"context"
+	//. "common/Define"
 )
+
+// session, data, data len
+type MessageCb func(net.Conn, []byte, int)
 
 type TcpSession struct{
 	host 	string
@@ -73,6 +77,7 @@ type TcpSession struct{
 	srcSvr  int32	
 	// destination  server or client.
 	dstSvr  int32
+	Recvcb 		MessageCb
 }
 
 const (
@@ -103,15 +108,16 @@ func (c* TcpSession) Connect(){
 
 }
 
-func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int32)*TcpSession{
+func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int32, newcb MessageCb)*TcpSession{
 	return &TcpSession{
-		host: addr,
-		conn: c,
-		send: make(chan []byte, 4096),
-		isAlive: false,
-		ctx: ctx,
-		srcSvr:	srcSvr,
-		dstSvr: dstSvr,
+		host: 		addr,
+		conn: 		c,
+		send: 		make(chan []byte, 4096),
+		isAlive: 	false,
+		ctx: 		ctx,
+		srcSvr:		srcSvr,
+		dstSvr: 	dstSvr,
+		Recvcb: 	newcb,
 	}
 }
 
@@ -176,11 +182,7 @@ func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
 		}
 
 		fmt.Printf("recv mesg: %v.\n", string(buff))
-		if self.dstSvr == ER_Client {
-			
-		}else{
-			S2SMessage.DispatchMessage(buff[:len], c.conn, self.srcSvr, self.dstSvr)
-		}
+		c.Recvcb(c.conn, buff, len)
 	}
 }
 
