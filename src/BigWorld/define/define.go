@@ -1,5 +1,6 @@
 package define 
 
 const (
-	ConstBigWordInterval = int32(60*5)
+	ConstBigWorldInterval int32 = 60*5
+	ConstBigWorldHost string = "127.0.0.1:40001"
 )
