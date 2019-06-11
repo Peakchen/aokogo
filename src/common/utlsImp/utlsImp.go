@@ -50,7 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package utlsImp
 
 import(
-	"github.com/satori/go.uuid"
+	"third/github.com/satori/go.uuid"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"

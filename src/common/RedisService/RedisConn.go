@@ -51,7 +51,7 @@ package RedisService
 
 import(
 	"common/utlsImp"
-	"github.com/garyburd/redigo/redis"
+	"third/github.com/garyburd/redigo/redis"
 )
 
 type RedisConn struct {
