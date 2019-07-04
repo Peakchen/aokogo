@@ -66,6 +66,9 @@ type TcpServer struct{
 	srcSvr  int32
 	dstSvr  int32
 	cb 		MessageCb
+	off     chan *TcpSession
+	// person online 
+	person		int32
 }
 
 func NewTcpServer(addr string, srcSvr, dstSvr int32, cb MessageCb)*TcpServer{
@@ -87,6 +90,8 @@ func (self *TcpServer) StartTcpServer(){
 
 	self.sw.Add(1)
 	go self.loop()
+	self.sw.Add(1)
+	go self.loopoff()
 	self.sw.Wait()
 }
 
@@ -103,10 +108,32 @@ func (self *TcpServer) loop(){
 				fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
 			}
 	
-			session := NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb)
+			session := NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb, self.off)
 			session.HandleSession()
+			self.person++
 		}
 	}
+}
+
+func (self *TcpServer) loopoff(){
+	defer self.sw.Done()
+	for {
+		select {
+		case os, ok := <-self.off:
+			if !ok {
+				return
+			}
+			self.offline(os)
+		case <-self.ctx.Done():
+			self.Exit()
+			return
+		}
+	}
+}
+
+func (self *TcpServer) offline(os *TcpSession){
+	// process 
+	self.person--
 }
 
 func (self *TcpServer) Exit(){

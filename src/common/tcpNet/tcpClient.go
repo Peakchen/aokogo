@@ -9,15 +9,19 @@ import (
 )
 
 type TcpClient struct {
-	wg  	sync.WaitGroup
-	ctx 	context.Context
-	cancel	context.CancelFunc
-	host    string
-	s 		*TcpSession
-	srcSvr  int32
-	dstSvr  int32
-	sessAlive bool
-	cb 		MessageCb
+	wg  		sync.WaitGroup
+	ctx 		context.Context
+	cancel		context.CancelFunc
+	host    	string
+	s 			*TcpSession
+	srcSvr  	int32
+	dstSvr  	int32
+	sessAlive 	bool
+	cb 			MessageCb
+	// person offline flag
+	off 		chan *TcpSession
+	// person online 
+	person		int32
 }
 
 func NewClient(host string, srcSvr, dstSvr int32, cb MessageCb)*TcpClient{
@@ -43,7 +47,7 @@ func (self *TcpClient) connect(){
 		return
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
-	self.s = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb)
+	self.s = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb, self.off)
 	self.s.HandleSession()
 }
 
@@ -59,6 +63,27 @@ func (self *TcpClient) loopconn(){
 			}
 		}
 	}
+}
+
+func (self *TcpClient) loopoff(){
+	defer self.wg.Done()
+	for {
+		select {
+		case os, ok := <-self.off:
+			if !ok {
+				return
+			}
+			self.offline(os)
+		case <-self.ctx.Done():
+			self.Exit()
+			return
+		}
+	}
+}
+
+func (self *TcpClient) offline(os *TcpSession){
+	// process 
+
 }
 
 func (self *TcpClient) Send(data []byte){

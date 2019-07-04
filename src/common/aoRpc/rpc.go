@@ -18,6 +18,8 @@ const (
 
 type TModelAct struct {
 	actid	string
+	mod  	interface{}
+	modt	string
 	modf  	reflect.Value
 	params 	[]reflect.Value
 }
@@ -65,6 +67,7 @@ func (self *TAorpc) Call(key, modelname, funcName string, ins []interface{}, out
 		return fmt.Errorf("can not find model, input model name: %v.", modelname)
 	}
 	v := reflect.ValueOf(m)
+	t := fmt.Sprintf("%s", reflect.TypeOf(m)) 
 	f := v.MethodByName(funcName)
 	rv := []reflect.Value{}
 	for _, in := range ins {
@@ -76,6 +79,8 @@ func (self *TAorpc) Call(key, modelname, funcName string, ins []interface{}, out
 		actid:	actkey,
 		modf: 	f,
 		params: rv,
+		mod:	m,
+		modt:   t,
 	}
 	var twg sync.WaitGroup
 	twg.Add(1)
@@ -140,7 +145,6 @@ func (self *TAorpc) loopAct(){
 			continue
 		}
 		mrts := act.modf.Call(act.params)
-
 		self.retchan <- &TActRet{
 			actid:	act.actid,
 			rets:	mrts,

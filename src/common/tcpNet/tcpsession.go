@@ -77,7 +77,10 @@ type TcpSession struct{
 	srcSvr  int32	
 	// destination  server or client.
 	dstSvr  int32
-	Recvcb 		MessageCb
+	// receive message call back
+	Recvcb 	MessageCb
+	// person offline flag
+	off 	chan *TcpSession
 }
 
 const (
@@ -108,7 +111,7 @@ func (c* TcpSession) Connect(){
 
 }
 
-func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int32, newcb MessageCb)*TcpSession{
+func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int32, newcb MessageCb, off chan *TcpSession)*TcpSession{
 	return &TcpSession{
 		host: 		addr,
 		conn: 		c,
@@ -122,6 +125,7 @@ func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int
 }
 
 func (c* TcpSession) exit(){
+	c.off <- c
 	c.conn.Close()
 	c.sw.Wait()
 }
