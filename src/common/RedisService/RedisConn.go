@@ -51,7 +51,7 @@ package RedisService
 
 import(
 	"common/utlsImp"
-	"third/github.com/garyburd/redigo/redis"
+	"third/github.com/gomodule/redigo/redis"
 )
 
 type RedisConn struct {
@@ -125,18 +125,19 @@ func (self *RedisConn) Update(Input IDBCache, SaveType EDBOperType)(err error){
 	Redis Oper func: Query
 	purpose: in order to Get data from Redis Cache.   
 */
-func (self *RedisConn) Query(Output IDBCache)(err error){
+func (self *RedisConn) Query(Output IDBCache)(ret error){
+	ret = nil
 	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
 	data, err := self.Conn.Do("GET", RedisKey)
 	if err != nil{
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data))
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data)
 		Log.Error("[Query] err: %v.\n", err)
 		return
 	}
 
 	BUmalErr := bson.Unmarshal(data.([]byte), &Output)
 	if BUmalErr != nil {
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data))
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data)
 		Log.Error("[Query] can not bson Unmarshal get data to Output, err: %v.\n", err)
 		return
 	}
@@ -144,7 +145,8 @@ func (self *RedisConn) Query(Output IDBCache)(err error){
 	return
 }
 
-func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType)(err error){
+func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType)(ret error){
+	ret = nil
 	switch EDBOperType {
 	case EDBOper_Insert:
 		var ExpendCmd = []interface{data, "EX", REDIS_SET_DEADLINE}
