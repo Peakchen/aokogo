@@ -53,16 +53,16 @@ import(
 	"github.com/gorilla/websocket"
 )
 
-type playMsg struct{
+type TPlayer struct{
 	ldbid int64
 }
 
 var playsession = make(map[int64]*websocket.Conn)
 
-func (p *playMsg) push(ldbid int64, c *websocket.Conn){
+func (p *TPlayer) push(ldbid int64, c *websocket.Conn){
 	playsession[ldbid] = c
 }
 
-func (p *playMsg) pop(ldbid int64){
+func (p *TPlayer) pop(ldbid int64){
 	delete(playsession, ldbid)
 }
