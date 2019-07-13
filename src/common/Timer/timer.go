@@ -1,17 +1,12 @@
 package Timer
 
-import (
-	
-)
-
 type TAokoTimer struct {
-	
 }
 
-func NewTimer(){
+func NewTimer() {
 
 }
 
-func (self *TAokoTimer) Register(){
+func (self *TAokoTimer) Register() {
 
 }
