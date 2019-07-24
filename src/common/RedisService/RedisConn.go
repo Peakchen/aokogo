@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,69 +49,73 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package RedisService
 
-import(
-	"common/utlsImp"
+import (
+	"common/Log"
+	"fmt"
+	"time"
+
+	"third/github.com/globalsign/mgo/bson"
 	"third/github.com/gomodule/redigo/redis"
 )
 
 type RedisConn struct {
-	ConnAddr string 
-	DBIndex int32
-	Passwd string
-	Conn* redis.Pool
+	ConnAddr string
+	DBIndex  int32
+	Passwd   string
+	Conn     *redis.Pool
 }
 
-func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *RedisConn{
+func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *RedisConn {
 	Rs := &RedisConn{
-		ConnAddr: 	ConnAddr,
-		DBIndex: 	DBIndex,
-		Passwd:		Passwd,
+		ConnAddr: ConnAddr,
+		DBIndex:  DBIndex,
+		Passwd:   Passwd,
 	}
 
 	Rs.NewDial()
 	return Rs
 }
 
-func (self *RedisConn) NewDial() (error) {
+func (self *RedisConn) NewDial() error {
 	self.Conn = &redis.Pool{
-		MaxIdle: 		IDle_three,
-		IdleTimeout:	IDleTimeOut_four_min,
-		Dial: func()(redis.Conn, error) {
-			return redis.Dial("tcp", 
-						self.ConnAddr, 
-						redis.DialDatabase(self.DBIndex), 
-						redis.DialPassword(self.Passwd), 
-						redis.DialReadTimeout(1*time.Second), 
-						redis.DialWriteTimeout(1*time.Second))
+		MaxIdle:     IDle_three,
+		IdleTimeout: IDleTimeOut_four_min,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp",
+				self.ConnAddr,
+				redis.DialDatabase(self.DBIndex),
+				redis.DialPassword(self.Passwd),
+				redis.DialReadTimeout(1*time.Second),
+				redis.DialWriteTimeout(1*time.Second))
 		},
 	}
-	
+
 	self.Conn.Do("FLUSHDB")
 	return nil
 }
 
-func MakeRedisModel(Identify, MainModel, SubModel string)string {
-	return MainModel+"."+SubModel+"."+Identify
+func MakeRedisModel(Identify, MainModel, SubModel string) string {
+	return MainModel + "." + SubModel + "." + Identify
 }
 
 /*
 	Redis Oper func: Insert
 	SaveType: EDBOper_Insert
-	purpose: in order to Insert data type EDBOperType to Redis Cache.   
+	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (self *RedisConn) Insert(Input IDBCache, SaveType EDBOperType)bool{
+func (self *RedisConn) Insert(Input IDBCache, SaveType EDBOperType) bool {
 	return self.Update(Input, SaveType)
 }
 
 /*
 	Redis Oper func: Update
 	SaveType: EDBOper_Update
-	purpose: in order to Update data type EDBOperType to Redis Cache.   
+	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
-func (self *RedisConn) Update(Input IDBCache, SaveType EDBOperType)(err error){
+func (self *RedisConn) Update(Input IDBCache, SaveType EDBOperType) (err error) {
 	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
-	if err != nil { 
+	if err != nil {
 		err = fmt.Errorf("bson.Marshal err: %v.\n", err)
 		Log.Error("[Update] err: %v", err)
 		return
@@ -123,13 +127,13 @@ func (self *RedisConn) Update(Input IDBCache, SaveType EDBOperType)(err error){
 
 /*
 	Redis Oper func: Query
-	purpose: in order to Get data from Redis Cache.   
+	purpose: in order to Get data from Redis Cache.
 */
-func (self *RedisConn) Query(Output IDBCache)(ret error){
+func (self *RedisConn) Query(Output IDBCache) (ret error) {
 	ret = nil
 	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
 	data, err := self.Conn.Do("GET", RedisKey)
-	if err != nil{
+	if err != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data)
 		Log.Error("[Query] err: %v.\n", err)
 		return
@@ -145,20 +149,20 @@ func (self *RedisConn) Query(Output IDBCache)(ret error){
 	return
 }
 
-func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType)(ret error){
+func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType) (ret error) {
 	ret = nil
 	switch EDBOperType {
 	case EDBOper_Insert:
-		var ExpendCmd = []interface{data, "EX", REDIS_SET_DEADLINE}
-		Ret, err := self.Conn.Do("SETNX", RedisKey, ExpendCmd...);
-		if err != nil{
+		ExpendCmd := []interface{}{data, "EX", REDIS_SET_DEADLINE}
+		Ret, err := self.Conn.Do("SETNX", RedisKey, ExpendCmd...)
+		if err != nil {
 			Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
 			return
 		}
-	
+
 		if Ret == 0 {
 			// connect key and value.
-			if _, err := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil{
+			if _, err := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil {
 				Log.Error("[Save] Insert SET data: %v, err: %v..\n", data, err)
 				return
 			}
@@ -166,26 +170,26 @@ func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperT
 
 	case EDBOper_Update:
 		// connect key and value.
-		var ExpendCmd = []interface{data, "EX", REDIS_SET_DEADLINE}
-		if _, err := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil{
+		var ExpendCmd = []interface{}{data, "EX", REDIS_SET_DEADLINE}
+		if _, err := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil {
 			Log.Error("[Save] Update Set data: %v, err: %v.\n", data, err)
 			return
 		}
 
 		CollectKey := ":" + RedisKey + "_Update_Oper"
 		// Add to collection.
-		if _,err := self.Conn.Do("SADD", CollectKey, RedisKey); err != nil {
+		if _, err := self.Conn.Do("SADD", CollectKey, RedisKey); err != nil {
 			Log.Error("[Save] SADD CollectKey: %v, RedisKey: %v, err: %v.", CollectKey, RedisKey, err)
 			return
 		}
-		
+
 	case EDBOper_Delete:
 		// nothing...
 	case EDBOper_DB: //it can be presisted to database.
 		// for mogo db.
 	default:
 		// nothing...
-		
+
 	}
 
 	return
