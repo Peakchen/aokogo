@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,17 +49,19 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package RedisService
 
-import(
+import (
 	"log"
 	"time"
+
+	"third/github.com/gomodule/redigo/redis"
 )
 
-func Subscriber(pool *redis.Pool, subcontent interface{}){
-	if pool == nil{
+func Subscriber(pool *redis.Pool, subcontent interface{}) {
+	if pool == nil {
 		return
 	}
 
-	for{
+	for {
 		c := pool.Get()
 		psc := redis.PubSubConn{Conn: c}
 		psc.Subscribe(subcontent)
@@ -69,8 +71,6 @@ func Subscriber(pool *redis.Pool, subcontent interface{}){
 			log.Printf("channel: %s, message: %s.", recv.Channel, recv.Data)
 		case redis.Subscription:
 			log.Printf("channel: %s, Count: %d, kind: %s.", recv.Channel, recv.Count, recv.Kind)
-		case redis.PMessage:
-			log.Printf("channel: %s, message: %s, Pattern: %s.", recv.Channel, recv.Data, recv.Pattern)
 		case error:
 			log.Printf("Error.")
 			c.Close()

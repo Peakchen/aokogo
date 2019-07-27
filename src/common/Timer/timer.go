@@ -1,12 +1,12 @@
 package timer
 
 import (
-	"common/RedisService"
+	"common/Log"
+	. "common/RedisService"
 	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 )
 
 // add by stefan 20190715 19:39
@@ -25,15 +25,15 @@ type TDataPack struct {
 }
 
 type TAokoTimer struct {
-	tmo 	[]string //
-	conn	*RedisService.RedisConn.Conn
+	tmo  []string //
+	conn *TRedisConn.Conn
 }
 
 var (
 	GAokoTimer = &TAokoTimer{}
 )
 
-func NewTimer(ctx context.Context, wg *sync.WaitGroup, c *RedisService.RedisConn) {
+func NewTimer(ctx context.Context, wg *sync.WaitGroup, c *TRedisConn) {
 	GAokoTimer.conn = c.Conn
 	GAokoTimer.tmo = []string{}
 	wg.Add(1)
@@ -71,17 +71,17 @@ func (self *TAokoTimer) Register(key, name string, model interface{}) {
 func (self *TAokoTimer) loop(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for {
-		for _, name := range self.tmo{
+		for _, name := range self.tmo {
 			data, err := self.conn.Do("LPOP", name)
 			if err != nil {
 				Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
 				return
 			}
-			if len(string(data)) == 0{
+			if len(string(data)) == 0 {
 				return
 			}
 			info := &TDataPack{}
-			if err := json.Unmarshal(data, info); err != nil{
+			if err := json.Unmarshal(data, info); err != nil {
 				log.Error("")
 				return
 			}

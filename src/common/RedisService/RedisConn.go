@@ -58,15 +58,15 @@ import (
 	"third/github.com/gomodule/redigo/redis"
 )
 
-type RedisConn struct {
+type TRedisConn struct {
 	ConnAddr string
 	DBIndex  int32
 	Passwd   string
-	Conn     *redis.Pool
+	RedPool  *redis.Pool
 }
 
-func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *RedisConn {
-	Rs := &RedisConn{
+func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *TRedisConn {
+	Rs := &TRedisConn{
 		ConnAddr: ConnAddr,
 		DBIndex:  DBIndex,
 		Passwd:   Passwd,
@@ -76,21 +76,20 @@ func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *RedisConn {
 	return Rs
 }
 
-func (self *RedisConn) NewDial() error {
-	self.Conn = &redis.Pool{
+func (self *TRedisConn) NewDial() error {
+	self.RedPool = &redis.Pool{
 		MaxIdle:     IDle_three,
 		IdleTimeout: IDleTimeOut_four_min,
 		Dial: func() (redis.Conn, error) {
 			return redis.Dial("tcp",
 				self.ConnAddr,
-				redis.DialDatabase(self.DBIndex),
+				redis.DialDatabase(int(self.DBIndex)),
 				redis.DialPassword(self.Passwd),
 				redis.DialReadTimeout(1*time.Second),
 				redis.DialWriteTimeout(1*time.Second))
 		},
 	}
-
-	self.Conn.Do("FLUSHDB")
+	self.RedPool.Get().Do("FLUSHDB")
 	return nil
 }
 
@@ -103,7 +102,7 @@ func MakeRedisModel(Identify, MainModel, SubModel string) string {
 	SaveType: EDBOper_Insert
 	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (self *RedisConn) Insert(Input IDBCache, SaveType EDBOperType) bool {
+func (self *TRedisConn) Insert(Input IDBCache, SaveType EDBOperType) error {
 	return self.Update(Input, SaveType)
 }
 
@@ -112,7 +111,7 @@ func (self *RedisConn) Insert(Input IDBCache, SaveType EDBOperType) bool {
 	SaveType: EDBOper_Update
 	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
-func (self *RedisConn) Update(Input IDBCache, SaveType EDBOperType) (err error) {
+func (self *TRedisConn) Update(Input IDBCache, SaveType EDBOperType) (err error) {
 	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
@@ -129,19 +128,19 @@ func (self *RedisConn) Update(Input IDBCache, SaveType EDBOperType) (err error) 
 	Redis Oper func: Query
 	purpose: in order to Get data from Redis Cache.
 */
-func (self *RedisConn) Query(Output IDBCache) (ret error) {
+func (self *TRedisConn) Query(Output IDBCache) (ret error) {
 	ret = nil
-	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
-	data, err := self.Conn.Do("GET", RedisKey)
+	RedisKey := MakeRedisModel(Output.CacheKey(), Output.MainModel(), Output.SubModel())
+	data, err := self.RedPool.Get().Do("GET", RedisKey)
 	if err != nil {
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data)
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
 		Log.Error("[Query] err: %v.\n", err)
 		return
 	}
 
 	BUmalErr := bson.Unmarshal(data.([]byte), &Output)
 	if BUmalErr != nil {
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Input.CacheKey(), Input.MainModel(), Input.SubModel(), data)
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
 		Log.Error("[Query] can not bson Unmarshal get data to Output, err: %v.\n", err)
 		return
 	}
@@ -149,12 +148,12 @@ func (self *RedisConn) Query(Output IDBCache) (ret error) {
 	return
 }
 
-func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType) (ret error) {
+func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType) (ret error) {
 	ret = nil
-	switch EDBOperType {
+	switch SaveType {
 	case EDBOper_Insert:
-		ExpendCmd := []interface{}{data, "EX", REDIS_SET_DEADLINE}
-		Ret, err := self.Conn.Do("SETNX", RedisKey, ExpendCmd...)
+		ExpendCmd := []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
+		Ret, err := self.RedPool.Get().Do("SETNX", ExpendCmd...)
 		if err != nil {
 			Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
 			return
@@ -162,7 +161,7 @@ func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperT
 
 		if Ret == 0 {
 			// connect key and value.
-			if _, err := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil {
+			if _, err := self.RedPool.Get().Do("SET", ExpendCmd...); err != nil {
 				Log.Error("[Save] Insert SET data: %v, err: %v..\n", data, err)
 				return
 			}
@@ -170,15 +169,15 @@ func (self *RedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperT
 
 	case EDBOper_Update:
 		// connect key and value.
-		var ExpendCmd = []interface{}{data, "EX", REDIS_SET_DEADLINE}
-		if _, err := self.Conn.Do("SET", RedisKey, ExpendCmd...); err != nil {
+		var ExpendCmd = []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
+		if _, err := self.RedPool.Get().Do("SET", ExpendCmd...); err != nil {
 			Log.Error("[Save] Update Set data: %v, err: %v.\n", data, err)
 			return
 		}
 
 		CollectKey := ":" + RedisKey + "_Update_Oper"
 		// Add to collection.
-		if _, err := self.Conn.Do("SADD", CollectKey, RedisKey); err != nil {
+		if _, err := self.RedPool.Get().Do("SADD", CollectKey, RedisKey); err != nil {
 			Log.Error("[Save] SADD CollectKey: %v, RedisKey: %v, err: %v.", CollectKey, RedisKey, err)
 			return
 		}
