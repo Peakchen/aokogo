@@ -1,4 +1,4 @@
-package utlsImp
+package utls
 
 import (
 	"errors"

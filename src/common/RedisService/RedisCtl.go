@@ -1,7 +1,8 @@
 package RedisService
 
 /*
-	ctrl some redis server change channl
+	ctrl some redis server change channl.
+	redis can sentil n main and sub redis service.
 */
 
 type TRedisCtrl struct {
