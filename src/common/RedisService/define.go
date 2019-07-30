@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,12 +49,12 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package RedisService
 
-import(
+import (
 	"time"
 )
 
 // pool Idl
-const(
+const (
 	IDle_Invalie = iota
 	IDle_one
 	IDle_two
@@ -64,55 +64,48 @@ const(
 )
 
 // idl timeout value
-const(
+const (
 	IDleTimeOut_invalid = iota
 	//second
-	IDleTimeOut_five_sec = 5*time.Second
-	IDleTimeOut_ten_sec = 10*time.Second
+	IDleTimeOut_five_sec = 5 * time.Second
+	IDleTimeOut_ten_sec  = 10 * time.Second
 	//minute
-	IDleTimeOut_one_min = 60*time.Second
-	IDleTimeOut_two_min = 120*time.Second
-	IDleTimeOut_three_min = 180*time.Second
-	IDleTimeOut_four_min = 240*time.Second
-
+	IDleTimeOut_one_min   = 60 * time.Second
+	IDleTimeOut_two_min   = 120 * time.Second
+	IDleTimeOut_three_min = 180 * time.Second
+	IDleTimeOut_four_min  = 240 * time.Second
 )
 
-const(
+const (
 	// common used MilliSecond
-	MSec_one = time.Millisecond
-	MSec_ten = 10*time.Millisecond
-	MSec_one_Hundred = 100*time.Millisecond
+	MSec_one         = time.Millisecond
+	MSec_ten         = 10 * time.Millisecond
+	MSec_one_Hundred = 100 * time.Millisecond
 
-	// common used Second 
-	Sec_five = 5*time.Second
-	Sec_ten = 10*time.Second
-	Sec_fifteen = 15*time.Second
-	Sec_twenty = 20*time.Second
-	Sec_thirty = 30*time.Second
-	Sec_fourty = 40*time.Second
-	Sec_fifty = 50*time.Second
-	Sec_sixty = 60*time.Second
+	// common used Second
+	Sec_five    = 5 * time.Second
+	Sec_ten     = 10 * time.Second
+	Sec_fifteen = 15 * time.Second
+	Sec_twenty  = 20 * time.Second
+	Sec_thirty  = 30 * time.Second
+	Sec_fourty  = 40 * time.Second
+	Sec_fifty   = 50 * time.Second
+	Sec_sixty   = 60 * time.Second
 )
 
 type REDIS_INT32 int32
 
 const (
 	REDIS_SET_DEADLINE REDIS_INT32 = 600 //s
-	
-)
 
-type IDBCache interface {
-	CacheKey() string
-	MainModel() string
-	SubModel() string
-}
+)
 
 type EDBOperType int32
 
 const (
-	EDBOper_Insert  EDBOperType = 1
-	EDBOper_Update  EDBOperType = 2
-	EDBOper_Delete  EDBOperType = 3
-	EDBOper_DB      EDBOperType = 4
+	EDBOper_Insert EDBOperType = 1
+	EDBOper_Update EDBOperType = 2
+	EDBOper_Delete EDBOperType = 3
+	EDBOper_DB     EDBOperType = 4
 	// ...
 )

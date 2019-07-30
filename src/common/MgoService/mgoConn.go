@@ -1,40 +1,46 @@
 package MgoService
 
 import (
-	"github.com/globalsign/mgo"
 	"common/Log"
+	. "common/public"
+	"fmt"
 	"time"
+
+	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"common/RedisService"
 )
 
-type MgoConn struct {
-	session *mgo.Session
-	UserName string
-	Passwd string
+type AokoMgo struct {
+	session     *mgo.Session
+	UserName    string
+	Passwd      string
 	ServiceHost string
+	chSessions  chan *mgo.Session
+	PoolCnt     int
 }
 
-func NewMgoConn(Username, Passwd, Host string)*MgoConn{
-	dbsess := &MgoConn{}
-	dbsess.UserName = Username
-	dbsess.Passwd = Passwd
-	dbsess.ServiceHost = Host
-
-	dbsess.NewDial()
-	return dbsess
+func NewMgoConn(Username, Passwd, Host string) *AokoMgo {
+	aokomogo := &AokoMgo{}
+	aokomogo.UserName = Username
+	aokomogo.Passwd = Passwd
+	aokomogo.ServiceHost = Host
+	//template set 10 session.
+	aokomogo.PoolCnt = 10
+	aokomogo.chSessions = make(chan *mgo.Session, aokomogo.PoolCnt)
+	aokomogo.NewDial()
+	return aokomogo
 }
 
-func (self *MgoConn) NewDial(){
+func (self *AokoMgo) NewDial() {
 	MdialInfo := &mgo.DialInfo{
-		Addrs: []string{self.ServiceHost},
-		Username: self.UserName,
-		Password: self.Passwd,
-		Direct: false,
-		Timeout: time.Second*3,
-		PoolLimit: 4096,
-		ReadTimeout: time.Second*5,
-		WriteTimeout: time.Second*5,
+		Addrs:        []string{self.ServiceHost},
+		Username:     self.UserName,
+		Password:     self.Passwd,
+		Direct:       false,
+		Timeout:      time.Second * 3,
+		PoolLimit:    4096,
+		ReadTimeout:  time.Second * 5,
+		WriteTimeout: time.Second * 5,
 	}
 
 	session, err := mgo.DialWithInfo(MdialInfo)
@@ -42,30 +48,48 @@ func (self *MgoConn) NewDial(){
 		Log.Error("mgo dial err: %v.\n", err)
 		return
 	}
-	
-	session.SetMode(mgo.Monotonic,true)
-	self.session = session
+
+	err = session.Ping()
+	if err != nil {
+		Log.Error("session ping out, err: ", err)
+		return
+	}
+
+	session.SetMode(mgo.Monotonic, true)
+	session.SetCursorTimeout(0)
+	// focus on those selects.
+	//http://www.mongoing.com/archives/1723
+	Safe := &mgo.Safe{
+		J:     true,       //true:写入落到磁盘才会返回|false:不等待落到磁盘|此项保证落到磁盘
+		W:     1,          //0:不会getLastError|1:主节点成功写入到内存|此项保证正确写入
+		WMode: "majority", //"majority":多节点写入|此项保证一致性|如果我们是单节点不需要这只此项
+	}
+	session.SetSafe(Safe)
+	//session.SetSocketTimeout(time.Duration(5 * time.Second()))
+	for i := 1; i <= self.PoolCnt; i++ {
+		self.chSessions <- self.session.Copy()
+	}
 	return
 }
 
-func (self *MgoConn) Stop(){
+func (self *AokoMgo) Stop() {
 	if self.session != nil {
 		self.session.Close()
 	}
 }
 
-func (self *MgoConn) GetDB()*mgo.Session{
+func (self *AokoMgo) GetDB() *mgo.Session {
 	if self.session == nil {
-		self.NewMgoConn()
+		self.NewDial()
 	}
 
 	return self.session.Clone()
 }
 
-func (self *MgoConn) OnTimer2FlushDB(){
-	reach := time.NewTicker(100*time.Millisecond)
+func (self *AokoMgo) OnTimer2FlushDB() {
+	reach := time.NewTicker(100 * time.Millisecond)
 	for {
-		select{
+		select {
 		case <-reach.C:
 			// todo:
 			self.FlushDB()
@@ -76,16 +100,30 @@ func (self *MgoConn) OnTimer2FlushDB(){
 	}
 }
 
-func (self *MgoConn) FlushDB(){
-	
+func (self *AokoMgo) FlushDB() {
+
 }
 
-func MakeDBModel(Identify, MainModel, SubModel string)string {
-	return MainModel+"."+SubModel+"."+Identify
+func (self *AokoMgo) GetSession() (sess *mgo.Session, err error) {
+	select {
+	case s, _ := <-self.chSessions:
+		return s, nil
+	case <-time.After(time.Duration(time.Second)):
+	default:
+	}
+	return nil, fmt.Errorf("aoko mongo session time out and not get.")
 }
 
-func (self *MgoConn) QueryOne(OutParam IDBCache)(err error){
-	collection := self.session.DB(OutParam.MainModel()).C(OutParam.SubModel())
+func MakeMgoModel(Identify, MainModel, SubModel string) string {
+	return MainModel + "." + SubModel + "." + Identify
+}
+
+func (self *AokoMgo) QueryOne(OutParam IDBCache) (err error) {
+	session, err := self.GetSession()
+	if err != nil {
+		return err
+	}
+	collection := session.DB(OutParam.MainModel()).C(OutParam.SubModel())
 	err = collection.Find(bson.M{"_id": OutParam.CacheKey()}).One(&OutParam)
 	if err != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.CacheKey(), OutParam.MainModel(), OutParam.SubModel(), err)
@@ -95,8 +133,12 @@ func (self *MgoConn) QueryOne(OutParam IDBCache)(err error){
 	return
 }
 
-func (self *MgoConn) QuerySome(OutParam IDBCache)(err error){
-	collection := self.session.DB(OutParam.MainModel()).C(OutParam.SubModel())
+func (self *AokoMgo) QuerySome(OutParam IDBCache) (err error) {
+	session, err := self.GetSession()
+	if err != nil {
+		return err
+	}
+	collection := session.DB(OutParam.MainModel()).C(OutParam.SubModel())
 	err = collection.Find(bson.M{"_id": OutParam.CacheKey()}).All(&OutParam)
 	if err != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.CacheKey(), OutParam.MainModel(), OutParam.SubModel(), err)
@@ -106,8 +148,12 @@ func (self *MgoConn) QuerySome(OutParam IDBCache)(err error){
 	return
 }
 
-func (self *MgoConn) SaveOne(InParam IDBCache)(err error){
-	collection := self.session.DB(InParam.MainModel()).C(InParam.SubModel())
+func (self *AokoMgo) SaveOne(InParam IDBCache) (err error) {
+	session, err := self.GetSession()
+	if err != nil {
+		return err
+	}
+	collection := session.DB(InParam.MainModel()).C(InParam.SubModel())
 	operAction := bson.M{"$set": bson.M{InParam.SubModel(): InParam}}
 	err = collection.Update(bson.M{"_id": InParam.CacheKey()}, operAction)
 	if err != nil {

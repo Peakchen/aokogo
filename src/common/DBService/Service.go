@@ -9,7 +9,7 @@ import (
 
 type TDBProvider struct {
 	rconn       *RedisService.TRedisConn
-	mconn       *MgoService.MgoConn
+	mconn       *MgoService.AokoMgo
 	ServerModel EServerModel
 }
 
