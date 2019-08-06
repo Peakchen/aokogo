@@ -123,12 +123,13 @@ func (self *AokoMgo) QueryOne(OutParam IDBCache) (err error) {
 	if err != nil {
 		return err
 	}
-	collection := session.DB(OutParam.MainModel()).C(OutParam.SubModel())
+	s := session.Clone()
+	defer s.Close()
+	collection := s.DB(OutParam.MainModel()).C(OutParam.SubModel())
 	err = collection.Find(bson.M{"_id": OutParam.CacheKey()}).One(&OutParam)
 	if err != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.CacheKey(), OutParam.MainModel(), OutParam.SubModel(), err)
 		Log.Error("[QueryOne] err: %v.\n", err)
-		return
 	}
 	return
 }
@@ -138,12 +139,13 @@ func (self *AokoMgo) QuerySome(OutParam IDBCache) (err error) {
 	if err != nil {
 		return err
 	}
-	collection := session.DB(OutParam.MainModel()).C(OutParam.SubModel())
+	s := session.Clone()
+	defer s.Close()
+	collection := s.DB(OutParam.MainModel()).C(OutParam.SubModel())
 	err = collection.Find(bson.M{"_id": OutParam.CacheKey()}).All(&OutParam)
 	if err != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.CacheKey(), OutParam.MainModel(), OutParam.SubModel(), err)
 		Log.Error("[QuerySome] err: %v.\n", err)
-		return
 	}
 	return
 }
@@ -153,14 +155,26 @@ func (self *AokoMgo) SaveOne(InParam IDBCache) (err error) {
 	if err != nil {
 		return err
 	}
-	collection := session.DB(InParam.MainModel()).C(InParam.SubModel())
+	s := session.Clone()
+	defer s.Close()
+	collection := s.DB(InParam.MainModel()).C(InParam.SubModel())
 	operAction := bson.M{"$set": bson.M{InParam.SubModel(): InParam}}
 	err = collection.Update(bson.M{"_id": InParam.CacheKey()}, operAction)
 	if err != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, err: %v.\n", InParam.CacheKey(), InParam.MainModel(), InParam.SubModel(), err)
 		Log.Error("[SaveOne] err: %v.\n", err)
-		return
 	}
-
 	return
+}
+
+func (self *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
+	session, err := self.GetSession()
+	if err != nil {
+		return err
+	}
+	s := session.Clone()
+	defer s.Close()
+	c := s.DB(InParam.MainModel()).C(InParam.SubModel())
+	err = c.EnsureIndex(mgo.Index{Key: idxs})
+	return err
 }
