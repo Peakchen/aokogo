@@ -3,8 +3,10 @@ package utls
 import (
 	"errors"
 	"math/big"
+	"reflect"
 	"strconv"
 	"time"
+	"unsafe"
 )
 
 // String2Bytes convert string to []byte
@@ -49,4 +51,23 @@ func NSToTime(ns int64) (time.Time, error) {
 	}
 	bigNS := big.NewInt(ns)
 	return time.Unix(ns/1e9, int64(bigNS.Mod(bigNS, big.NewInt(1e9)).Uint64())), nil
+}
+
+func String2Slicebyte(s string) []byte {
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	bh := reflect.SliceHeader{
+		Data: sh.Data,
+		Len:  sh.Len,
+		Cap:  sh.Len,
+	}
+	return *(*[]byte)(unsafe.Pointer(&bh))
+}
+
+func SliceByte2String(b []byte) string {
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := reflect.StringHeader{
+		Data: bh.Data,
+		Len:  bh.Len,
+	}
+	return *(*string)(unsafe.Pointer(&sh))
 }
