@@ -63,8 +63,7 @@ type TcpServer struct {
 	listener *net.TCPListener
 	ctx      context.Context
 	cancel   context.CancelFunc
-	srcSvr   int32
-	dstSvr   int32
+	mapSvr   map[int32][]int32
 	cb       MessageCb
 	off      chan *TcpSession
 	on       *TcpSession
@@ -72,11 +71,10 @@ type TcpServer struct {
 	person int32
 }
 
-func NewTcpServer(addr string, srcSvr, dstSvr int32, cb MessageCb) *TcpServer {
+func NewTcpServer(addr string, mapSvr *map[int32][]int32, cb MessageCb) *TcpServer {
 	return &TcpServer{
 		host:   addr,
-		srcSvr: srcSvr,
-		dstSvr: dstSvr,
+		mapSvr: *mapSvr,
 		cb:     cb,
 	}
 }
@@ -109,7 +107,7 @@ func (self *TcpServer) loop() {
 				fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
 			}
 
-			self.on = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb, self.off)
+			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off)
 			self.on.HandleSession()
 			self.online()
 		}

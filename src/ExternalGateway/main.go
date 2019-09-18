@@ -66,9 +66,14 @@ func main() {
 		fmt.Println("[ExternalGateWay][main] start.")
 	}
 
+	var (
+		mapsvr map[int32][]int32 = map[int32][]int32{
+			int32(Define.ERouteId_ER_Client): []int32{int32(Define.ERouteId_ER_Game)},
+		}
+	)
+
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
-		int32(Define.ERouteId_ER_Client),
-		int32(Define.ERouteId_ER_Game),
+		&mapsvr,
 		ExternalGatewayMessageCallBack)
 	newExternalServer.StartTcpServer()
 }

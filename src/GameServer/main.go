@@ -50,8 +50,11 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
+	"common/Define"
+	"common/tcpNet"
 	"flag"
 	"fmt"
+	"net"
 	//"log"
 )
 
@@ -64,7 +67,19 @@ var addr = flag.String("addr", "localhost:8080", "http service address")
 func main() {
 	fmt.Println("start game.")
 	//flag.Parse()
+	var (
+		mapsvr map[int32][]int32 = map[int32][]int32{
+			int32(Define.ERouteId_ER_Game): []int32{int32(Define.ERouteId_ER_ISG), int32(Define.ERouteId_ER_ESG)},
+		}
+	)
+	gameSvr := tcpNet.NewClient(Define.GameServerHost,
+		&mapsvr,
+		GameMessageCallBack)
 
-	//
+	gameSvr.Run()
 	return
+}
+
+func GameMessageCallBack(c net.Conn, data []byte, len int) {
+	fmt.Println("exec external gateway server message call back.", c.RemoteAddr(), c.LocalAddr())
 }

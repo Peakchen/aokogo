@@ -1,71 +1,76 @@
 package tcpNet
+
 // client connect server.
 import (
 	"net"
 	"sync"
+
 	//"time"
 	"context"
 	"fmt"
 )
 
 type TcpClient struct {
-	wg  		sync.WaitGroup
-	ctx 		context.Context
-	cancel		context.CancelFunc
-	host    	string
-	s 			*TcpSession
-	srcSvr  	int32
-	dstSvr  	int32
-	sessAlive 	bool
-	cb 			MessageCb
+	wg        sync.WaitGroup
+	ctx       context.Context
+	cancel    context.CancelFunc
+	host      string
+	s         *TcpSession
+	mapSvr    map[int32][]int32
+	sessAlive bool
+	cb        MessageCb
 	// person offline flag
-	off 		chan *TcpSession
-	// person online 
-	person		int32
+	off chan *TcpSession
+	// person online
+	person int32
 }
 
-func NewClient(host string, srcSvr, dstSvr int32, cb MessageCb)*TcpClient{
+func NewClient(host string, mapSvr *map[int32][]int32, cb MessageCb) *TcpClient {
 	return &TcpClient{
-		host: 	host,
-		srcSvr:	srcSvr,
-		dstSvr: dstSvr,
-		cb: 	cb,
+		host:   host,
+		mapSvr: *mapSvr,
+		cb:     cb,
 	}
 }
 
-func (self *TcpClient) Run(){
+func (self *TcpClient) Run() {
 	self.ctx, self.cancel = context.WithCancel(context.Background())
 	self.connect()
 	self.wg.Add(1)
 	go self.loopconn()
+	self.wg.Wait()
 }
 
-func (self *TcpClient) connect(){
+func (self *TcpClient) connect() error {
 	c, err := net.Dial("tcp", self.host)
 	if err != nil {
 		fmt.Println("net dial err: ", err)
-		return
+		return err
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
-	self.s = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb, self.off)
+	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off)
 	self.s.HandleSession()
+	return nil
 }
 
-func (self *TcpClient) loopconn(){
+func (self *TcpClient) loopconn() {
 	for {
-		select{
+		select {
 		case <-self.ctx.Done():
 			self.Exit()
 			return
 		default:
-			if !self.sessAlive {
-				self.connect()
+			if self.sessAlive {
+				continue
+			}
+			if err := self.connect(); err != nil {
+				fmt.Println("dail to server fail, host: ", self.host)
 			}
 		}
 	}
 }
 
-func (self *TcpClient) loopoff(){
+func (self *TcpClient) loopoff() {
 	defer self.wg.Done()
 	for {
 		select {
@@ -81,16 +86,16 @@ func (self *TcpClient) loopoff(){
 	}
 }
 
-func (self *TcpClient) offline(os *TcpSession){
-	// process 
+func (self *TcpClient) offline(os *TcpSession) {
+	// process
 
 }
 
-func (self *TcpClient) Send(data []byte){
+func (self *TcpClient) Send(data []byte) {
 	self.s.SetSendCache(data)
 }
 
-func (self *TcpClient) Exit(){
+func (self *TcpClient) Exit() {
 	self.sessAlive = false
 	self.cancel()
 	self.s.exit()

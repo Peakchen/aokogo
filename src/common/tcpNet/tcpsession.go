@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,38 +49,37 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package tcpNet
 
-import(
+import (
+	"log"
 	"net"
 	"time"
-	"log"
+
 	//"common/S2SMessage"
-	"sync"
-	"fmt"
 	"context"
+	"fmt"
+	"sync"
 	//. "common/Define"
 )
 
 // session, data, data len
 type MessageCb func(net.Conn, []byte, int)
 
-type TcpSession struct{
-	host 	string
+type TcpSession struct {
+	host    string
 	isAlive bool
 	// The net connection.
-	conn 	net.Conn
+	conn net.Conn
 	// Buffered channel of outbound messages.
-	send 	chan []byte
-	// send/recv 
-	sw  	sync.WaitGroup
-	ctx 	context.Context
-	// source server or client.
-	srcSvr  int32	
-	// destination  server or client.
-	dstSvr  int32
+	send chan []byte
+	// send/recv
+	sw  sync.WaitGroup
+	ctx context.Context
+	// source server or client/destination  server or client.
+	mapSvr map[int32][]int32
 	// receive message call back
-	Recvcb 	MessageCb
+	Recvcb MessageCb
 	// person offline flag
-	off 	chan *TcpSession
+	off chan *TcpSession
 }
 
 const (
@@ -97,7 +96,7 @@ const (
 	maxMessageSize = 4096
 )
 
-func (c* TcpSession) Connect(){
+func (c *TcpSession) Connect() {
 	if !c.isAlive {
 		var err error
 		var server_host string = c.host
@@ -111,30 +110,29 @@ func (c* TcpSession) Connect(){
 
 }
 
-func NewSession(addr string, c net.Conn, ctx context.Context, srcSvr, dstSvr int32, newcb MessageCb, off chan *TcpSession)*TcpSession{
+func NewSession(addr string, c net.Conn, ctx context.Context, mapSvr *map[int32][]int32, newcb MessageCb, off chan *TcpSession) *TcpSession {
 	return &TcpSession{
-		host: 		addr,
-		conn: 		c,
-		send: 		make(chan []byte, 4096),
-		isAlive: 	false,
-		ctx: 		ctx,
-		srcSvr:		srcSvr,
-		dstSvr: 	dstSvr,
-		Recvcb: 	newcb,
+		host:    addr,
+		conn:    c,
+		send:    make(chan []byte, 4096),
+		isAlive: false,
+		ctx:     ctx,
+		mapSvr:  *mapSvr,
+		Recvcb:  newcb,
 	}
 }
 
-func (c* TcpSession) exit(){
+func (c *TcpSession) exit() {
 	c.off <- c
 	c.conn.Close()
 	c.sw.Wait()
 }
 
-func (c* TcpSession) SetSendCache(data []byte) {
+func (c *TcpSession) SetSendCache(data []byte) {
 	c.send <- data
 }
 
-func (c* TcpSession) Sendmessage(sw *sync.WaitGroup){
+func (c *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 	//ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		//ticker.Stop()
@@ -170,7 +168,7 @@ func (c* TcpSession) Sendmessage(sw *sync.WaitGroup){
 	}
 }
 
-func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
+func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 	defer func() {
 		c.conn.Close()
 		sw.Done()
@@ -190,7 +188,7 @@ func (c* TcpSession) Recvmessage(sw *sync.WaitGroup){
 	}
 }
 
-func (c *TcpSession) HandleSession(){
+func (c *TcpSession) HandleSession() {
 	c.sw.Add(1)
 	go c.Recvmessage(&c.sw)
 	c.sw.Add(1)

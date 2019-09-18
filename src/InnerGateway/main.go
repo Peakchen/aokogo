@@ -51,14 +51,24 @@ package main
 import (
 	"common/Define"
 	"common/tcpNet"
+	"fmt"
 	"net"
 )
 
 func main() {
-	newServer := tcpNet.NewTcpServer(Define.InnerServerHost, 1, 1, InnerGatewayMessageCallBack)
-	newServer.StartTcpServer()
+	fmt.Println("start innter gateway.")
+	var (
+		mapsvr map[int32][]int32 = map[int32][]int32{
+			int32(Define.ERouteId_ER_Client): []int32{int32(Define.ERouteId_ER_Game)},
+			int32(Define.ERouteId_ER_Game):   []int32{int32(Define.ERouteId_ER_Client)},
+		}
+	)
+	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
+		&mapsvr,
+		InnerGatewayMessageCallBack)
+	newInnerServer.StartTcpServer()
 }
 
 func InnerGatewayMessageCallBack(c net.Conn, data []byte, len int) {
-
+	fmt.Println("exec [innter gateway] server message call back.", c.RemoteAddr(), c.LocalAddr())
 }
