@@ -81,5 +81,5 @@ func main() {
 }
 
 func GameMessageCallBack(c net.Conn, data []byte, len int) {
-	fmt.Println("exec external gateway server message call back.", c.RemoteAddr(), c.LocalAddr())
+	fmt.Println("exec game server message call back.", c.RemoteAddr(), c.LocalAddr())
 }
