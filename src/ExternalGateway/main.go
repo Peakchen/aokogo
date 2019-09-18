@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,22 +49,30 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package main
 
-import(
-	"runtime"
-	"fmt"
+import (
+	"common/Define"
 	"common/tcpNet"
-	"common/define"
+	"fmt"
+	"net"
+	"runtime"
 )
 
-func init(){
+func init() {
 	runtime.GOMAXPROCS(1)
 }
 
-func main(){
+func main() {
 	if true {
 		fmt.Println("[ExternalGateWay][main] start.")
 	}
 
-	newExternalServer := tcpNet.NewTcpServer(define.ExternalServerHost)
+	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
+		int32(Define.ERouteId_ER_Client),
+		int32(Define.ERouteId_ER_Game),
+		ExternalGatewayMessageCallBack)
 	newExternalServer.StartTcpServer()
+}
+
+func ExternalGatewayMessageCallBack(c net.Conn, data []byte, len int) {
+	fmt.Println("exec external gateway server message call back.", c.RemoteAddr(), c.LocalAddr())
 }

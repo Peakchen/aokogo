@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,39 +49,39 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package tcpNet
 
-import(
+import (
+	"context"
+	"fmt"
 	"net"
 	"os"
-	"fmt"
 	"sync"
-	"context"
 )
 
-type TcpServer struct{
-	sw  	sync.WaitGroup
-	host   	string
+type TcpServer struct {
+	sw       sync.WaitGroup
+	host     string
 	listener *net.TCPListener
-	ctx 	context.Context
-	cancel	context.CancelFunc
-	srcSvr  int32
-	dstSvr  int32
-	cb 		MessageCb
-	off     chan *TcpSession
-	on		*TcpSession
-	// person online 
-	person		int32
+	ctx      context.Context
+	cancel   context.CancelFunc
+	srcSvr   int32
+	dstSvr   int32
+	cb       MessageCb
+	off      chan *TcpSession
+	on       *TcpSession
+	// person online
+	person int32
 }
 
-func NewTcpServer(addr string, srcSvr, dstSvr int32, cb MessageCb)*TcpServer{
+func NewTcpServer(addr string, srcSvr, dstSvr int32, cb MessageCb) *TcpServer {
 	return &TcpServer{
-		host: 	addr,
+		host:   addr,
 		srcSvr: srcSvr,
 		dstSvr: dstSvr,
-		cb:		cb,
+		cb:     cb,
 	}
 }
 
-func (self *TcpServer) StartTcpServer(){
+func (self *TcpServer) StartTcpServer() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
@@ -93,12 +93,12 @@ func (self *TcpServer) StartTcpServer(){
 	go self.loop()
 	self.sw.Add(1)
 	go self.loopoff()
-	//self.sw.Wait()
+	self.sw.Wait()
 }
 
-func (self *TcpServer) loop(){
+func (self *TcpServer) loop() {
 	defer self.sw.Done()
-	for{
+	for {
 		select {
 		case <-self.ctx.Done():
 			self.Exit()
@@ -108,7 +108,7 @@ func (self *TcpServer) loop(){
 			if err != nil {
 				fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
 			}
-	
+
 			self.on = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb, self.off)
 			self.on.HandleSession()
 			self.online()
@@ -116,7 +116,7 @@ func (self *TcpServer) loop(){
 	}
 }
 
-func (self *TcpServer) loopoff(){
+func (self *TcpServer) loopoff() {
 	defer self.sw.Done()
 	for {
 		select {
@@ -132,16 +132,16 @@ func (self *TcpServer) loopoff(){
 	}
 }
 
-func (self *TcpServer) online(){
+func (self *TcpServer) online() {
 	self.person++
 }
 
-func (self *TcpServer) offline(os *TcpSession){
-	// process 
+func (self *TcpServer) offline(os *TcpSession) {
+	// process
 	self.person--
 }
 
-func (self *TcpServer) Exit(){
+func (self *TcpServer) Exit() {
 	self.listener.Close()
 	self.cancel()
 	self.sw.Wait()
