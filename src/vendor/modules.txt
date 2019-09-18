@@ -1,0 +1,128 @@
+# 9fans.net/go v0.0.0-20181112161441-237454027057
+9fans.net/go/acme
+9fans.net/go/draw
+9fans.net/go/plan9
+9fans.net/go/plan9/client
+9fans.net/go/draw/drawfcall
+# github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75
+github.com/Bowery/prompt
+# github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
+github.com/axgle/mahonia
+# github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
+github.com/chzyer/readline
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
+# github.com/dchest/safefile v0.0.0-20151022103144-855e8d98f185
+github.com/dchest/safefile
+# github.com/garyburd/redigo v1.6.0
+github.com/garyburd/redigo/redis
+github.com/garyburd/redigo/internal
+github.com/garyburd/redigo/internal/redistest
+github.com/garyburd/redigo/redisx
+# github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+github.com/globalsign/mgo
+github.com/globalsign/mgo/bson
+github.com/globalsign/mgo/internal/sasl
+github.com/globalsign/mgo/internal/scram
+github.com/globalsign/mgo/internal/json
+github.com/globalsign/mgo/dbtest
+github.com/globalsign/mgo/txn
+# github.com/golang/protobuf v1.3.2
+github.com/golang/protobuf/proto
+# github.com/gomodule/redigo v2.0.0+incompatible
+github.com/gomodule/redigo/redis
+github.com/gomodule/redigo/internal
+github.com/gomodule/redigo/redisx
+# github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
+github.com/google/shlex
+# github.com/gorilla/websocket v1.4.0
+github.com/gorilla/websocket
+# github.com/kardianos/govendor v1.0.9
+github.com/kardianos/govendor/cliprompt
+github.com/kardianos/govendor/help
+github.com/kardianos/govendor/run
+github.com/kardianos/govendor/prompt
+github.com/kardianos/govendor/internal/pathos
+github.com/kardianos/govendor/internal/vfilepath
+github.com/kardianos/govendor/internal/vos
+github.com/kardianos/govendor/pkgspec
+github.com/kardianos/govendor/vcs
+github.com/kardianos/govendor/vendorfile
+github.com/kardianos/govendor/migrate
+github.com/kardianos/govendor/context
+github.com/kardianos/govendor/internal/gt
+# github.com/karrick/godirwalk v1.10.12
+github.com/karrick/godirwalk
+# github.com/kr/fs v0.1.0
+github.com/kr/fs
+# github.com/kr/pretty v0.1.0
+github.com/kr/pretty
+# github.com/kr/text v0.1.0
+github.com/kr/text
+# github.com/mdempsky/gocode v0.0.0-20190203001940-7fb65232883f
+github.com/mdempsky/gocode/internal/gbimporter
+github.com/mdempsky/gocode/internal/suggest
+github.com/mdempsky/gocode/internal/lookdot
+github.com/mdempsky/gocode/internal/cache
+# github.com/pkg/errors v0.8.1
+github.com/pkg/errors
+# github.com/pkg/sftp v1.10.0
+github.com/pkg/sftp
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/rogpeppe/godef v1.1.1
+github.com/rogpeppe/godef/go/ast
+github.com/rogpeppe/godef/go/parser
+github.com/rogpeppe/godef/go/printer
+github.com/rogpeppe/godef/go/token
+github.com/rogpeppe/godef/go/types
+github.com/rogpeppe/godef/go/scanner
+# github.com/samuel/go-zookeeper v0.0.0-20190810000440-0ceca61e4d75
+github.com/samuel/go-zookeeper/zk
+# github.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518
+github.com/sqs/goreturns/returns
+# github.com/stretchr/testify v1.4.0
+github.com/stretchr/testify/assert
+# github.com/uudashr/gopkgs v2.0.1+incompatible
+github.com/uudashr/gopkgs
+# github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036
+github.com/yuin/gopher-lua/ast
+github.com/yuin/gopher-lua/parse
+github.com/yuin/gopher-lua/pm
+github.com/yuin/gopher-lua
+# golang.org/x/crypto v0.0.0 => github.com/golang/crypto v0.0.0-20190701094942-4def268fd1a4
+golang.org/x/crypto/ssh
+golang.org/x/crypto/ssh/agent
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/internal/chacha20
+golang.org/x/crypto/poly1305
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/internal/subtle
+# golang.org/x/net v0.0.0 => github.com/golang/net v0.0.0-20190724013045-ca1201d0de80
+golang.org/x/net/context
+# golang.org/x/sys v0.0.0 => github.com/golang/sys v0.0.0-20190804053845-51ab0e2deafa
+golang.org/x/sys/unix
+golang.org/x/sys/cpu
+# golang.org/x/tools v0.0.0 => github.com/golang/tools v0.0.0-20190806215303-88ddfcebc769
+golang.org/x/tools/go/buildutil
+golang.org/x/tools/go/vcs
+golang.org/x/tools/imports
+golang.org/x/tools/internal/imports
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/packages
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/module
+golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/internal/semver
+golang.org/x/tools/internal/fastwalk
+# gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+gopkg.in/check.v1
+# gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
+gopkg.in/tomb.v2
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
+# stathat.com/c/consistent v1.0.0
+stathat.com/c/consistent

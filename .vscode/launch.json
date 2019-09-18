@@ -15,7 +15,8 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [],
-            "showLog": true
+            "showLog": true,
+            "cwd": "D:\\aoko\\bin"
         }
     ]
 }
