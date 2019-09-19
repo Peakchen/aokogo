@@ -50,6 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package tcpNet
 
 import (
+	"common/Log"
 	"context"
 	"fmt"
 	"net"
@@ -104,7 +105,7 @@ func (self *TcpServer) loop() {
 		default:
 			c, err := self.listener.AcceptTCP()
 			if err != nil {
-				fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
+				Log.FmtPrintf("[TcpServer][acceptLoop] can not accept tcp .")
 			}
 
 			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off)

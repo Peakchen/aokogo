@@ -50,13 +50,13 @@ package main
 
 import (
 	"common/Define"
+	"common/Log"
 	"common/tcpNet"
-	"fmt"
 	"net"
 )
 
 func main() {
-	fmt.Println("start innter gateway.")
+	Log.FmtPrintf("start InnerGateway.")
 	var (
 		mapsvr map[int32][]int32 = map[int32][]int32{
 			int32(Define.ERouteId_ER_Client): []int32{int32(Define.ERouteId_ER_Game)},
@@ -70,5 +70,5 @@ func main() {
 }
 
 func InnerGatewayMessageCallBack(c net.Conn, data []byte, len int) {
-	fmt.Println("exec [innter gateway] server message call back.", c.RemoteAddr(), c.LocalAddr())
+	Log.FmtPrintf("exec [innter gateway] server message call back.", c.RemoteAddr(), c.LocalAddr())
 }

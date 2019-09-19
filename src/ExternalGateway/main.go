@@ -51,8 +51,8 @@ package main
 
 import (
 	"common/Define"
+	"common/Log"
 	"common/tcpNet"
-	"fmt"
 	"net"
 	"runtime"
 )
@@ -62,9 +62,7 @@ func init() {
 }
 
 func main() {
-	if true {
-		fmt.Println("[ExternalGateWay][main] start.")
-	}
+	Log.FmtPrintf("start ExternalGateWay.")
 
 	var (
 		mapsvr map[int32][]int32 = map[int32][]int32{
@@ -79,5 +77,5 @@ func main() {
 }
 
 func ExternalGatewayMessageCallBack(c net.Conn, data []byte, len int) {
-	fmt.Println("exec external gateway server message call back.", c.RemoteAddr(), c.LocalAddr())
+	Log.FmtPrintf("exec external gateway server message call back.", c.RemoteAddr(), c.LocalAddr())
 }

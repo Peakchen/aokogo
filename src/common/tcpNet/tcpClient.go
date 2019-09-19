@@ -2,12 +2,12 @@ package tcpNet
 
 // client connect server.
 import (
+	"common/Log"
 	"net"
 	"sync"
 
 	//"time"
 	"context"
-	"fmt"
 )
 
 type TcpClient struct {
@@ -44,7 +44,7 @@ func (self *TcpClient) Run() {
 func (self *TcpClient) connect() error {
 	c, err := net.Dial("tcp", self.host)
 	if err != nil {
-		fmt.Println("net dial err: ", err)
+		Log.FmtPrintf("net dial err: ", err)
 		return err
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
@@ -64,7 +64,7 @@ func (self *TcpClient) loopconn() {
 				continue
 			}
 			if err := self.connect(); err != nil {
-				fmt.Println("dail to server fail, host: ", self.host)
+				Log.FmtPrintf("dail to server fail, host: ", self.host)
 			}
 		}
 	}
