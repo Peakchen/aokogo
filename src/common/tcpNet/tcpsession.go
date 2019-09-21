@@ -50,19 +50,20 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package tcpNet
 
 import (
-	"log"
+	"common/Log"
 	"net"
 	"time"
 
 	//"common/S2SMessage"
 	"context"
-	"fmt"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
 	//. "common/Define"
 )
 
 // session, data, data len
-type MessageCb func(net.Conn, []byte, int)
+type MessageCb func(c net.Conn, mainID int32, subID int32, msg proto.Message)
 
 type TcpSession struct {
 	host    string
@@ -77,9 +78,11 @@ type TcpSession struct {
 	// source server or client/destination  server or client.
 	mapSvr map[int32][]int32
 	// receive message call back
-	Recvcb MessageCb
+	recvCb MessageCb
 	// person offline flag
 	off chan *TcpSession
+	//message pack
+	pack IMessagePack
 }
 
 const (
@@ -110,7 +113,13 @@ func (c *TcpSession) Connect() {
 
 }
 
-func NewSession(addr string, c net.Conn, ctx context.Context, mapSvr *map[int32][]int32, newcb MessageCb, off chan *TcpSession) *TcpSession {
+func NewSession(addr string,
+	c net.Conn,
+	ctx context.Context,
+	mapSvr *map[int32][]int32,
+	newcb MessageCb,
+	off chan *TcpSession,
+	pack IMessagePack) *TcpSession {
 	return &TcpSession{
 		host:    addr,
 		conn:    c,
@@ -118,7 +127,8 @@ func NewSession(addr string, c net.Conn, ctx context.Context, mapSvr *map[int32]
 		isAlive: false,
 		ctx:     ctx,
 		mapSvr:  *mapSvr,
-		Recvcb:  newcb,
+		recvCb:  newcb,
+		pack:    pack,
 	}
 }
 
@@ -157,6 +167,10 @@ func (c *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 				c.conn.Close()
 				return
 			}
+
+			//pack message then send.
+
+			//send...
 			var err error
 			_, err = c.conn.Write(message)
 			if err != nil {
@@ -178,13 +192,22 @@ func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 	buff := make([]byte, maxMessageSize)
 	for {
 		len, err := c.conn.Read(buff)
-		if err != nil {
-			log.Printf("error: %v", err)
-			break
+		if err != nil || len == 0 {
+			Log.FmtPrintf("error: %v, buff len: %v.", err, len)
+			continue
 		}
 
-		fmt.Printf("recv mesg: %v.\n", string(buff))
-		c.Recvcb(c.conn, buff, len)
+		//todo: unpack message then read real date.
+		c.pack.UnPackAction(buff[4:])
+		msg, err := c.pack.UnPackData()
+		if err != nil {
+			Log.FmtPrintln("unpack data err: ", err)
+			continue
+		}
+
+		mainID, subID := c.pack.GetMessageID()
+		//read...
+		c.recvCb(c.conn, mainID, subID, msg)
 	}
 }
 

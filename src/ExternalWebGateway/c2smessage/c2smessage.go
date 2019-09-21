@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,31 +49,31 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package c2smessage
 
-import(
+import (
 	"common/C2SMessage"
-	"common/S2SMessage"
-	"github.com/gorilla/websocket"
 	"log"
+
+	"github.com/gorilla/websocket"
 )
 
 /* login game by account and passwd
-*/
-func OnC2SDispatchMessage(basemsg *C2SMessage.C2Sbasemessgae, c* websocket.Conn){
+ */
+func OnC2SDispatchMessage(basemsg *C2SMessage.CS_BaseMessage_Req, c *websocket.Conn) {
 	// todo:
 	log.Printf("OnC2SDispatchMessage: player Sid[%d].", basemsg.Sid)
-	switch S2SMessage.ServerId(*basemsg.Sid) {
-	case S2SMessage.ServerId_SID_Login:
-		//send to loginserver
-		S2SMessage.DispatchClientMessage(basemsg.Data, c)
-	case S2SMessage.ServerId_SID_BigWorld:
+	// switch S2SMessage.ServerId(basemsg.Sid) {
+	// case S2SMessage.ServerId_SID_Login:
+	// 	//send to loginserver
+	// 	S2SMessage.DispatchClientMessage(basemsg.Data, c)
+	// case S2SMessage.ServerId_SID_BigWorld:
 
-	case S2SMessage.ServerId_SID_Game:
+	// case S2SMessage.ServerId_SID_Game:
 
-	case S2SMessage.ServerId_SID_SmallWorld:
+	// case S2SMessage.ServerId_SID_SmallWorld:
 
-	}
+	// }
 }
 
-func init(){
-	C2SMessage.Register(int32(C2SMessage.MessageRoute_R_SID_ESG), OnC2SDispatchMessage)
+func init() {
+	//C2SMessage.Register(int32(C2SMessage.MessageRoute_R_SID_ESG), OnC2SDispatchMessage)
 }

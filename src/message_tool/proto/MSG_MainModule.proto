@@ -1,0 +1,12 @@
+syntax = "proto3";
+package Msg_MainModule;
+
+// add by stefanchen 
+// 主模块消息结构
+enum MAINMSG
+{
+    Begin = 0; //起点消息
+    SERVER = 1; //
+
+}
+

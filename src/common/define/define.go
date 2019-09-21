@@ -53,10 +53,26 @@ import (
 )
 
 const (
-	LoginServerHost    string = "172.0.0.1:17000"
+	LoginServerHost    string = "0.0.0.1:17000"
 	ExternalServerHost string = "0.0.0.0:51001"
 	InnerServerHost    string = "172.0.0.1:19000"
-	GameServerHost     string = "172.0.0.1:19000"
+	GameServerHost     string = "0.0.0.1:19000"
+)
+
+type ERouteId int32
+
+const (
+	ERouteId_ER_Invalid    ERouteId = 0
+	ERouteId_ER_ESG        ERouteId = 1
+	ERouteId_ER_ISG        ERouteId = 2
+	ERouteId_ER_DB         ERouteId = 3
+	ERouteId_ER_BigWorld   ERouteId = 4
+	ERouteId_ER_Login      ERouteId = 5
+	ERouteId_ER_SmallWorld ERouteId = 6
+	ERouteId_ER_DBProxy    ERouteId = 7
+	ERouteId_ER_Game       ERouteId = 8
+	ERouteId_ER_Client     ERouteId = 9
+	ERouteId_ER_Max        ERouteId = 10
 )
 
 type HandlerFunc func(http.ResponseWriter, *http.Request)

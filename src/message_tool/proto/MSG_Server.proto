@@ -1,0 +1,31 @@
+syntax = "proto3";
+package MSG_Server;
+
+// add by stefanchen 
+// server 
+enum SUBMSG
+{
+    Begin = 0; //起点消息
+    
+    CS_EnterServer = 1; //进入服务器请求
+    SC_EnterServer = 2; //进入服务器回复
+
+}
+
+enum ErrorCode
+{
+    Invalid = 0; //非法数据
+    Success = 1; //成功
+    Fail = 2; //失败
+}
+
+message CS_EnterServer_Req
+{
+    int32 Enter = 1; //
+}
+
+message SC_EnterServer_Rsp
+{
+    ErrorCode Ret = 1; //返回码
+}
+

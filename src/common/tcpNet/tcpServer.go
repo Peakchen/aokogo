@@ -108,7 +108,7 @@ func (self *TcpServer) loop() {
 				Log.FmtPrintf("[TcpServer][acceptLoop] can not accept tcp .")
 			}
 
-			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off)
+			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ServerProtocol{})
 			self.on.HandleSession()
 			self.online()
 		}
@@ -138,6 +138,10 @@ func (self *TcpServer) online() {
 func (self *TcpServer) offline(os *TcpSession) {
 	// process
 	self.person--
+}
+
+func (self *TcpServer) SendMessage() {
+
 }
 
 func (self *TcpServer) Exit() {

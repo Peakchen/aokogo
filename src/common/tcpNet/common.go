@@ -1,5 +1,7 @@
 package tcpNet
 
+import "github.com/golang/protobuf/proto"
+
 /*
 Copyright (c) <year> <copyright holders>
 
@@ -10,11 +12,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,64 +51,26 @@ OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
-
-import (
-	"encoding/binary"
-)
-
-/*
-	model: ServerProtocol
-	server to server, message  
-*/
-type ServerProtocol struct{
-	mainid uint16
-	subid  uint16
-	messagelength uint16
-	messageData []byte
-}
-
-func (self *ServerProtocol)S2SPack(Output []byte){
-	var pos int32 = 0
-	binary.LittleEndian.PutUint16(Output[pos:], self.mainid)
-	pos += 2
-
-	binary.LittleEndian.PutUint16(Output[pos:], self.subid)
-	pos += 2
-
-	binary.LittleEndian.PutUint16(Output[pos:], self.messagelength)
-	pos += 2
-
-	copy(Output[pos:], self.messageData)
-}
-
-func (self *ServerProtocol)S2SUnPack(InData []byte)(int32){
-	var pos int32 = 0
-	self.mainid = binary.LittleEndian.Uint16(InData[pos:])
-	pos += 2
-
-	self.subid = binary.LittleEndian.Uint16(InData[pos:])
-	pos += 2
-
-	self.messagelength = binary.LittleEndian.Uint16(InData[pos:])
-	pos += 2
-
-	pos += int32(self.messagelength)
-	return pos
+type IMessagePack interface {
+	PackAction(Output []byte)
+	PackData(msg proto.Message) (data []byte, err error)
+	UnPackAction(InData []byte) int32
+	UnPackData() (msg proto.Message, err error)
+	GetMessageID() (mainID int32, subID int32)
 }
 
 /*
 	func: EncodeCmd
 	purpose: Encode message mainid and subid to cmd.
 */
-func EncodeCmd(mainID, subID uint16)uint32{
-	return (uint32(mainID) << 16 ) | uint32(subID)
+func EncodeCmd(mainID, subID uint16) uint32 {
+	return (uint32(mainID) << 16) | uint32(subID)
 }
 
 /*
 	func: DecodeCmd
 	purpose: DecodeCmd message cmd to mainid and subid.
 */
-func DecodeCmd(cmd uint16)(uint16, uint16){
-	return uint16(cmd >> 16 ), uint16(cmd)
+func DecodeCmd(cmd uint16) (uint16, uint16) {
+	return uint16(cmd >> 16), uint16(cmd)
 }
- 

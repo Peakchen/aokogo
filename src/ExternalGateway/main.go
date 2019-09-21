@@ -50,10 +50,10 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
+	"ExternalGateway/message"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
-	"net"
 	"runtime"
 )
 
@@ -72,10 +72,6 @@ func main() {
 
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
 		&mapsvr,
-		ExternalGatewayMessageCallBack)
+		message.ExternalGatewayMessageCallBack)
 	newExternalServer.StartTcpServer()
-}
-
-func ExternalGatewayMessageCallBack(c net.Conn, data []byte, len int) {
-	Log.FmtPrintf("exec external gateway server message call back.", c.RemoteAddr(), c.LocalAddr())
 }

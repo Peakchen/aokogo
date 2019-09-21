@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -50,46 +50,47 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package C2SMessage
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/golang/protobuf/proto"
 	"log"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/gorilla/websocket"
 )
 
-type funchandler func(msg *C2Sbasemessgae, c* websocket.Conn)
+type funchandler func(msg *CS_BaseMessage_Req, c *websocket.Conn)
 
-var(
-	messageHandler  map[int32] funchandler
+var (
+	messageHandler map[int32]funchandler
 )
 
-func Register(id int32, handler funchandler){
+func Register(id int32, handler funchandler) {
 	messageHandler[id] = handler
 }
 
-func DispatchMessage(msg []byte, c* websocket.Conn){
+func DispatchMessage(msg []byte, c *websocket.Conn) {
 
-	var msg_base = &C2Sbasemessgae{}
+	var msg_base = &CS_BaseMessage_Req{}
 	var pm = proto.Unmarshal(msg, msg_base)
 	if pm == nil {
 		log.Fatal("unmarshal message fail.")
 		return
 	}
 
-	cb, ok := messageHandler[*msg_base.Baseid]
+	cb, ok := messageHandler[msg_base.Sid]
 	if ok {
 		cb(msg_base, c)
 	}
 }
 
-func PostMessage(pb proto.Message, c* websocket.Conn){
-	
-	msg,err := proto.Marshal(pb)
+func PostMessage(pb proto.Message, c *websocket.Conn) {
+
+	msg, err := proto.Marshal(pb)
 	if err == nil {
 		log.Fatal("Marshal message fail.")
 		return
 	}
 
 	werr := c.WriteMessage(websocket.BinaryMessage, msg)
-	if werr != nil{
+	if werr != nil {
 		log.Fatal("Write close.")
 		return
 	}

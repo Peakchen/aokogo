@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,7 +49,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package c2s_message
 
-import(
+import (
 	//"common/C2SMessage"
 	//"github.com/gorilla/websocket"
 	//"github.com/protobuf/proto"
@@ -58,18 +58,18 @@ import(
 	//"common/define"
 )
 
-const(
-	strLogin = "/login" 
+const (
+	strLogin       = "/login"
 	strweChatLogin = "/wechatlogin"
 )
 
-type loginHandlerfunc func (http.ResponseWriter, *http.Request)
+type loginHandlerfunc func(http.ResponseWriter, *http.Request)
 
 var (
-	m_mapLoginHandler map[string] loginHandlerfunc
+	m_mapLoginHandler map[string]loginHandlerfunc
 )
 
-func Register(key string, f loginHandlerfunc){
+func Register(key string, f loginHandlerfunc) {
 	var _, ok = m_mapLoginHandler[key]
 	if ok {
 		return
@@ -78,20 +78,20 @@ func Register(key string, f loginHandlerfunc){
 	m_mapLoginHandler[key] = f
 }
 
-func OnDispatchLoginMessage(key string, w http.ResponseWriter, r *http.Request){
+func OnDispatchLoginMessage(key string, w http.ResponseWriter, r *http.Request) {
 	var cb, ok = m_mapLoginHandler[key]
 	if !ok {
 		return
-	} 
+	}
 
 	if cb == nil {
 		return
 	}
 
-	cb(w,r)
+	cb(w, r)
 }
 
-func init(){
+func init() {
 	Register(strLogin, OnLogin)
 	Register(strweChatLogin, OnWechatlogin)
 	/* C2SMessage.Register(int32(C2SMessage.GameMessageId_msg_req_login), OnLogin)
@@ -99,8 +99,8 @@ func init(){
 }
 
 /* login game by account and passwd
-*/
-/* func OnLogin(basemsg *C2SMessage.C2Sbasemessgae, c* websocket.Conn){
+ */
+/* func OnLogin(basemsg *C2SMessage.C2SBaseMessage, c* websocket.Conn){
 	// todo:
 	var msg_login = &C2SMessage.Requestlogin{}
 	var pm = proto.Unmarshal(basemsg.Data, msg_login)
@@ -111,10 +111,10 @@ func init(){
 
 	log.Printf("login: player dbid[%d]",msg_login.Dbid)
 }
- */
-/* login game by wechat
 */
-/* func OnWechatlogin(basemsg *C2SMessage.C2Sbasemessgae, c* websocket.Conn){
+/* login game by wechat
+ */
+/* func OnWechatlogin(basemsg *C2SMessage.C2SBaseMessage, c* websocket.Conn){
 	// todo:
 	var msg_wechatlogin = &C2SMessage.RequestWechatlogin{}
 	var pm = proto.Unmarshal(basemsg.Data, msg_wechatlogin)
@@ -126,7 +126,7 @@ func init(){
 	log.Printf("login: player openid[%d]", msg_wechatlogin.Openid)
 } */
 
-func OnLogin(w http.ResponseWriter, r *http.Request){
+func OnLogin(w http.ResponseWriter, r *http.Request) {
 	log.Println("start login.")
 	// todo:
 	query := r.URL.Query()
@@ -136,12 +136,11 @@ func OnLogin(w http.ResponseWriter, r *http.Request){
 	gender := query.Get("gender")
 	log.Println("login code : ", code, " , nickName:", nickName, " , avatarURL:", avatarURL, ", gender:", gender)
 
-	
 }
 
 /* login game by wechat
-*/
-func OnWechatlogin(w http.ResponseWriter, r *http.Request){
+ */
+func OnWechatlogin(w http.ResponseWriter, r *http.Request) {
 	// todo:
-	
+
 }

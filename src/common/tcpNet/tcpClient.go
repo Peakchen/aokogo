@@ -48,7 +48,7 @@ func (self *TcpClient) connect() error {
 		return err
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
-	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off)
+	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ClientProtocol{})
 	self.s.HandleSession()
 	return nil
 }
@@ -93,6 +93,10 @@ func (self *TcpClient) offline(os *TcpSession) {
 
 func (self *TcpClient) Send(data []byte) {
 	self.s.SetSendCache(data)
+}
+
+func (self *TcpClient) SendMessage() {
+
 }
 
 func (self *TcpClient) Exit() {
