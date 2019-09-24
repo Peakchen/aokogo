@@ -1,5 +1,5 @@
 syntax = "proto3";
-package Msg_MainModule;
+package MSG_MainModule;
 
 // add by stefanchen 
 // 主模块消息结构

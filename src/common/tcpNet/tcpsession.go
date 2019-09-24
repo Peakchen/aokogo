@@ -194,7 +194,7 @@ func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 		len, err := c.conn.Read(buff)
 		if err != nil || len == 0 {
 			Log.FmtPrintf("error: %v, buff len: %v.", err, len)
-			continue
+			break
 		}
 
 		//todo: unpack message then read real date.
@@ -202,7 +202,7 @@ func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 		msg, err := c.pack.UnPackData()
 		if err != nil {
 			Log.FmtPrintln("unpack data err: ", err)
-			continue
+			break
 		}
 
 		mainID, subID := c.pack.GetMessageID()

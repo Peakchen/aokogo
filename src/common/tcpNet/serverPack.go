@@ -2,6 +2,7 @@ package tcpNet
 
 import (
 	"encoding/binary"
+	"fmt"
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
@@ -48,9 +49,19 @@ func (self *ServerProtocol) UnPackAction(InData []byte) int32 {
 }
 
 func (self *ServerProtocol) UnPackData() (msg proto.Message, err error) {
-	msgsrc := reflect.New(reflect.TypeOf((*proto.Message)(nil)).Elem()).Type()
-	dst := reflect.New(msgsrc.Elem()).Interface()
+	err = nil
+	//dst = *(dst.(*proto.Message))
+	mt, finded := GetMessageInfo(self.mainid, self.subid)
+	if !finded {
+		err = fmt.Errorf("can not regist message: ", self.mainid, self.subid)
+		return
+	}
+
+	dst := reflect.New(mt.paramTypes[1].Elem()).Interface()
 	err = proto.Unmarshal(self.data, dst.(proto.Message))
+	if err != nil {
+		return
+	}
 	msg = dst.(proto.Message)
 	return
 }
