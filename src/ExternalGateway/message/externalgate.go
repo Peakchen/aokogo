@@ -15,6 +15,7 @@ func ExternalGatewayMessageCallBack(c net.Conn, mainID int32, subID int32, msg p
 }
 
 func onServer(key string, req *MSG_Server.CS_EnterServer_Req) (succ bool, err error) {
+	Log.FmtPrintf("onServer recv: %v, %v.", key, req.Enter)
 	return
 }
 

@@ -52,6 +52,7 @@ package tcpNet
 import (
 	"common/Log"
 	"net"
+	"reflect"
 	"time"
 
 	//"common/S2SMessage"
@@ -194,19 +195,27 @@ func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 		len, err := c.conn.Read(buff)
 		if err != nil || len == 0 {
 			Log.FmtPrintf("error: %v, buff len: %v.", err, len)
-			break
+			//c.conn.Close()
+			continue
 		}
 
 		//todo: unpack message then read real date.
-		c.pack.UnPackAction(buff[4:])
-		msg, err := c.pack.UnPackData()
+		c.pack.UnPackAction(buff)
+		msg, cb, err := c.pack.UnPackData()
 		if err != nil {
 			Log.FmtPrintln("unpack data err: ", err)
-			break
+			continue
 		}
 
 		mainID, subID := c.pack.GetMessageID()
+		Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
 		//read...
+		params := []reflect.Value{
+			reflect.ValueOf("1"),
+			reflect.ValueOf(msg),
+		}
+		cb.Call(params)
+		c.SetSendCache([]byte("respone client."))
 		c.recvCb(c.conn, mainID, subID, msg)
 	}
 }
@@ -216,4 +225,5 @@ func (c *TcpSession) HandleSession() {
 	go c.Recvmessage(&c.sw)
 	c.sw.Add(1)
 	go c.Sendmessage(&c.sw)
+	c.sw.Wait()
 }

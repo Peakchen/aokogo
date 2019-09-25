@@ -11,11 +11,13 @@ const (
 
 func FmtPrintf(src string, params ...interface{}) {
 	fmt.Printf(time.Now().Local().Format(timeFmt)+" "+src, params...)
+	fmt.Println("\n")
 }
 
 func FmtPrintln(src string, params ...interface{}) {
 	content := make([]interface{}, 0, len(params)+1)
 	content = append(content, time.Now().Format(timeFmt)+" ")
+	content = append(content, src)
 	content = append(content, params...)
 	fmt.Println(content...)
 }

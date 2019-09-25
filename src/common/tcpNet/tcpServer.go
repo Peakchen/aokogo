@@ -104,10 +104,12 @@ func (self *TcpServer) loop() {
 			return
 		default:
 			c, err := self.listener.AcceptTCP()
-			if err != nil {
-				Log.FmtPrintf("[TcpServer][acceptLoop] can not accept tcp .")
+			if err != nil || c == nil {
+				Log.FmtPrintf("can not accept tcp.")
+				continue
 			}
 
+			c.SetNoDelay(true)
 			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ServerProtocol{})
 			self.on.HandleSession()
 			self.online()

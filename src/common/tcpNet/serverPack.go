@@ -15,7 +15,7 @@ import (
 type ServerProtocol struct {
 	mainid uint16
 	subid  uint16
-	length uint16
+	length uint32
 	data   []byte
 }
 
@@ -27,7 +27,7 @@ func (self *ServerProtocol) PackAction(Output []byte) {
 	binary.LittleEndian.PutUint16(Output[pos:], self.subid)
 	pos += 2
 
-	binary.LittleEndian.PutUint16(Output[pos:], self.length)
+	binary.LittleEndian.PutUint32(Output[pos:], self.length)
 	pos += 4
 
 	copy(Output[pos:], self.data)
@@ -41,16 +41,15 @@ func (self *ServerProtocol) UnPackAction(InData []byte) int32 {
 	self.subid = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
-	self.length = binary.LittleEndian.Uint16(InData[pos:])
+	self.length = binary.LittleEndian.Uint32(InData[pos:])
 	pos += 4
 
-	self.data = InData[pos:]
+	self.data = InData[pos : pos+int32(self.length)]
 	return pos
 }
 
-func (self *ServerProtocol) UnPackData() (msg proto.Message, err error) {
+func (self *ServerProtocol) UnPackData() (msg proto.Message, cb reflect.Value, err error) {
 	err = nil
-	//dst = *(dst.(*proto.Message))
 	mt, finded := GetMessageInfo(self.mainid, self.subid)
 	if !finded {
 		err = fmt.Errorf("can not regist message: ", self.mainid, self.subid)
@@ -63,6 +62,7 @@ func (self *ServerProtocol) UnPackData() (msg proto.Message, err error) {
 		return
 	}
 	msg = dst.(proto.Message)
+	cb = mt.proc
 	return
 }
 

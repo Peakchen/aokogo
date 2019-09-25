@@ -1,6 +1,10 @@
 package tcpNet
 
-import "github.com/golang/protobuf/proto"
+import (
+	"reflect"
+
+	"github.com/golang/protobuf/proto"
+)
 
 /*
 Copyright (c) <year> <copyright holders>
@@ -55,7 +59,7 @@ type IMessagePack interface {
 	PackAction(Output []byte)
 	PackData(msg proto.Message) (data []byte, err error)
 	UnPackAction(InData []byte) int32
-	UnPackData() (msg proto.Message, err error)
+	UnPackData() (msg proto.Message, cb reflect.Value, err error)
 	GetMessageID() (mainID int32, subID int32)
 }
 
