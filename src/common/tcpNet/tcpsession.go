@@ -166,10 +166,12 @@ func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 			if !ok {
 				// The hub closed the channel.
 				this.isAlive = false
-				this.conn.Close()
 				return
 			}
-			this.writeMessage(data)
+
+			if !this.writeMessage(data) {
+
+			}
 		}
 	}
 }
@@ -184,12 +186,14 @@ func (this *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 		case <-this.ctx.Done():
 			return
 		default:
-			this.readMessage()
+			if !this.readMessage() {
+
+			}
 		}
 	}
 }
 
-func (this *TcpSession) writeMessage(data []byte) {
+func (this *TcpSession) writeMessage(data []byte) bool {
 	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//pack message then send.
 
@@ -199,16 +203,19 @@ func (this *TcpSession) writeMessage(data []byte) {
 	_, err = this.conn.Write(data)
 	if err != nil {
 		this.isAlive = false
-		this.conn.Close()
+		Log.FmtPrintln("send data fail, err: ", err)
+		return false
 	}
+
+	return true
 }
 
-func (this *TcpSession) readMessage() {
+func (this *TcpSession) readMessage() (succ bool) {
 	this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
-		Log.FmtPrintln("read err:", err)
+		//Log.FmtPrintln("read err:", err)
 		return
 	}
 
@@ -249,6 +256,8 @@ func (this *TcpSession) readMessage() {
 	cb.Call(params)
 	this.SetSendCache([]byte("respone client.\n"))
 	this.recvCb(this.conn, mainID, subID, msg)
+	succ = true
+	return
 }
 
 func (this *TcpSession) HandleSession() {

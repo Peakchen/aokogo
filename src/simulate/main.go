@@ -64,7 +64,7 @@ func sendloop(conn net.Conn) {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		Log.FmtPrintln("time: ", i)
 		if !sender(conn) {
 			conn, err = net.DialTCP("tcp", nil, tcpAddr)
