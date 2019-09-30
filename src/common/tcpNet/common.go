@@ -80,7 +80,17 @@ func DecodeCmd(cmd uint16) (uint16, uint16) {
 	return uint16(cmd >> 16), uint16(cmd)
 }
 
+/*
+
+- 协议格式，小端字节序
+
+主命令号 | 次命令号 | 包长度 | 包体
+--------| --------| -------- | ----
+2字节   |  2字节  | 4字节  | 包体
+*/
 const (
-	EnMessageMainIDPackLen = 4
-	EnMessageSubIDPackLen  = 4
+	EnMessage_MainIDPackLen = 2 //主命令
+	EnMessage_SubIDPackLen  = 2 //次命令
+	EnMessage_DataPackLen   = 4 //真实数据长度
+	EnMessage_NoDataLen     = 8 //非data数据长度(包体之前的)
 )

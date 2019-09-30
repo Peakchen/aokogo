@@ -45,7 +45,7 @@ func readloop(conn net.Conn) {
 			Log.FmtPrintln("waiting server back msg error: ", conn.RemoteAddr().String(), err)
 			continue
 		}
-		Log.FmtPrintln("receive server back msg: ", conn.RemoteAddr().String(), string(buffer[:n]))
+		Log.FmtPrintf("receive server back, ip: %v, msg: %v.", conn.RemoteAddr().String(), string(buffer[:n]))
 	}
 
 }
@@ -56,8 +56,29 @@ func main() {
 	dialsend()
 }
 
+var server string = "0.0.0.0:51001"
+
+func sendloop(conn net.Conn) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
+	if err != nil {
+		Log.FmtPrintf("Fatal error: %s", err.Error())
+		os.Exit(1)
+	}
+	for i := 0; i < 100; i++ {
+		Log.FmtPrintln("time: ", i)
+		if !sender(conn) {
+			conn, err = net.DialTCP("tcp", nil, tcpAddr)
+			if err != nil {
+				Log.FmtPrintf("Fatal error: %s", err.Error())
+				os.Exit(1)
+			}
+		}
+		time.Sleep(time.Duration(2) * time.Second)
+	}
+}
+
 func dialsend() {
-	server := "0.0.0.0:51001"
+
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
@@ -70,18 +91,8 @@ func dialsend() {
 	}
 
 	Log.FmtPrintln("connection success")
-	for i := 0; i < 100; i++ {
-		Log.FmtPrintln("time: ", i)
-		if !sender(conn) {
-			conn, err = net.DialTCP("tcp", nil, tcpAddr)
-			if err != nil {
-				Log.FmtPrintf("Fatal error: %s", err.Error())
-				os.Exit(1)
-			}
-		}
-		time.Sleep(time.Duration(2) * time.Second)
-	}
-	sw.Add(1)
+	sw.Add(2)
 	go readloop(conn)
+	go sendloop(conn)
 	sw.Wait()
 }

@@ -154,8 +154,7 @@ func (this *TcpSession) SetSendCache(data []byte) {
 
 func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 	defer func() {
-		this.conn.Close()
-		sw.Done()
+		this.exit()
 	}()
 
 	for {
@@ -163,25 +162,14 @@ func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 		case <-this.ctx.Done():
 			this.exit()
 			return
-		case message, ok := <-this.send:
-			this.conn.SetWriteDeadline(time.Now().Add(writeWait))
+		case data, ok := <-this.send:
 			if !ok {
 				// The hub closed the channel.
 				this.isAlive = false
 				this.conn.Close()
 				return
 			}
-
-			//pack message then send.
-
-			//send...
-			var err error
-			_, err = this.conn.Write(message)
-			if err != nil {
-				this.isAlive = false
-				this.conn.Close()
-				continue
-			}
+			this.writeMessage(data)
 		}
 	}
 }
@@ -192,54 +180,75 @@ func (this *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 	}()
 
 	for {
-		this.conn.SetReadDeadline(time.Now().Add(pongWait))
-		packLenBuf := make([]byte, 8)
-		readn, err := io.ReadFull(this.conn, packLenBuf)
-		if err != nil || readn < 8 {
-			Log.FmtPrintln("read err:", err)
+		select {
+		case <-this.ctx.Done():
 			return
+		default:
+			this.readMessage()
 		}
-
-		packlen := binary.LittleEndian.Uint32(packLenBuf[4:8])
-		Log.FmtPrintln("receiving packLen: ", packlen)
-		if packlen > maxMessageSize {
-			Log.FmtPrintln("error receiving packLen:", packlen)
-			return
-		}
-
-		data := make([]byte, 8+packlen)
-		readn, err = io.ReadFull(this.conn, data[8:])
-		if err != nil || readn < int(packlen) {
-			Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
-			return
-		}
-
-		//todo: unpack message then read real date.
-		copy(data[:8], packLenBuf[:])
-		_, err = this.pack.UnPackAction(data)
-		if err != nil {
-			Log.FmtPrintln("unpack action err: ", err)
-			return
-		}
-
-		msg, cb, err := this.pack.UnPackData()
-		if err != nil {
-			Log.FmtPrintln("unpack data err: ", err)
-			return
-		}
-
-		mainID, subID := this.pack.GetMessageID()
-		Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
-		//read...
-		params := []reflect.Value{
-			reflect.ValueOf("1"),
-			reflect.ValueOf(msg),
-		}
-		cb.Call(params)
-		this.SetSendCache([]byte("respone client."))
-		this.recvCb(this.conn, mainID, subID, msg)
-		//this.pack.Clean()
 	}
+}
+
+func (this *TcpSession) writeMessage(data []byte) {
+	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
+	//pack message then send.
+
+	//send...
+	var err error
+	Log.FmtPrintln("begin send response message to client.")
+	_, err = this.conn.Write(data)
+	if err != nil {
+		this.isAlive = false
+		this.conn.Close()
+	}
+}
+
+func (this *TcpSession) readMessage() {
+	this.conn.SetReadDeadline(time.Now().Add(pongWait))
+	packLenBuf := make([]byte, EnMessage_NoDataLen)
+	readn, err := io.ReadFull(this.conn, packLenBuf)
+	if err != nil || readn < EnMessage_NoDataLen {
+		Log.FmtPrintln("read err:", err)
+		return
+	}
+
+	packlen := binary.LittleEndian.Uint32(packLenBuf[EnMessage_DataPackLen:EnMessage_NoDataLen])
+	if packlen > maxMessageSize {
+		Log.FmtPrintln("error receiving packLen:", packlen)
+		return
+	}
+
+	data := make([]byte, EnMessage_NoDataLen+packlen)
+	readn, err = io.ReadFull(this.conn, data[EnMessage_NoDataLen:])
+	if err != nil || readn < int(packlen) {
+		Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
+		return
+	}
+
+	//todo: unpack message then read real date.
+	copy(data[:EnMessage_NoDataLen], packLenBuf[:])
+	_, err = this.pack.UnPackAction(data)
+	if err != nil {
+		Log.FmtPrintln("unpack action err: ", err)
+		return
+	}
+
+	msg, cb, err := this.pack.UnPackData()
+	if err != nil {
+		Log.FmtPrintln("unpack data err: ", err)
+		return
+	}
+
+	mainID, subID := this.pack.GetMessageID()
+	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+	//read...
+	params := []reflect.Value{
+		reflect.ValueOf("1"),
+		reflect.ValueOf(msg),
+	}
+	cb.Call(params)
+	this.SetSendCache([]byte("respone client.\n"))
+	this.recvCb(this.conn, mainID, subID, msg)
 }
 
 func (this *TcpSession) HandleSession() {
