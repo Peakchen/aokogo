@@ -4,7 +4,6 @@ import (
 	"common/Log"
 	"common/msgProto/MSG_Server"
 	"common/tcpNet"
-	"fmt"
 	"net"
 	"os"
 	"sync"
@@ -14,23 +13,27 @@ import (
 )
 
 //发送信息
-func sender(conn net.Conn) {
+func sender(conn net.Conn) bool {
 	//words := "Hello Server!"
 	cp := tcpNet.ClientProtocol{}
-
 	req := &MSG_Server.CS_EnterServer_Req{}
 	req.Enter = 2
 	data, err := proto.Marshal(req)
 	if err != nil {
-		fmt.Println("proto marshal fail, data: ", err)
-		return
+		Log.FmtPrintln("proto marshal fail, data: ", err)
+		return false
 	}
 	cp.SetCmd(1, 1, data)
-	buff := make([]byte, 512)
+	buff := make([]byte, len(data)+8)
 	cp.PackAction(buff)
-	conn.Write(buff) //[]byte(words)
-	fmt.Println("send over")
-
+	Log.FmtPrintln("send buff len: ", len(buff))
+	n, err := conn.Write(buff)
+	if n == 0 || err != nil {
+		Log.FmtPrintln("Write fail, data: ", n, err)
+		return false
+	}
+	Log.FmtPrintln("send over")
+	return true
 }
 
 func readloop(conn net.Conn) {
@@ -50,28 +53,34 @@ func readloop(conn net.Conn) {
 var sw sync.WaitGroup
 
 func main() {
-	for i := 0; i < 100; i++ {
-		Log.FmtPrintln("time: ", i)
-		time.Sleep(time.Duration(1))
-		dialsend()
-	}
+	dialsend()
 }
 
 func dialsend() {
 	server := "0.0.0.0:51001"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
 
-	fmt.Println("connection success")
-	sender(conn)
+	Log.FmtPrintln("connection success")
+	for i := 0; i < 100; i++ {
+		Log.FmtPrintln("time: ", i)
+		if !sender(conn) {
+			conn, err = net.DialTCP("tcp", nil, tcpAddr)
+			if err != nil {
+				Log.FmtPrintf("Fatal error: %s", err.Error())
+				os.Exit(1)
+			}
+		}
+		time.Sleep(time.Duration(2) * time.Second)
+	}
 	sw.Add(1)
 	go readloop(conn)
 	sw.Wait()

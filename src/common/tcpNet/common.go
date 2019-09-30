@@ -58,9 +58,10 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 type IMessagePack interface {
 	PackAction(Output []byte)
 	PackData(msg proto.Message) (data []byte, err error)
-	UnPackAction(InData []byte) int32
+	UnPackAction(InData []byte) (pos int32, err error)
 	UnPackData() (msg proto.Message, cb reflect.Value, err error)
 	GetMessageID() (mainID int32, subID int32)
+	Clean()
 }
 
 /*
@@ -78,3 +79,8 @@ func EncodeCmd(mainID, subID uint16) uint32 {
 func DecodeCmd(cmd uint16) (uint16, uint16) {
 	return uint16(cmd >> 16), uint16(cmd)
 }
+
+const (
+	EnMessageMainIDPackLen = 4
+	EnMessageSubIDPackLen  = 4
+)

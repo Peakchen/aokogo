@@ -4,6 +4,7 @@ package tcpNet
 import (
 	"common/Log"
 	"net"
+	"os"
 	"sync"
 
 	//"time"
@@ -42,12 +43,19 @@ func (self *TcpClient) Run() {
 }
 
 func (self *TcpClient) connect() error {
-	c, err := net.Dial("tcp", self.host)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+	if err != nil {
+		Log.FmtPrintf("Fatal error: %s", err.Error())
+		os.Exit(1)
+	}
+
+	c, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
 		Log.FmtPrintf("net dial err: ", err)
 		return err
 	}
-	c.(*net.TCPConn).SetNoDelay(true)
+
+	c.SetNoDelay(true)
 	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ClientProtocol{})
 	self.s.HandleSession()
 	return nil

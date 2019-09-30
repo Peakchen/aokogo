@@ -1,5 +1,5 @@
 /*
-Copyright (c) <year> <copyright holders>
+Copyright (this) <year> <copyright holders>
 
 "Anti 996" License Version 1.0 (Draft)
 
@@ -51,6 +51,8 @@ package tcpNet
 
 import (
 	"common/Log"
+	"encoding/binary"
+	"io"
 	"net"
 	"reflect"
 	"time"
@@ -64,13 +66,13 @@ import (
 )
 
 // session, data, data len
-type MessageCb func(c net.Conn, mainID int32, subID int32, msg proto.Message)
+type MessageCb func(this net.Conn, mainID int32, subID int32, msg proto.Message)
 
 type TcpSession struct {
 	host    string
 	isAlive bool
 	// The net connection.
-	conn net.Conn
+	conn *net.TCPConn
 	// Buffered channel of outbound messages.
 	send chan []byte
 	// send/recv
@@ -100,22 +102,26 @@ const (
 	maxMessageSize = 4096
 )
 
-func (c *TcpSession) Connect() {
-	if !c.isAlive {
-		var err error
-		var server_host string = c.host
-		c.conn, err = net.Dial("tcp", server_host)
+func (this *TcpSession) Connect() {
+	if !this.isAlive {
+		tcpAddr, err := net.ResolveTCPAddr("tcp", this.host)
+		if err != nil {
+			Log.FmtPrintln("session failed: ", err)
+			return
+		}
+
+		this.conn, err = net.DialTCP("tcp", nil, tcpAddr)
 		if err != nil {
 			return
 		}
 
-		c.isAlive = true
+		this.isAlive = true
 	}
 
 }
 
 func NewSession(addr string,
-	c net.Conn,
+	this *net.TCPConn,
 	ctx context.Context,
 	mapSvr *map[int32][]int32,
 	newcb MessageCb,
@@ -123,8 +129,8 @@ func NewSession(addr string,
 	pack IMessagePack) *TcpSession {
 	return &TcpSession{
 		host:    addr,
-		conn:    c,
-		send:    make(chan []byte, 4096),
+		conn:    this,
+		send:    make(chan []byte, maxMessageSize),
 		isAlive: false,
 		ctx:     ctx,
 		mapSvr:  *mapSvr,
@@ -133,39 +139,36 @@ func NewSession(addr string,
 	}
 }
 
-func (c *TcpSession) exit() {
-	c.off <- c
-	c.conn.Close()
-	c.sw.Wait()
+func (this *TcpSession) exit() {
+	this.off <- this
+	close(this.send)
+	this.conn.CloseRead()
+	this.conn.CloseWrite()
+	this.conn.Close()
+	this.sw.Wait()
 }
 
-func (c *TcpSession) SetSendCache(data []byte) {
-	c.send <- data
+func (this *TcpSession) SetSendCache(data []byte) {
+	this.send <- data
 }
 
-func (c *TcpSession) Sendmessage(sw *sync.WaitGroup) {
-	//ticker := time.NewTicker(pingPeriod)
+func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 	defer func() {
-		//ticker.Stop()
-		c.conn.Close()
+		this.conn.Close()
 		sw.Done()
 	}()
 
 	for {
-		if !c.isAlive {
-			c.Connect()
-		}
-
 		select {
-		case <-c.ctx.Done():
-			c.exit()
+		case <-this.ctx.Done():
+			this.exit()
 			return
-		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+		case message, ok := <-this.send:
+			this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
-				c.isAlive = false
-				c.conn.Close()
+				this.isAlive = false
+				this.conn.Close()
 				return
 			}
 
@@ -173,41 +176,59 @@ func (c *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 
 			//send...
 			var err error
-			_, err = c.conn.Write(message)
+			_, err = this.conn.Write(message)
 			if err != nil {
-				c.isAlive = false
-				c.conn.Close()
+				this.isAlive = false
+				this.conn.Close()
 				continue
 			}
 		}
 	}
 }
 
-func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
+func (this *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 	defer func() {
-		c.conn.Close()
-		sw.Done()
+		this.exit()
 	}()
 
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
-	buff := make([]byte, maxMessageSize)
 	for {
-		len, err := c.conn.Read(buff)
-		if err != nil || len == 0 {
-			Log.FmtPrintf("error: %v, buff len: %v.", err, len)
-			//c.conn.Close()
-			continue
+		this.conn.SetReadDeadline(time.Now().Add(pongWait))
+		packLenBuf := make([]byte, 8)
+		readn, err := io.ReadFull(this.conn, packLenBuf)
+		if err != nil || readn < 8 {
+			Log.FmtPrintln("read err:", err)
+			return
+		}
+
+		packlen := binary.LittleEndian.Uint32(packLenBuf[4:8])
+		Log.FmtPrintln("receiving packLen: ", packlen)
+		if packlen > maxMessageSize {
+			Log.FmtPrintln("error receiving packLen:", packlen)
+			return
+		}
+
+		data := make([]byte, 8+packlen)
+		readn, err = io.ReadFull(this.conn, data[8:])
+		if err != nil || readn < int(packlen) {
+			Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
+			return
 		}
 
 		//todo: unpack message then read real date.
-		c.pack.UnPackAction(buff)
-		msg, cb, err := c.pack.UnPackData()
+		copy(data[:8], packLenBuf[:])
+		_, err = this.pack.UnPackAction(data)
 		if err != nil {
-			Log.FmtPrintln("unpack data err: ", err)
-			continue
+			Log.FmtPrintln("unpack action err: ", err)
+			return
 		}
 
-		mainID, subID := c.pack.GetMessageID()
+		msg, cb, err := this.pack.UnPackData()
+		if err != nil {
+			Log.FmtPrintln("unpack data err: ", err)
+			return
+		}
+
+		mainID, subID := this.pack.GetMessageID()
 		Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
 		//read...
 		params := []reflect.Value{
@@ -215,15 +236,16 @@ func (c *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 			reflect.ValueOf(msg),
 		}
 		cb.Call(params)
-		c.SetSendCache([]byte("respone client."))
-		c.recvCb(c.conn, mainID, subID, msg)
+		this.SetSendCache([]byte("respone client."))
+		this.recvCb(this.conn, mainID, subID, msg)
+		//this.pack.Clean()
 	}
 }
 
-func (c *TcpSession) HandleSession() {
-	c.sw.Add(1)
-	go c.Recvmessage(&c.sw)
-	c.sw.Add(1)
-	go c.Sendmessage(&c.sw)
-	c.sw.Wait()
+func (this *TcpSession) HandleSession() {
+	this.sw.Add(1)
+	go this.Recvmessage(&this.sw)
+	this.sw.Add(1)
+	go this.Sendmessage(&this.sw)
+	//this.sw.Wait()
 }
