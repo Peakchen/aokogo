@@ -10,14 +10,23 @@ const (
 )
 
 func FmtPrintf(src string, params ...interface{}) {
-	fmt.Printf(time.Now().Local().Format(timeFmt)+" "+src, params...)
-	fmt.Println("\n")
+	var dst string
+	if len(params) == 0 {
+		dst = fmt.Sprintf(time.Now().Local().Format(timeFmt)+" "+src) + "\n"
+	} else {
+		dst = fmt.Sprintf(time.Now().Local().Format(timeFmt)+" "+src, params...) + "\n"
+	}
+
+	fmt.Println(dst)
+	WriteLog("[Info]", dst)
 }
 
-func FmtPrintln(src string, params ...interface{}) {
+func FmtPrintln(params ...interface{}) {
 	content := make([]interface{}, 0, len(params)+1)
 	content = append(content, time.Now().Format(timeFmt)+" ")
-	content = append(content, src)
-	content = append(content, params...)
+	if len(params) > 0 {
+		content = append(content, params...)
+	}
 	fmt.Println(content...)
+	WriteLog("[Info]", "", content...)
 }

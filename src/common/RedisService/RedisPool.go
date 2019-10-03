@@ -53,7 +53,7 @@ import (
 	"log"
 	"time"
 
-	"third/github.com/gomodule/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 )
 
 func Subscriber(pool *redis.Pool, subcontent interface{}) {

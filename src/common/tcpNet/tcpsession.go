@@ -139,13 +139,13 @@ func NewSession(addr string,
 	}
 }
 
-func (this *TcpSession) exit() {
+func (this *TcpSession) exit(sw *sync.WaitGroup) {
 	this.off <- this
 	close(this.send)
 	this.conn.CloseRead()
 	this.conn.CloseWrite()
 	this.conn.Close()
-	this.sw.Wait()
+	sw.Wait()
 }
 
 func (this *TcpSession) SetSendCache(data []byte) {
@@ -154,13 +154,12 @@ func (this *TcpSession) SetSendCache(data []byte) {
 
 func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 	defer func() {
-		this.exit()
+		this.exit(sw)
 	}()
 
 	for {
 		select {
 		case <-this.ctx.Done():
-			this.exit()
 			return
 		case data, ok := <-this.send:
 			if !ok {
@@ -178,7 +177,7 @@ func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 
 func (this *TcpSession) Recvmessage(sw *sync.WaitGroup) {
 	defer func() {
-		this.exit()
+		this.exit(sw)
 	}()
 
 	for {
@@ -260,10 +259,8 @@ func (this *TcpSession) readMessage() (succ bool) {
 	return
 }
 
-func (this *TcpSession) HandleSession() {
-	this.sw.Add(1)
-	go this.Recvmessage(&this.sw)
-	this.sw.Add(1)
-	go this.Sendmessage(&this.sw)
-	//this.sw.Wait()
+func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
+	sw.Add(2)
+	go this.Recvmessage(sw)
+	go this.Sendmessage(sw)
 }

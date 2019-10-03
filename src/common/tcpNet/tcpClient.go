@@ -34,15 +34,16 @@ func NewClient(host string, mapSvr *map[int32][]int32, cb MessageCb) *TcpClient 
 	}
 }
 
-func (self *TcpClient) Run() {
+func (self *TcpClient) Run(sw *sync.WaitGroup) {
 	self.ctx, self.cancel = context.WithCancel(context.Background())
-	self.connect()
-	self.wg.Add(1)
-	go self.loopconn()
+	self.connect(sw)
+	self.wg.Add(2)
+	go self.loopconn(sw)
+	go self.loopoff(sw)
 	self.wg.Wait()
 }
 
-func (self *TcpClient) connect() error {
+func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	if err != nil {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
@@ -57,29 +58,29 @@ func (self *TcpClient) connect() error {
 
 	c.SetNoDelay(true)
 	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ClientProtocol{})
-	self.s.HandleSession()
+	self.s.HandleSession(sw)
 	return nil
 }
 
-func (self *TcpClient) loopconn() {
+func (self *TcpClient) loopconn(sw *sync.WaitGroup) {
+	defer self.Exit(sw)
 	for {
 		select {
 		case <-self.ctx.Done():
-			self.Exit()
 			return
 		default:
 			if self.sessAlive {
 				continue
 			}
-			if err := self.connect(); err != nil {
+			if err := self.connect(sw); err != nil {
 				Log.FmtPrintf("dail to server fail, host: ", self.host)
 			}
 		}
 	}
 }
 
-func (self *TcpClient) loopoff() {
-	defer self.wg.Done()
+func (self *TcpClient) loopoff(sw *sync.WaitGroup) {
+	defer self.Exit(sw)
 	for {
 		select {
 		case os, ok := <-self.off:
@@ -88,7 +89,6 @@ func (self *TcpClient) loopoff() {
 			}
 			self.offline(os)
 		case <-self.ctx.Done():
-			self.Exit()
 			return
 		}
 	}
@@ -107,9 +107,9 @@ func (self *TcpClient) SendMessage() {
 
 }
 
-func (self *TcpClient) Exit() {
+func (self *TcpClient) Exit(sw *sync.WaitGroup) {
 	self.sessAlive = false
 	self.cancel()
-	self.s.exit()
-	self.wg.Wait()
+	self.s.exit(sw)
+	sw.Wait()
 }

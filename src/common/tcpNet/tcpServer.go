@@ -59,7 +59,7 @@ import (
 )
 
 type TcpServer struct {
-	sw       sync.WaitGroup
+	sw       *sync.WaitGroup
 	host     string
 	listener *net.TCPListener
 	ctx      context.Context
@@ -80,27 +80,25 @@ func NewTcpServer(addr string, mapSvr *map[int32][]int32, cb MessageCb) *TcpServ
 	}
 }
 
-func (self *TcpServer) StartTcpServer() {
+func (self *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 	self.listener = listener
-	self.ctx, self.cancel = context.WithCancel(context.Background())
+	self.ctx, self.cancel = ctx, cancle
 
-	self.sw.Add(1)
-	go self.loop()
-	self.sw.Add(1)
-	go self.loopoff()
-	self.sw.Wait()
+	sw.Add(2)
+	go self.loop(sw)
+	go self.loopoff(sw)
+	sw.Wait()
 }
 
-func (self *TcpServer) loop() {
-	defer self.sw.Done()
+func (self *TcpServer) loop(sw *sync.WaitGroup) {
+	defer self.Exit(sw)
 	for {
 		select {
 		case <-self.ctx.Done():
-			self.Exit()
 			return
 		default:
 			c, err := self.listener.AcceptTCP()
@@ -112,14 +110,14 @@ func (self *TcpServer) loop() {
 			c.SetNoDelay(true)
 			c.SetKeepAlive(true)
 			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ServerProtocol{})
-			self.on.HandleSession()
+			self.on.HandleSession(sw)
 			self.online()
 		}
 	}
 }
 
-func (self *TcpServer) loopoff() {
-	defer self.sw.Done()
+func (self *TcpServer) loopoff(sw *sync.WaitGroup) {
+	defer self.Exit(sw)
 	for {
 		select {
 		case os, ok := <-self.off:
@@ -128,7 +126,6 @@ func (self *TcpServer) loopoff() {
 			}
 			self.offline(os)
 		case <-self.ctx.Done():
-			self.Exit()
 			return
 		}
 	}
@@ -147,10 +144,10 @@ func (self *TcpServer) SendMessage() {
 
 }
 
-func (self *TcpServer) Exit() {
+func (self *TcpServer) Exit(sw *sync.WaitGroup) {
 	self.listener.Close()
 	self.cancel()
-	self.sw.Wait()
+	sw.Wait()
 }
 
 func checkError(err error) {

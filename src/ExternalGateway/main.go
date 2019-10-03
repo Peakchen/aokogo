@@ -54,11 +54,14 @@ import (
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
+	"context"
 	"runtime"
+	"sync"
 )
 
 func init() {
 	runtime.GOMAXPROCS(1)
+	Log.NewLog()
 }
 
 func main() {
@@ -73,5 +76,9 @@ func main() {
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
 		&mapsvr,
 		message.ExternalGatewayMessageCallBack)
-	newExternalServer.StartTcpServer()
+
+	sw := sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.Background())
+	Log.Run(&sw, ctx)
+	newExternalServer.StartTcpServer(&sw, ctx, cancel)
 }

@@ -67,13 +67,12 @@ import (
 	"net"
 	"time"
 
-	uuid "third/github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 //get new uuid
 func GetUUID() string {
-	uuid, _ := uuid.NewV4()
-	return uuid.String()
+	return uuid.NewV4().String()
 }
 
 // encrypt string to base64 crypto using AES

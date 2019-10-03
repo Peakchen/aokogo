@@ -50,7 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package Player
 
 import(
-	"third/github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type TPlayer struct{

@@ -54,8 +54,8 @@ import (
 	"fmt"
 	"time"
 
-	"third/github.com/globalsign/mgo/bson"
-	"third/github.com/gomodule/redigo/redis"
+	"github.com/globalsign/mgo/bson"
+	"github.com/gomodule/redigo/redis"
 )
 
 type TRedisConn struct {

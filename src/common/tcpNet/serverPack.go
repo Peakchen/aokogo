@@ -47,11 +47,11 @@ func (self *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
 	pos += 4
 
 	if len(InData) < int(pos+int32(self.length)) {
-		err = fmt.Errorf("err: InData len: %v, pos: %v, data len: %v,", len(InData), pos, self.length)
+		err = fmt.Errorf("err: InData len: %v, pos: %v, data len: %v.", len(InData), pos, self.length)
 		return
 	}
 
-	Log.FmtPrintf("normal: InData len: %v, pos: %v, data len: %v,", len(InData), pos, self.length)
+	Log.FmtPrintf("normal: InData len: %v, pos: %v, data len: %v.", len(InData), pos, self.length)
 	self.data = InData[pos : pos+int32(self.length)]
 	return pos, nil
 }
