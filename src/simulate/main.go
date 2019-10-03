@@ -67,7 +67,7 @@ func main() {
 }
 
 func init() {
-	Log.NewLog()
+
 }
 
 var server string = "0.0.0.0:51001"
@@ -107,8 +107,6 @@ func dialsend() {
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
-	Log.Run(&sw, ctx)
-
 	Log.FmtPrintln("connection success")
 	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
 

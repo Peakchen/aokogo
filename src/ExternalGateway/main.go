@@ -61,7 +61,6 @@ import (
 
 func init() {
 	runtime.GOMAXPROCS(1)
-	Log.NewLog()
 }
 
 func main() {
@@ -79,6 +78,5 @@ func main() {
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
-	Log.Run(&sw, ctx)
 	newExternalServer.StartTcpServer(&sw, ctx, cancel)
 }

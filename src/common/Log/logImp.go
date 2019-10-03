@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"reflect"
 	"runtime/debug"
 	"sync"
 	"syscall"
@@ -21,6 +22,8 @@ type TAokoLog struct {
 	filesize   uint64
 	logNum     uint64
 	data       chan string
+	sw         sync.WaitGroup
+	FileNo     uint32
 }
 
 const (
@@ -28,20 +31,73 @@ const (
 	EnLogDataChanMax    = 1024
 )
 
+const (
+	EnLogType_Info  string = "logInfo"
+	EnLogType_Error string = "logError"
+	EnLogType_Fail  string = "logFail"
+	EnLogType_Debug string = "logDebug"
+)
+
 var (
 	aokoLog *TAokoLog
 )
 var exitchan = make(chan os.Signal, 1)
 
-func NewLog() {
-	aokoLog = &TAokoLog{}
-	initLogFile()
-	//aokoLog.ctx, aokoLog.cancle = context.WithCancel(context.Background())
+func NewLog(logtype string) {
+	aokoLog = &TAokoLog{
+		FileNo: 1,
+	}
+	initLogFile(logtype)
+	run()
 }
 
-func initLogFile() {
+func initLogFile(logtype string) {
+	var (
+		RealFileName string
+		PathDir      string = logtype
+	)
+
 	filename := utls.GetExeFileName()
-	RealFileName := fmt.Sprintf("./log/%v_%v.log", filename, time.Now().Unix())
+	switch logtype {
+	case EnLogType_Info:
+		RealFileName = fmt.Sprintf("./logInfo/%v_Info_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(timeDate))
+	case EnLogType_Error:
+		RealFileName = fmt.Sprintf("./logError/%v_Error_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(timeDate))
+	case EnLogType_Fail:
+		RealFileName = fmt.Sprintf("./logFail/%v_Fail_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(timeDate))
+	case EnLogType_Debug:
+		RealFileName = fmt.Sprintf("./logDebug/%v_Debug_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(timeDate))
+	default:
+
+	}
+
+	err := os.Remove(PathDir)
+	if err != nil {
+		if reflect.TypeOf(err) != reflect.TypeOf(&os.PathError{}) {
+			fmt.Println("err dir type: ", reflect.TypeOf(err))
+			return
+		}
+		perror := err.(*os.PathError)
+		if perror.Err != syscall.ENOENT &&
+			perror.Err != syscall.ERROR_DIR_NOT_EMPTY {
+			fmt.Printf("Remove log dir fail, dir: %v, errcode: %v, err: %v.\n", PathDir, perror.Err, err.Error())
+			return
+		}
+	}
+
+	err = os.Mkdir(PathDir, os.ModePerm)
+	if err != nil {
+		if reflect.TypeOf(err) != reflect.TypeOf(&os.PathError{}) {
+			fmt.Println("err dir type: ", reflect.TypeOf(err))
+			return
+		}
+		perror := err.(*os.PathError)
+		if perror.Err != syscall.ERROR_ALREADY_EXISTS {
+			fmt.Printf("log mkdir fail, dir: %v, errcode: %v, err: %v.\n", PathDir, perror.Err, err.Error())
+			return
+		}
+	}
+
 	filehandler, err := os.OpenFile(RealFileName, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return
@@ -53,18 +109,27 @@ func initLogFile() {
 
 }
 
-func Run(sw *sync.WaitGroup, ctx context.Context) {
+func run() {
 	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
+	aokoLog.ctx, aokoLog.cancle = context.WithCancel(context.Background())
 	aokoLog.wg.Add(1)
-	go aokoLog.loop(sw, ctx)
+	go aokoLog.loop()
 }
 
 func Error(format string, args ...interface{}) {
-	WriteLog("[Error]\t\t\t", format, args)
+	WriteLog(EnLogType_Error, "[Error]\t\t\t", format, args)
 }
 
 func Info(format string, args ...interface{}) {
-	WriteLog("[Info]\t\t\t", format, args)
+	WriteLog(EnLogType_Info, "[Info]\t\t\t", format, args)
+}
+
+func Fail(format string, args ...interface{}) {
+	WriteLog(EnLogType_Fail, "[Fail]\t\t\t", format, args)
+}
+
+func Debug(format string, args ...interface{}) {
+	WriteLog(EnLogType_Debug, "[Debug]\t\t\t", format, args)
 }
 
 func Panic(format string, args ...interface{}) {
@@ -74,9 +139,9 @@ func Panic(format string, args ...interface{}) {
 	debug.PrintStack()
 }
 
-func WriteLog(title, format string, args ...interface{}) {
+func WriteLog(logtype, title, format string, args ...interface{}) {
 	if aokoLog == nil {
-		Panic("log instance is nil.")
+		NewLog(logtype)
 	}
 
 	var (
@@ -103,7 +168,8 @@ func WriteLog(title, format string, args ...interface{}) {
 
 	if aokoLog.filesize >= EnAKLogFileMaxLimix {
 		FmtPrintf("log file: %v over max limix.", aokoLog.filename)
-		initLogFile()
+		aokoLog.FileNo++
+		initLogFile(logtype)
 	}
 
 	aokoLog.filesize += uint64(len(logStr))
@@ -118,27 +184,27 @@ func (this *TAokoLog) endLog() {
 	}
 }
 
-func (this *TAokoLog) exit(sw *sync.WaitGroup) {
+func (this *TAokoLog) exit() {
 	fmt.Println("log exit: ", <-this.data, aokoLog.filesize, aokoLog.logNum)
 	this.flush()
 	this.endLog()
 	close(this.data)
-	sw.Wait()
+	this.sw.Wait()
 }
 
-func (this *TAokoLog) loop(sw *sync.WaitGroup, ctx context.Context) {
-	defer this.exit(sw)
+func (this *TAokoLog) loop() {
+	defer this.exit()
 	tick := time.NewTicker(time.Duration(30 * time.Second))
 	for {
 		if s, ok := <-exitchan; ok {
 			tick.Stop()
-			this.exit(sw)
+			this.exit()
 			time.Sleep(time.Duration(3) * time.Second)
 			fmt.Println("Got signal:", s)
 			return
 		}
 		select {
-		case <-ctx.Done():
+		case <-this.ctx.Done():
 			tick.Stop()
 			return
 		case <-tick.C:

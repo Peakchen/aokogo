@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	timeFmt string = "2006-01-02 15:04:05.000000 Z0700"
+	timeFmt  string = "2006-01-02 15:04:05.000000 Z0700"
+	timeDate string = "2006-01-02"
 )
 
 func FmtPrintf(src string, params ...interface{}) {
@@ -18,7 +19,7 @@ func FmtPrintf(src string, params ...interface{}) {
 	}
 
 	fmt.Println(dst)
-	WriteLog("[Info]", dst)
+	WriteLog(EnLogType_Info, "[Info]", dst)
 }
 
 func FmtPrintln(params ...interface{}) {
@@ -28,5 +29,5 @@ func FmtPrintln(params ...interface{}) {
 		content = append(content, params...)
 	}
 	fmt.Println(content...)
-	WriteLog("[Info]", "", content...)
+	WriteLog(EnLogType_Info, "[Info]", "", content...)
 }
