@@ -100,6 +100,7 @@ func dialsend() {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
+
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
 		Log.FmtPrintf("Fatal error: %s", err.Error())

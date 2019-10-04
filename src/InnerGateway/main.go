@@ -49,10 +49,12 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
+	"InnerGateway/message"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
-	"net"
+	"context"
+	"sync"
 )
 
 func main() {
@@ -63,12 +65,12 @@ func main() {
 			int32(Define.ERouteId_ER_Game):   []int32{int32(Define.ERouteId_ER_Client)},
 		}
 	)
+
 	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
 		&mapsvr,
-		InnerGatewayMessageCallBack)
-	newInnerServer.StartTcpServer()
-}
+		message.InnerGatewayMessageCallBack)
 
-func InnerGatewayMessageCallBack(c net.Conn, data []byte, len int) {
-	Log.FmtPrintf("exec [innter gateway] server message call back.", c.RemoteAddr(), c.LocalAddr())
+	sw := sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.Background())
+	newInnerServer.StartTcpServer(&sw, ctx, cancel)
 }

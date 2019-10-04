@@ -60,13 +60,8 @@ import (
 	//"common/S2SMessage"
 	"context"
 	"sync"
-
-	"github.com/golang/protobuf/proto"
 	//. "common/Define"
 )
-
-// session, data, data len
-type MessageCb func(this net.Conn, mainID int32, subID int32, msg proto.Message)
 
 type TcpSession struct {
 	host    string

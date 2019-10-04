@@ -107,6 +107,7 @@ func (self *TcpServer) loop(sw *sync.WaitGroup) {
 				continue
 			}
 
+			Log.FmtPrintf("connect here addr: %v.", c.RemoteAddr())
 			c.SetNoDelay(true)
 			c.SetKeepAlive(true)
 			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ServerProtocol{})

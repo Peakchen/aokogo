@@ -116,7 +116,8 @@ func run() {
 	go aokoLog.loop()
 }
 
-func Error(format string, args ...interface{}) {
+func Error(args ...interface{}) {
+	format := ""
 	WriteLog(EnLogType_Error, "[Error]\t\t\t", format, args)
 }
 
@@ -124,7 +125,8 @@ func Info(format string, args ...interface{}) {
 	WriteLog(EnLogType_Info, "[Info]\t\t\t", format, args)
 }
 
-func Fail(format string, args ...interface{}) {
+func Fail(args ...interface{}) {
+	format := ""
 	WriteLog(EnLogType_Fail, "[Fail]\t\t\t", format, args)
 }
 

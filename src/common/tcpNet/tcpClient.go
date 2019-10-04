@@ -34,8 +34,9 @@ func NewClient(host string, mapSvr *map[int32][]int32, cb MessageCb) *TcpClient 
 	}
 }
 
-func (self *TcpClient) Run(sw *sync.WaitGroup) {
+func (self *TcpClient) Run() {
 	self.ctx, self.cancel = context.WithCancel(context.Background())
+	sw := &sync.WaitGroup{}
 	self.connect(sw)
 	self.wg.Add(2)
 	go self.loopconn(sw)
@@ -56,6 +57,7 @@ func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 		return err
 	}
 
+	self.sessAlive = true
 	c.SetNoDelay(true)
 	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ClientProtocol{})
 	self.s.HandleSession(sw)
@@ -74,6 +76,7 @@ func (self *TcpClient) loopconn(sw *sync.WaitGroup) {
 			}
 			if err := self.connect(sw); err != nil {
 				Log.FmtPrintf("dail to server fail, host: ", self.host)
+				return
 			}
 		}
 	}

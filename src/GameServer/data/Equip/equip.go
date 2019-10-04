@@ -1,6 +1,0 @@
-package Equip
-
-import (
-	
-)
-

@@ -1,6 +1,7 @@
 package tcpNet
 
 import (
+	"net"
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
@@ -94,3 +95,6 @@ const (
 	EnMessage_DataPackLen   = 4 //真实数据长度
 	EnMessage_NoDataLen     = 8 //非data数据长度(包体之前的)
 )
+
+// session, data, data len
+type MessageCb func(c net.Conn, mainID int32, subID int32, msg proto.Message)

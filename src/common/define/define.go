@@ -55,8 +55,8 @@ import (
 const (
 	LoginServerHost    string = "0.0.0.1:17000"
 	ExternalServerHost string = "0.0.0.0:51001"
-	InnerServerHost    string = "172.0.0.1:19000"
-	GameServerHost     string = "0.0.0.1:19000"
+	InnerServerHost    string = "0.0.0.0:19000"
+	GameServerHost     string = "127.0.0.1:19000"
 )
 
 type ERouteId int32

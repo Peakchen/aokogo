@@ -1,0 +1,6 @@
+package ServerConfig
+
+
+func init(){
+	
+}

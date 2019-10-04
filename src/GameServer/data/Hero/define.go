@@ -1,5 +1,0 @@
-package hero
-
-const (
-	
-)
