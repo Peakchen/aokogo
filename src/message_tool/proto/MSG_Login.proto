@@ -1,0 +1,44 @@
+syntax = "proto3";
+package MSG_Login;
+
+// add by stefanchen 
+// server 
+enum SUBMSG
+{
+    Begin = 0; //起点消息
+    
+    CS_UserBind = 1; //用户认证请求
+    SC_UserBind = 2; //用户认证回复
+
+    CS_UserRegister = 3; //注册请求
+    SC_UserRegister = 4; //注册回复
+}
+
+enum ErrorCode
+{
+    Invalid = 0; //非法数据
+    Success = 1; //成功
+    Fail = 2; //失败
+}
+
+//CS_UserBind
+message CS_UserBind_Req
+{
+    string Account = 1; //名字
+    string Passwd = 2; //密码（做加密处理存数据库）
+}
+
+//CS_UserRegister
+message CS_UserRegister_Req
+{
+    string Account = 1; //名字
+    string Passwd = 2; //密码（做加密处理存数据库）
+    string DeviceSerial = 3; //设备号
+    string DeviceName = 4; //设备名
+}
+
+//SC_UserRegister
+message SC_UserRegister_Rsp
+{
+    ErrorCode Ret = 1; //错误码
+}

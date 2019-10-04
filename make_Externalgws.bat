@@ -3,9 +3,8 @@
 set VERSION=v.0.1.0
 echo version=%VERSION%
 
-set GOPATH=D:\aoko
 set GOPATH_BAK=%GOPATH%
-set GOPATH=%GOPATH%;%~dp0;
+set GOPATH=%GOPATH%;%~dp0;%~dp0\aoko;
 
 set GOOS=windows
 set GOARCH=amd64

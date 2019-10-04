@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,25 +49,24 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package httpExService
 
-import(
+import (
 	"net/http"
 	//"fmt"
-	"log"
-	"time"
-	"common/define"
+	Define "common/define"
 	"encoding/json"
+	"log"
 	"strings"
+	"time"
 )
 
-
-func StartHttpService(addr string, handler define.HandlerFunc){
+func StartHttpService(addr string, handler Define.HandlerFunc) {
 	log.Printf("http addr: %s.", addr)
 	server := &http.Server{
-		Addr:			addr,
-		Handler:		handler,
-		ReadTimeout:	30*time.Second,
-		WriteTimeout:	30*time.Second,
-		MaxHeaderBytes:	1<<16,
+		Addr:           addr,
+		Handler:        handler,
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   30 * time.Second,
+		MaxHeaderBytes: 1 << 16,
 	}
 
 	err := server.ListenAndServe()
@@ -90,7 +89,7 @@ func Get(url string, jsonst interface{}) error {
 	return err
 }
 
-func Post(url string, jsonst interface{}) error{
+func Post(url string, jsonst interface{}) error {
 	resp, err := http.Post(url, "application/x-www-form-urlencoded", strings.NewReader("name=cjb"))
 	if err != nil {
 		log.Println("htp post, err :", err)

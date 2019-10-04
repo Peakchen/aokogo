@@ -28,4 +28,3 @@ message SC_EnterServer_Rsp
 {
     ErrorCode Ret = 1; //返回码
 }
-

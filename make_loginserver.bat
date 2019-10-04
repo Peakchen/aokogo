@@ -11,7 +11,7 @@ set GOARCH=amd64
 
 
 echo start install sever ...
-go install -gcflags " -N -l" InnerGateway
+go install -gcflags " -N -l" LoginServer
 
 echo make ok
 

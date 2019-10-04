@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -47,28 +47,22 @@ OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
-package loginHandler
+package logindefine
 
-const(
-	//wechat
-	weChatAPPID            = "wxd5accb31d9319f12"
-	weChatAPPSecret        = "382af0b77ad4e311b0f1e8ff9b56a3b8"
-	urlHttpsServerLink     = "http://aoko.test.com"
-	urlWeChatAuthorization = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect"
+import (
+	"LoginServer/c2s_message"
+	"common/Log"
+	"net"
+	"net/http"
 
+	"github.com/golang/protobuf/proto"
 )
 
-// LoadAccessTokenReply 微信拉取access token回复
-type AccessTokenReply struct {
-	szSessionKey string `json:"session_key"`
-	szOpenID     string `json:"openid"`
-
-	nErrorCode 	 int32    `json:"errcode"`
-	szErrorMsg   string `json:"errmsg"`
+func DealWitchLoginHandler(w http.ResponseWriter, r *http.Request) {
+	var path = r.URL.Path
+	c2s_message.OnDispatchLoginMessage(path, w, r)
 }
 
-// UserInfoReply 用户信息数据
-type UserInfoReply struct {
-	szNickName  string `json:"nickName"`
-	szAvatarURL string `json:"avatarURL"`
+func LoginMessageCallBack(c net.Conn, mainID int32, subID int32, msg proto.Message) {
+	Log.FmtPrintf("exec login server message call back.", c.RemoteAddr(), c.LocalAddr())
 }
