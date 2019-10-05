@@ -2,7 +2,10 @@ package tcpNet
 
 // client connect server.
 import (
+	"common/Define"
 	"common/Log"
+	"common/msgProto/MSG_MainModule"
+	"common/msgProto/MSG_Server"
 	"net"
 	"os"
 	"sync"
@@ -23,20 +26,26 @@ type TcpClient struct {
 	// person offline flag
 	off chan *TcpSession
 	// person online
-	person int32
+	person  int32
+	SvrType Define.ERouteId
+	Adacb   AfterDialAct
+	mpobj   IMessagePack
 }
 
-func NewClient(host string, mapSvr *map[int32][]int32, cb MessageCb) *TcpClient {
+func NewClient(host string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, Ada AfterDialAct) *TcpClient {
 	return &TcpClient{
-		host:   host,
-		mapSvr: *mapSvr,
-		cb:     cb,
+		host:    host,
+		mapSvr:  *mapSvr,
+		cb:      cb,
+		SvrType: SvrType,
+		Adacb:   Ada,
 	}
 }
 
 func (self *TcpClient) Run() {
 	self.ctx, self.cancel = context.WithCancel(context.Background())
 	sw := &sync.WaitGroup{}
+	self.mpobj = &ClientProtocol{}
 	self.connect(sw)
 	self.wg.Add(2)
 	go self.loopconn(sw)
@@ -59,8 +68,12 @@ func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 
 	self.sessAlive = true
 	c.SetNoDelay(true)
-	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, &ClientProtocol{})
+	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.mpobj)
 	self.s.HandleSession(sw)
+	if self.Adacb != nil {
+		self.Adacb()
+	}
+	self.sendRegisterMsg()
 	return nil
 }
 
@@ -115,4 +128,16 @@ func (self *TcpClient) Exit(sw *sync.WaitGroup) {
 	self.cancel()
 	self.s.exit(sw)
 	sw.Wait()
+}
+
+func (self *TcpClient) sendRegisterMsg() {
+	Log.FmtPrintf("after dial, send point: %v register message to server.", self.SvrType)
+	req := &MSG_Server.CS_ServerRegister_Req{}
+	req.ServerType = int32(self.SvrType)
+	req.Msgs = GetAllMessageIDs()
+	Log.FmtPrintln(req.Msgs)
+	buff := self.mpobj.GetSendPackMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
+		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
+		req)
+	self.Send(buff)
 }

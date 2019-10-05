@@ -57,8 +57,8 @@ func (self *ClientProtocol) PackData(msg proto.Message) (data []byte, err error)
 	return
 }
 
-func (self *ClientProtocol) GetMessageID() (mainID int32, subID int32) {
-	return int32(self.mainid), int32(self.subid)
+func (self *ClientProtocol) GetMessageID() (mainID uint16, subID uint16) {
+	return self.mainid, self.subid
 }
 
 func (self *ClientProtocol) SetCmd(mainid, subid uint16, data []byte) {
@@ -67,7 +67,6 @@ func (self *ClientProtocol) SetCmd(mainid, subid uint16, data []byte) {
 	self.data = data
 	self.length = uint32(len(data))
 	Log.FmtPrintln("SetCmd data len: ", self.length)
-	//self.length = binary.LittleEndian.Uint32(data)
 }
 
 func (self *ClientProtocol) Clean() {
@@ -75,4 +74,17 @@ func (self *ClientProtocol) Clean() {
 	self.data = make([]byte, maxMessageSize)
 	self.mainid = 0
 	self.subid = 0
+}
+
+func (self *ClientProtocol) GetSendPackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		Log.FmtPrintln("proto marshal fail, data: ", err)
+		return
+	}
+
+	self.SetCmd(mainid, subid, data)
+	out = make([]byte, len(data)+EnMessage_NoDataLen)
+	self.PackAction(out)
+	return
 }

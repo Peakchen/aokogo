@@ -49,7 +49,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"InnerGateway/message"
+	"InnerGateway/LogicMsg"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -67,8 +67,9 @@ func main() {
 	)
 
 	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
+		Define.ERouteId_ER_ISG,
 		&mapsvr,
-		message.InnerGatewayMessageCallBack)
+		LogicMsg.InnerGatewayMessageCallBack)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

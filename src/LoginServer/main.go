@@ -5,7 +5,7 @@
 package main
 
 import (
-	"LoginServer/logindefine"
+	"LoginServer/LogicMsg"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -20,8 +20,10 @@ func main() {
 	)
 
 	gameSvr := tcpNet.NewClient(Define.LoginServerHost,
+		Define.ERouteId_ER_Login,
 		&mapsvr,
-		logindefine.LoginMessageCallBack)
+		LogicMsg.LoginMessageCallBack,
+		nil)
 
 	gameSvr.Run()
 	return

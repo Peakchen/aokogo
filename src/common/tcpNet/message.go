@@ -73,3 +73,11 @@ func GetMessageInfo(mainID, subID uint16) (proc *TMessageProc, finded bool) {
 	proc, finded = _MessageTab[_cmd]
 	return
 }
+
+func GetAllMessageIDs() (msgs []int32) {
+	msgs = []int32{}
+	for msgid, _ := range _MessageTab {
+		msgs = append(msgs, int32(msgid))
+	}
+	return
+}

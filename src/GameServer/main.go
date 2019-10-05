@@ -50,7 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"GameServer/message"
+	"GameServer/LogicMsg"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -70,8 +70,10 @@ func main() {
 	)
 
 	gameSvr := tcpNet.NewClient(Define.GameServerHost,
+		Define.ERouteId_ER_Game,
 		&mapsvr,
-		message.GameMessageCallBack)
+		LogicMsg.GameMessageCallBack,
+		LogicMsg.AfterDialCallBack)
 
 	gameSvr.Run()
 	return

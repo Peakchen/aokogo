@@ -41,6 +41,6 @@ func getServerData() (data []byte, err error) {
 	return
 }
 
-func ClientMessageCallBack(c net.Conn, mainID int32, subID int32, msg proto.Message) {
+func ClientMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg proto.Message) {
 	Log.FmtPrintf("exec client message call back.", c.RemoteAddr(), c.LocalAddr())
 }

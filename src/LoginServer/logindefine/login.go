@@ -51,18 +51,10 @@ package logindefine
 
 import (
 	"LoginServer/c2s_message"
-	"common/Log"
-	"net"
 	"net/http"
-
-	"github.com/golang/protobuf/proto"
 )
 
 func DealWitchLoginHandler(w http.ResponseWriter, r *http.Request) {
 	var path = r.URL.Path
 	c2s_message.OnDispatchLoginMessage(path, w, r)
-}
-
-func LoginMessageCallBack(c net.Conn, mainID int32, subID int32, msg proto.Message) {
-	Log.FmtPrintf("exec login server message call back.", c.RemoteAddr(), c.LocalAddr())
 }

@@ -51,6 +51,7 @@ package tcpNet
 
 import (
 	"common/Log"
+	"common/msgProto/MSG_MainModule"
 	"encoding/binary"
 	"io"
 	"net"
@@ -147,7 +148,7 @@ func (this *TcpSession) SetSendCache(data []byte) {
 	this.send <- data
 }
 
-func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
+func (this *TcpSession) Sendloop(sw *sync.WaitGroup) {
 	defer func() {
 		this.exit(sw)
 	}()
@@ -170,7 +171,7 @@ func (this *TcpSession) Sendmessage(sw *sync.WaitGroup) {
 	}
 }
 
-func (this *TcpSession) Recvmessage(sw *sync.WaitGroup) {
+func (this *TcpSession) Recvloop(sw *sync.WaitGroup) {
 	defer func() {
 		this.exit(sw)
 	}()
@@ -234,14 +235,21 @@ func (this *TcpSession) readMessage() (succ bool) {
 		return
 	}
 
+	mainID, subID := this.pack.GetMessageID()
+	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+
 	msg, cb, err := this.pack.UnPackData()
 	if err != nil {
 		Log.FmtPrintln("unpack data err: ", err)
 		return
 	}
 
-	mainID, subID := this.pack.GetMessageID()
-	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+	switch mainID {
+	case uint16(MSG_MainModule.MAINMSG_SERVER):
+
+	default:
+
+	}
 	//read...
 	params := []reflect.Value{
 		reflect.ValueOf("1"),
@@ -256,6 +264,6 @@ func (this *TcpSession) readMessage() (succ bool) {
 
 func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
 	sw.Add(2)
-	go this.Recvmessage(sw)
-	go this.Sendmessage(sw)
+	go this.Recvloop(sw)
+	go this.Sendloop(sw)
 }

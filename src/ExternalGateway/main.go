@@ -50,7 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"ExternalGateway/message"
+	"ExternalGateway/LogicMsg"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -73,8 +73,9 @@ func main() {
 	)
 
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
+		Define.ERouteId_ER_ESG,
 		&mapsvr,
-		message.ExternalGatewayMessageCallBack)
+		LogicMsg.ExternalGatewayMessageCallBack)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

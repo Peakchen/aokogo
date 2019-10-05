@@ -79,8 +79,8 @@ func (self *ServerProtocol) PackData(msg proto.Message) (data []byte, err error)
 	return
 }
 
-func (self *ServerProtocol) GetMessageID() (mainID int32, subID int32) {
-	return int32(self.mainid), int32(self.subid)
+func (self *ServerProtocol) GetMessageID() (mainID uint16, subID uint16) {
+	return self.mainid, self.subid
 }
 
 func (self *ServerProtocol) Clean() {
@@ -88,4 +88,25 @@ func (self *ServerProtocol) Clean() {
 	self.data = make([]byte, maxMessageSize)
 	self.mainid = 0
 	self.subid = 0
+}
+
+func (self *ServerProtocol) SetCmd(mainid, subid uint16, data []byte) {
+	self.mainid = mainid
+	self.subid = subid
+	self.data = data
+	self.length = uint32(len(data))
+	Log.FmtPrintln("SetCmd data len: ", self.length)
+}
+
+func (self *ServerProtocol) GetSendPackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		Log.FmtPrintln("server proto marshal fail, data: ", err)
+		return
+	}
+
+	self.SetCmd(mainid, subid, data)
+	out = make([]byte, len(data)+EnMessage_NoDataLen)
+	self.PackAction(out)
+	return
 }

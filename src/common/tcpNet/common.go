@@ -61,8 +61,10 @@ type IMessagePack interface {
 	PackData(msg proto.Message) (data []byte, err error)
 	UnPackAction(InData []byte) (pos int32, err error)
 	UnPackData() (msg proto.Message, cb reflect.Value, err error)
-	GetMessageID() (mainID int32, subID int32)
+	GetMessageID() (mainID uint16, subID uint16)
 	Clean()
+	SetCmd(mainid, subid uint16, data []byte)
+	GetSendPackMsg(mainid, subid uint16, msg proto.Message) (out []byte)
 }
 
 /*
@@ -77,7 +79,7 @@ func EncodeCmd(mainID, subID uint16) uint32 {
 	func: DecodeCmd
 	purpose: DecodeCmd message cmd to mainid and subid.
 */
-func DecodeCmd(cmd uint16) (uint16, uint16) {
+func DecodeCmd(cmd uint32) (uint16, uint16) {
 	return uint16(cmd >> 16), uint16(cmd)
 }
 
@@ -97,4 +99,7 @@ const (
 )
 
 // session, data, data len
-type MessageCb func(c net.Conn, mainID int32, subID int32, msg proto.Message)
+type MessageCb func(c net.Conn, mainID uint16, subID uint16, msg proto.Message)
+
+// after dial connect todo action.
+type AfterDialAct func()

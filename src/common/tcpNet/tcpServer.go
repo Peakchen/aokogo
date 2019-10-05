@@ -50,6 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package tcpNet
 
 import (
+	"common/Define"
 	"common/Log"
 	"context"
 	"fmt"
@@ -69,14 +70,16 @@ type TcpServer struct {
 	off      chan *TcpSession
 	on       *TcpSession
 	// person online
-	person int32
+	person  int32
+	SvrType Define.ERouteId
 }
 
-func NewTcpServer(addr string, mapSvr *map[int32][]int32, cb MessageCb) *TcpServer {
+func NewTcpServer(addr string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb) *TcpServer {
 	return &TcpServer{
-		host:   addr,
-		mapSvr: *mapSvr,
-		cb:     cb,
+		host:    addr,
+		mapSvr:  *mapSvr,
+		cb:      cb,
+		SvrType: SvrType,
 	}
 }
 
