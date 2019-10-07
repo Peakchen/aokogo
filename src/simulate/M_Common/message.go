@@ -1,0 +1,143 @@
+package M_Common
+
+import (
+	"common/Log"
+	"common/tcpNet"
+	"context"
+	"fmt"
+	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
+
+	"github.com/golang/protobuf/proto"
+)
+
+type TModuleCommon struct {
+	host       string
+	sw         sync.WaitGroup
+	ctx        context.Context
+	cancle     context.CancelFunc
+	data       []byte
+	module     string
+	clientPack tcpNet.IMessagePack
+}
+
+var exitchan = make(chan os.Signal, 1)
+
+func NewModule(host, module string) *TModuleCommon {
+	return &TModuleCommon{
+		host:       host,
+		module:     module,
+		clientPack: &tcpNet.ClientProtocol{},
+	}
+}
+
+func (self *TModuleCommon) PushMsg(mainid, subid uint16, msg proto.Message) {
+	buff := self.clientPack.PackMsg(mainid,
+		subid,
+		msg)
+	copy(self.data, buff)
+}
+
+func (self *TModuleCommon) Run() {
+	self.dialSend()
+}
+
+//发送信息
+func (self *TModuleCommon) sender(conn net.Conn) (succ bool) {
+	if len(self.data) == 0 {
+		succ = true
+		return
+	}
+	n, err := conn.Write(self.data)
+	if n == 0 || err != nil {
+		Log.FmtPrintln("Write fail, data: ", n, err)
+		return false
+	}
+	Log.FmtPrintln("send over")
+	succ = true
+	return
+}
+
+func (self *TModuleCommon) readloop(conn net.Conn) {
+	for {
+		select {
+		case <-self.ctx.Done():
+			self.sw.Done()
+			return
+		default:
+			//接收服务端反馈
+			buffer := make([]byte, 2048)
+			n, err := conn.Read(buffer)
+			if err != nil {
+				Log.FmtPrintln("waiting server back msg error: ", conn.RemoteAddr().String(), err)
+				continue
+			}
+			Log.FmtPrintf("receive server back, ip: %v, msg: %v.", conn.RemoteAddr().String(), string(buffer[:n]))
+		}
+	}
+
+}
+
+func (self *TModuleCommon) sendloop(conn net.Conn) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+	if err != nil {
+		Log.FmtPrintf("Fatal error: %s", err.Error())
+		os.Exit(1)
+	}
+	for i := 0; i < 10; i++ {
+		Log.FmtPrintln("time: ", i)
+		if !self.sender(conn) {
+			conn, err = net.DialTCP("tcp", nil, tcpAddr)
+			if err != nil {
+				Log.FmtPrintf("Fatal error: %s", err.Error())
+				os.Exit(1)
+			}
+		}
+		time.Sleep(time.Duration(2) * time.Second)
+	}
+}
+
+func (self *TModuleCommon) dialSend() {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+	if err != nil {
+		Log.FmtPrintf("Fatal error: %s", err.Error())
+		os.Exit(1)
+	}
+
+	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	if err != nil {
+		Log.FmtPrintf("Fatal error: %s", err.Error())
+		os.Exit(1)
+	}
+
+	self.ctx, self.cancle = context.WithCancel(context.Background())
+	Log.FmtPrintln("connection success")
+	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
+
+	self.sw.Add(3)
+	go self.readloop(conn)
+	go self.sendloop(conn)
+	go self.exitloop()
+	self.sw.Wait()
+}
+
+func (self *TModuleCommon) exitloop() {
+	for {
+		//Block until a signal is received.
+		if s, ok := <-exitchan; ok {
+			fmt.Println("Got signal:", s)
+		}
+		os.Exit(1)
+		select {
+		case <-self.ctx.Done():
+			self.sw.Done()
+			return
+		default:
+
+		}
+	}
+}
