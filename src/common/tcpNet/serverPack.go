@@ -98,7 +98,7 @@ func (self *ServerProtocol) SetCmd(mainid, subid uint16, data []byte) {
 	Log.FmtPrintln("SetCmd data len: ", self.length)
 }
 
-func (self *ServerProtocol) GetSendPackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
+func (self *ServerProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		Log.FmtPrintln("server proto marshal fail, data: ", err)

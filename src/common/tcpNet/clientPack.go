@@ -76,7 +76,7 @@ func (self *ClientProtocol) Clean() {
 	self.subid = 0
 }
 
-func (self *ClientProtocol) GetSendPackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
+func (self *ClientProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		Log.FmtPrintln("proto marshal fail, data: ", err)

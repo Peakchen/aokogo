@@ -64,7 +64,7 @@ type IMessagePack interface {
 	GetMessageID() (mainID uint16, subID uint16)
 	Clean()
 	SetCmd(mainid, subid uint16, data []byte)
-	GetSendPackMsg(mainid, subid uint16, msg proto.Message) (out []byte)
+	PackMsg(mainid, subid uint16, msg proto.Message) (out []byte)
 }
 
 /*

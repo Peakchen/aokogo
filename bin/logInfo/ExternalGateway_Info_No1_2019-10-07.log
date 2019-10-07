@@ -1,0 +1,61 @@
+[Info]2019-10-07 11:25:32.072000 +0800 connect here addr: 127.0.0.1:3827.
+[Info]2019-10-07 11:25:32.077000 +0800 server UnPackAction-> len: 0
+[Info]2019-10-07 11:25:32.078000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:32.078000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:32.078000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:32.078000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:32.078000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:34.078000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:34.078000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:34.078000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:34.078000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:34.078000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:34.079000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:36.079000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:36.079000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:36.080000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:36.080000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:36.081000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:36.081000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:38.082000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:38.082000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:38.083000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:38.083000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:38.083000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:38.084000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:40.083000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:40.083000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:40.084000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:40.085000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:40.085000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:40.085000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:42.085000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:42.086000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:42.087000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:42.087000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:42.087000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:42.088000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:44.086000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:44.087000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:44.088000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:44.088000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:44.088000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:44.089000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:46.088000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:46.088000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:46.088000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:46.089000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:46.089000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:46.090000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:48.089000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:48.089000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:48.090000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:48.091000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:48.091000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:48.091000 +0800 begin send response message to client.
+[Info]2019-10-07 11:25:50.090000 +0800 server UnPackAction-> len: 2
+[Info]2019-10-07 11:25:50.091000 +0800 normal: InData len: 10, pos: 8, data len: 2.
+[Info]2019-10-07 11:25:50.091000 +0800 mainid: 1, subID: 1.
+[Info]2019-10-07 11:25:50.092000 +0800 onServer recv: 1, 2.
+[Info]2019-10-07 11:25:50.093000 +0800 exec external gateway server message call back: 127.0.0.1:3827, 127.0.0.1:51001.
+[Info]2019-10-07 11:25:50.093000 +0800 begin send response message to client.

@@ -39,19 +39,31 @@ const (
 )
 
 var (
-	aokoLog *TAokoLog
+	aokoLog map[string]*TAokoLog
 )
 var exitchan = make(chan os.Signal, 1)
 
-func NewLog(logtype string) {
-	aokoLog = &TAokoLog{
-		FileNo: 1,
-	}
-	initLogFile(logtype)
-	run()
+func init() {
+	aokoLog = map[string]*TAokoLog{}
 }
 
-func initLogFile(logtype string) {
+func checkNewLog(logtype string) (logobj *TAokoLog) {
+	var (
+		ok bool
+	)
+	logobj, ok = aokoLog[logtype]
+	if !ok {
+		aokoLog[logtype] = &TAokoLog{
+			FileNo: 1,
+		}
+		initLogFile(logtype, aokoLog[logtype])
+		run(aokoLog[logtype])
+		logobj = aokoLog[logtype]
+	}
+	return
+}
+
+func initLogFile(logtype string, aokoLog *TAokoLog) {
 	var (
 		RealFileName string
 		PathDir      string = logtype
@@ -109,11 +121,11 @@ func initLogFile(logtype string) {
 
 }
 
-func run() {
+func run(aokoLog *TAokoLog) {
 	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
 	aokoLog.ctx, aokoLog.cancle = context.WithCancel(context.Background())
 	aokoLog.wg.Add(1)
-	go aokoLog.loop()
+	go aokoLog.loop(aokoLog)
 }
 
 func Error(args ...interface{}) {
@@ -134,16 +146,22 @@ func Debug(format string, args ...interface{}) {
 	WriteLog(EnLogType_Debug, "[Debug]\t\t\t", format, args)
 }
 
-func Panic(format string, args ...interface{}) {
-	logStr := fmt.Sprintf("%v", debug.Stack())
-	aokoLog.filehandle.WriteString(logStr)
-	aokoLog.endLog()
-	debug.PrintStack()
+func Panic() {
+	aokoLog := checkNewLog(EnLogType_Fail)
+	if aokoLog != nil {
+		debug.PrintStack()
+		buf := debug.Stack()
+		aokoLog.filehandle.WriteString(string(buf[:]))
+		aokoLog.endLog()
+		//close(aokoLog.data)
+	}
 }
 
 func WriteLog(logtype, title, format string, args ...interface{}) {
+	aokoLog := checkNewLog(logtype)
 	if aokoLog == nil {
-		NewLog(logtype)
+		Panic()
+		return
 	}
 
 	var (
@@ -171,7 +189,7 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 	if aokoLog.filesize >= EnAKLogFileMaxLimix {
 		FmtPrintf("log file: %v over max limix.", aokoLog.filename)
 		aokoLog.FileNo++
-		initLogFile(logtype)
+		initLogFile(logtype, aokoLog)
 	}
 
 	aokoLog.filesize += uint64(len(logStr))
@@ -186,38 +204,40 @@ func (this *TAokoLog) endLog() {
 	}
 }
 
-func (this *TAokoLog) exit() {
+func (this *TAokoLog) exit(aokoLog *TAokoLog) {
 	fmt.Println("log exit: ", <-this.data, aokoLog.filesize, aokoLog.logNum)
-	this.flush()
+	this.flush(aokoLog)
 	this.endLog()
 	close(this.data)
 	this.sw.Wait()
 }
 
-func (this *TAokoLog) loop() {
-	defer this.exit()
+func (this *TAokoLog) loop(aokoLog *TAokoLog) {
+	defer this.sw.Done()
+
 	tick := time.NewTicker(time.Duration(30 * time.Second))
 	for {
 		if s, ok := <-exitchan; ok {
 			tick.Stop()
-			this.exit()
+			this.exit(aokoLog)
 			time.Sleep(time.Duration(3) * time.Second)
 			fmt.Println("Got signal:", s)
 			return
 		}
+
 		select {
 		case <-this.ctx.Done():
 			tick.Stop()
 			return
 		case <-tick.C:
-			go this.flush()
+			go this.flush(aokoLog)
 		default:
 
 		}
 	}
 }
 
-func (this *TAokoLog) flush() {
+func (this *TAokoLog) flush(aokoLog *TAokoLog) {
 	for {
 		select {
 		case val, ok := <-this.data:

@@ -96,6 +96,8 @@ const (
 
 	// Maximum message size allowed from peer.
 	maxMessageSize = 4096
+	//offline session
+	maxOfflineSize = 1024
 )
 
 func (this *TcpSession) Connect() {
@@ -132,10 +134,15 @@ func NewSession(addr string,
 		mapSvr:  *mapSvr,
 		recvCb:  newcb,
 		pack:    pack,
+		off:     make(chan *TcpSession, maxOfflineSize),
 	}
 }
 
 func (this *TcpSession) exit(sw *sync.WaitGroup) {
+	if this == nil {
+		return
+	}
+
 	this.off <- this
 	close(this.send)
 	this.conn.CloseRead()

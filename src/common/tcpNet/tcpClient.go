@@ -7,7 +7,6 @@ import (
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
 	"net"
-	"os"
 	"sync"
 
 	//"time"
@@ -56,13 +55,13 @@ func (self *TcpClient) Run() {
 func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	if err != nil {
-		Log.FmtPrintf("Fatal error: %s", err.Error())
-		os.Exit(1)
+		Log.Error("Fatal error: %v.", err.Error())
+		return err
 	}
 
 	c, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		Log.FmtPrintf("net dial err: ", err)
+		Log.Error("net dial err: %v.", err)
 		return err
 	}
 
@@ -88,7 +87,7 @@ func (self *TcpClient) loopconn(sw *sync.WaitGroup) {
 				continue
 			}
 			if err := self.connect(sw); err != nil {
-				Log.FmtPrintf("dail to server fail, host: ", self.host)
+				Log.Error("dail to server fail, host: ", self.host, err)
 				return
 			}
 		}
@@ -125,8 +124,8 @@ func (self *TcpClient) SendMessage() {
 
 func (self *TcpClient) Exit(sw *sync.WaitGroup) {
 	self.sessAlive = false
-	self.cancel()
 	self.s.exit(sw)
+	self.cancel()
 	sw.Wait()
 }
 
@@ -136,7 +135,7 @@ func (self *TcpClient) sendRegisterMsg() {
 	req.ServerType = int32(self.SvrType)
 	req.Msgs = GetAllMessageIDs()
 	Log.FmtPrintln(req.Msgs)
-	buff := self.mpobj.GetSendPackMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
+	buff := self.mpobj.PackMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
 		req)
 	self.Send(buff)
