@@ -32,6 +32,7 @@ func NewModule(host, module string) *TModuleCommon {
 		host:       host,
 		module:     module,
 		clientPack: &tcpNet.ClientProtocol{},
+		data:       make([]byte, 1024),
 	}
 }
 
@@ -39,7 +40,9 @@ func (self *TModuleCommon) PushMsg(mainid, subid uint16, msg proto.Message) {
 	buff := self.clientPack.PackMsg(mainid,
 		subid,
 		msg)
+	self.data = make([]byte, len(buff))
 	copy(self.data, buff)
+	Log.FmtPrintln("msg len: ", len(self.data))
 }
 
 func (self *TModuleCommon) Run() {

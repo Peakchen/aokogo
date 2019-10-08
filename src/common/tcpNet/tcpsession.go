@@ -223,14 +223,14 @@ func (this *TcpSession) readMessage() (succ bool) {
 
 	packlen := binary.LittleEndian.Uint32(packLenBuf[EnMessage_DataPackLen:EnMessage_NoDataLen])
 	if packlen > maxMessageSize {
-		Log.FmtPrintln("error receiving packLen:", packlen)
+		Log.Error("error receiving packLen:", packlen)
 		return
 	}
 
 	data := make([]byte, EnMessage_NoDataLen+packlen)
 	readn, err = io.ReadFull(this.conn, data[EnMessage_NoDataLen:])
 	if err != nil || readn < int(packlen) {
-		Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
+		Log.Error("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
 		return
 	}
 
@@ -238,7 +238,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 	copy(data[:EnMessage_NoDataLen], packLenBuf[:])
 	_, err = this.pack.UnPackAction(data)
 	if err != nil {
-		Log.FmtPrintln("unpack action err: ", err)
+		Log.Error("unpack action err: ", err)
 		return
 	}
 
@@ -247,7 +247,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 
 	msg, cb, err := this.pack.UnPackData()
 	if err != nil {
-		Log.FmtPrintln("unpack data err: ", err)
+		Log.Error("unpack data err: ", err)
 		return
 	}
 

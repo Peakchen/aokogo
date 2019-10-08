@@ -1,4 +1,4 @@
-package main
+package M_Server
 
 import (
 	"common/Log"
@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var serverhost string = "0.0.0.0:51001"
+var serverhost string = "127.0.0.1:51001"
 
 func TestServer(t *testing.T) {
 	Log.FmtPrintf("server msg test.")

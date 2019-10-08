@@ -1,12 +1,13 @@
-package simulate
+package main
 
 import (
 	"common/Log"
-	"testing"
 )
 
-func TestAllM(t *testing.T) {
+func main() {
 	Log.FmtPrintf("main msg test.")
+	// M_Server.TestServer(nil)
+	// M_login.Testlogin(nil)
 }
 
 func init() {

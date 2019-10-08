@@ -60,7 +60,7 @@ func (self *ServerProtocol) UnPackData() (msg proto.Message, cb reflect.Value, e
 	err = nil
 	mt, finded := GetMessageInfo(self.mainid, self.subid)
 	if !finded {
-		err = fmt.Errorf("can not regist message: ", self.mainid, self.subid)
+		err = fmt.Errorf("can not regist message, mainid: %v, subid: %v.", self.mainid, self.subid)
 		return
 	}
 
