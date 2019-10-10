@@ -2,6 +2,7 @@ package tcpNet
 
 import (
 	"common/Log"
+	"common/msgProto/MSG_MainModule"
 	"errors"
 	"fmt"
 	"reflect"
@@ -79,5 +80,33 @@ func GetAllMessageIDs() (msgs []int32) {
 	for msgid, _ := range _MessageTab {
 		msgs = append(msgs, int32(msgid))
 	}
+	return
+}
+
+func MessageCallBack(packobj IMessagePack) (succ bool, err error) {
+	mainID, subID := packobj.GetMessageID()
+	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+	msg, cb, err := packobj.UnPackData()
+	if err != nil {
+		Log.Error("unpack data err: ", err)
+		return
+	}
+
+	switch mainID {
+	case uint16(MSG_MainModule.MAINMSG_SERVER):
+
+	default:
+
+	}
+
+	params := []reflect.Value{
+		reflect.ValueOf("1"),
+		reflect.ValueOf(msg),
+	}
+
+	ret := cb.Call(params)
+	succ = ret[0].Interface().(bool)
+	err = ret[1].Interface().(error)
+
 	return
 }

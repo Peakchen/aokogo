@@ -51,11 +51,9 @@ package tcpNet
 
 import (
 	"common/Log"
-	"common/msgProto/MSG_MainModule"
 	"encoding/binary"
 	"io"
 	"net"
-	"reflect"
 	"time"
 
 	//"common/S2SMessage"
@@ -82,6 +80,8 @@ type TcpSession struct {
 	off chan *TcpSession
 	//message pack
 	pack IMessagePack
+	//session manager
+	sessionMgr TMessageSession
 }
 
 const (
@@ -124,17 +124,19 @@ func NewSession(addr string,
 	mapSvr *map[int32][]int32,
 	newcb MessageCb,
 	off chan *TcpSession,
-	pack IMessagePack) *TcpSession {
+	pack IMessagePack,
+	sessionMgr TMessageSession) *TcpSession {
 	return &TcpSession{
-		host:    addr,
-		conn:    conn,
-		send:    make(chan []byte, maxMessageSize),
-		isAlive: false,
-		ctx:     ctx,
-		mapSvr:  *mapSvr,
-		recvCb:  newcb,
-		pack:    pack,
-		off:     make(chan *TcpSession, maxOfflineSize),
+		host:       addr,
+		conn:       conn,
+		send:       make(chan []byte, maxMessageSize),
+		isAlive:    false,
+		ctx:        ctx,
+		mapSvr:     *mapSvr,
+		recvCb:     newcb,
+		pack:       pack,
+		off:        make(chan *TcpSession, maxOfflineSize),
+		sessionMgr: sessionMgr,
 	}
 }
 
@@ -218,7 +220,9 @@ func (this *TcpSession) readMessage() (succ bool) {
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
-		//Log.FmtPrintln("read err:", err)
+		if readn == 0 || err.Error() == "EOF" {
+			succ = true
+		}
 		return
 	}
 
@@ -243,30 +247,12 @@ func (this *TcpSession) readMessage() (succ bool) {
 		return
 	}
 
-	mainID, subID := this.pack.GetMessageID()
-	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
-
-	msg, cb, err := this.pack.UnPackData()
+	succ, err = MessageCallBack(this.pack)
 	if err != nil {
-		Log.Error("unpack data err: ", err)
-		return
+		Log.Error("message pack call back: ", err)
 	}
 
-	switch mainID {
-	case uint16(MSG_MainModule.MAINMSG_SERVER):
-
-	default:
-
-	}
-	//read...
-	params := []reflect.Value{
-		reflect.ValueOf("1"),
-		reflect.ValueOf(msg),
-	}
-	cb.Call(params)
-	//this.SetSendCache([]byte("respone client.\n"))
-	this.recvCb(this.conn, mainID, subID, msg)
-	succ = true
+	this.sessionMgr.Push(this)
 	return
 }
 

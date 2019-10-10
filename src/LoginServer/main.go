@@ -23,7 +23,8 @@ func main() {
 		Define.ERouteId_ER_Login,
 		&mapsvr,
 		LogicMsg.LoginMessageCallBack,
-		nil)
+		nil,
+		tcpNet.GClientSessionPool)
 
 	gameSvr.Run()
 	return

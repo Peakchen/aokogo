@@ -25,19 +25,21 @@ type TcpClient struct {
 	// person offline flag
 	off chan *TcpSession
 	// person online
-	person  int32
-	SvrType Define.ERouteId
-	Adacb   AfterDialAct
-	mpobj   IMessagePack
+	person     int32
+	SvrType    Define.ERouteId
+	Adacb      AfterDialAct
+	mpobj      IMessagePack
+	sessionMgr TMessageSession
 }
 
-func NewClient(host string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, Ada AfterDialAct) *TcpClient {
+func NewClient(host string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, Ada AfterDialAct, sessionMgr TMessageSession) *TcpClient {
 	return &TcpClient{
-		host:    host,
-		mapSvr:  *mapSvr,
-		cb:      cb,
-		SvrType: SvrType,
-		Adacb:   Ada,
+		host:       host,
+		mapSvr:     *mapSvr,
+		cb:         cb,
+		SvrType:    SvrType,
+		Adacb:      Ada,
+		sessionMgr: sessionMgr,
 	}
 }
 
@@ -73,7 +75,7 @@ func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 	}
 
 	c.SetNoDelay(true)
-	self.dialsess = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.mpobj)
+	self.dialsess = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.mpobj, self.sessionMgr)
 	self.dialsess.HandleSession(sw)
 	self.afterDial()
 	return nil

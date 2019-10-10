@@ -73,7 +73,8 @@ func main() {
 		Define.ERouteId_ER_Game,
 		&mapsvr,
 		LogicMsg.GameMessageCallBack,
-		LogicMsg.AfterDialCallBack)
+		LogicMsg.AfterDialCallBack,
+		tcpNet.GClientSessionPool)
 
 	gameSvr.Run()
 	return

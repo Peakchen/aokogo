@@ -103,3 +103,8 @@ type MessageCb func(c net.Conn, mainID uint16, subID uint16, msg proto.Message)
 
 // after dial connect todo action.
 type AfterDialAct func()
+
+type TMessageSession interface {
+	Push(s *TcpSession)
+	Get() (s *TcpSession)
+}

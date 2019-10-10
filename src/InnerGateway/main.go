@@ -69,7 +69,8 @@ func main() {
 	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
 		Define.ERouteId_ER_ISG,
 		&mapsvr,
-		LogicMsg.InnerGatewayMessageCallBack)
+		LogicMsg.InnerGatewayMessageCallBack,
+		tcpNet.GServerSessionPool)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

@@ -75,7 +75,8 @@ func main() {
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
 		Define.ERouteId_ER_ESG,
 		&mapsvr,
-		LogicMsg.ExternalGatewayMessageCallBack)
+		LogicMsg.ExternalGatewayMessageCallBack,
+		tcpNet.GServerSessionPool)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
