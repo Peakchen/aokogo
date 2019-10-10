@@ -57,7 +57,7 @@ func (self *TModuleCommon) sender(conn net.Conn) (succ bool) {
 	}
 	n, err := conn.Write(self.data)
 	if n == 0 || err != nil {
-		Log.FmtPrintln("Write fail, data: ", n, err)
+		Log.Error("Write fail, data: ", n, err)
 		return false
 	}
 	Log.FmtPrintln("send over")
@@ -76,7 +76,7 @@ func (self *TModuleCommon) readloop(conn net.Conn) {
 			buffer := make([]byte, 2048)
 			n, err := conn.Read(buffer)
 			if err != nil {
-				Log.FmtPrintln("waiting server back msg error: ", conn.RemoteAddr().String(), err)
+				Log.Error("waiting server back msg error: ", conn.RemoteAddr().String(), err)
 				continue
 			}
 			Log.FmtPrintf("receive server back, ip: %v, msg: %v.", conn.RemoteAddr().String(), string(buffer[:n]))
@@ -94,10 +94,21 @@ func (self *TModuleCommon) sendloop(conn net.Conn) {
 	for i := 0; i < 10; i++ {
 		Log.FmtPrintln("time: ", i)
 		if !self.sender(conn) {
-			conn, err = net.DialTCP("tcp", nil, tcpAddr)
-			if err != nil {
-				Log.FmtPrintf("Fatal error: %s", err.Error())
-				os.Exit(1)
+			tick := time.NewTicker(time.Duration(3 * time.Second))
+			for {
+				select {
+				case <-tick.C:
+					conn, err = net.DialTCP("tcp", nil, tcpAddr)
+					if err != nil {
+						Log.FmtPrintf("dial to server, host: %v.", self.host)
+						Log.Error("err: ", err.Error())
+						continue
+					}
+					break
+				default:
+
+				}
+
 			}
 		}
 		time.Sleep(time.Duration(2) * time.Second)
@@ -107,14 +118,14 @@ func (self *TModuleCommon) sendloop(conn net.Conn) {
 func (self *TModuleCommon) dialSend() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	if err != nil {
-		Log.FmtPrintf("Fatal error: %s", err.Error())
-		os.Exit(1)
+		Log.Error("resolve error: %s", err.Error())
+		return
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		Log.FmtPrintf("Fatal error: %s", err.Error())
-		os.Exit(1)
+		Log.Error("dial error: %s", err.Error())
+		return
 	}
 
 	self.ctx, self.cancle = context.WithCancel(context.Background())

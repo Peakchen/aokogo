@@ -102,7 +102,7 @@ const (
 
 func (this *TcpSession) Connect() {
 	if !this.isAlive {
-		tcpAddr, err := net.ResolveTCPAddr("tcp", this.host)
+		tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 		if err != nil {
 			Log.FmtPrintln("session failed: ", err)
 			return
@@ -119,7 +119,7 @@ func (this *TcpSession) Connect() {
 }
 
 func NewSession(addr string,
-	this *net.TCPConn,
+	conn *net.TCPConn,
 	ctx context.Context,
 	mapSvr *map[int32][]int32,
 	newcb MessageCb,
@@ -127,7 +127,7 @@ func NewSession(addr string,
 	pack IMessagePack) *TcpSession {
 	return &TcpSession{
 		host:    addr,
-		conn:    this,
+		conn:    conn,
 		send:    make(chan []byte, maxMessageSize),
 		isAlive: false,
 		ctx:     ctx,
@@ -143,8 +143,9 @@ func (this *TcpSession) exit(sw *sync.WaitGroup) {
 		return
 	}
 
+	this.isAlive = false
 	this.off <- this
-	close(this.send)
+	//close(this.send)
 	this.conn.CloseRead()
 	this.conn.CloseWrite()
 	this.conn.Close()
@@ -156,6 +157,7 @@ func (this *TcpSession) SetSendCache(data []byte) {
 }
 
 func (this *TcpSession) Sendloop(sw *sync.WaitGroup) {
+	defer sw.Done()
 	defer func() {
 		this.exit(sw)
 	}()
@@ -164,21 +166,16 @@ func (this *TcpSession) Sendloop(sw *sync.WaitGroup) {
 		select {
 		case <-this.ctx.Done():
 			return
-		case data, ok := <-this.send:
-			if !ok {
-				// The hub closed the channel.
-				this.isAlive = false
-				return
-			}
-
+		case data := <-this.send:
 			if !this.writeMessage(data) {
-
+				return
 			}
 		}
 	}
 }
 
 func (this *TcpSession) Recvloop(sw *sync.WaitGroup) {
+	defer sw.Done()
 	defer func() {
 		this.exit(sw)
 	}()
@@ -189,20 +186,23 @@ func (this *TcpSession) Recvloop(sw *sync.WaitGroup) {
 			return
 		default:
 			if !this.readMessage() {
-
+				return
 			}
 		}
 	}
 }
 
-func (this *TcpSession) writeMessage(data []byte) bool {
+func (this *TcpSession) writeMessage(data []byte) (succ bool) {
+	if !this.isAlive {
+		return
+	}
+
 	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//pack message then send.
 
 	//send...
-	var err error
 	Log.FmtPrintln("begin send response message to client.")
-	_, err = this.conn.Write(data)
+	_, err := this.conn.Write(data)
 	if err != nil {
 		this.isAlive = false
 		Log.FmtPrintln("send data fail, err: ", err)
@@ -213,7 +213,8 @@ func (this *TcpSession) writeMessage(data []byte) bool {
 }
 
 func (this *TcpSession) readMessage() (succ bool) {
-	this.conn.SetReadDeadline(time.Now().Add(pongWait))
+	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
+
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
@@ -263,13 +264,14 @@ func (this *TcpSession) readMessage() (succ bool) {
 		reflect.ValueOf(msg),
 	}
 	cb.Call(params)
-	this.SetSendCache([]byte("respone client.\n"))
+	//this.SetSendCache([]byte("respone client.\n"))
 	this.recvCb(this.conn, mainID, subID, msg)
 	succ = true
 	return
 }
 
 func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
+	this.isAlive = true
 	sw.Add(2)
 	go this.Recvloop(sw)
 	go this.Sendloop(sw)

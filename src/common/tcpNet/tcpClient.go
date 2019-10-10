@@ -8,20 +8,20 @@ import (
 	"common/msgProto/MSG_Server"
 	"net"
 	"sync"
+	"time"
 
 	//"time"
 	"context"
 )
 
 type TcpClient struct {
-	wg        sync.WaitGroup
-	ctx       context.Context
-	cancel    context.CancelFunc
-	host      string
-	s         *TcpSession
-	mapSvr    map[int32][]int32
-	sessAlive bool
-	cb        MessageCb
+	wg       sync.WaitGroup
+	ctx      context.Context
+	cancel   context.CancelFunc
+	host     string
+	dialsess *TcpSession
+	mapSvr   map[int32][]int32
+	cb       MessageCb
 	// person offline flag
 	off chan *TcpSession
 	// person online
@@ -46,6 +46,7 @@ func (self *TcpClient) Run() {
 	sw := &sync.WaitGroup{}
 	self.mpobj = &ClientProtocol{}
 	self.connect(sw)
+
 	self.wg.Add(2)
 	go self.loopconn(sw)
 	go self.loopoff(sw)
@@ -53,9 +54,15 @@ func (self *TcpClient) Run() {
 }
 
 func (self *TcpClient) connect(sw *sync.WaitGroup) error {
+	if self.dialsess != nil {
+		if self.dialsess.isAlive {
+			return nil
+		}
+	}
+
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
 	if err != nil {
-		Log.Error("Fatal error: %v.", err.Error())
+		Log.Error("resolve tcp error: %v.", err.Error())
 		return err
 	}
 
@@ -65,31 +72,29 @@ func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 		return err
 	}
 
-	self.sessAlive = true
 	c.SetNoDelay(true)
-	self.s = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.mpobj)
-	self.s.HandleSession(sw)
-	if self.Adacb != nil {
-		self.Adacb()
-	}
-	self.sendRegisterMsg()
+	self.dialsess = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.mpobj)
+	self.dialsess.HandleSession(sw)
+	self.afterDial()
 	return nil
 }
 
 func (self *TcpClient) loopconn(sw *sync.WaitGroup) {
+	defer sw.Done()
 	defer self.Exit(sw)
+
+	conntick := time.NewTicker(time.Duration(3 * time.Second))
 	for {
 		select {
 		case <-self.ctx.Done():
 			return
-		default:
-			if self.sessAlive {
+		case <-conntick.C:
+			if err := self.connect(sw); err != nil {
+				Log.FmtPrintf("dail to server fail, host: %v.", self.host)
 				continue
 			}
-			if err := self.connect(sw); err != nil {
-				Log.Error("dail to server fail, host: ", self.host, err)
-				return
-			}
+		default:
+
 		}
 	}
 }
@@ -115,7 +120,7 @@ func (self *TcpClient) offline(os *TcpSession) {
 }
 
 func (self *TcpClient) Send(data []byte) {
-	self.s.SetSendCache(data)
+	self.dialsess.SetSendCache(data)
 }
 
 func (self *TcpClient) SendMessage() {
@@ -123,8 +128,7 @@ func (self *TcpClient) SendMessage() {
 }
 
 func (self *TcpClient) Exit(sw *sync.WaitGroup) {
-	self.sessAlive = false
-	self.s.exit(sw)
+	self.dialsess = nil
 	self.cancel()
 	sw.Wait()
 }
@@ -134,9 +138,16 @@ func (self *TcpClient) sendRegisterMsg() {
 	req := &MSG_Server.CS_ServerRegister_Req{}
 	req.ServerType = int32(self.SvrType)
 	req.Msgs = GetAllMessageIDs()
-	Log.FmtPrintln(req.Msgs)
+	Log.FmtPrintln("register context: ", req.Msgs)
 	buff := self.mpobj.PackMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
 		req)
 	self.Send(buff)
+}
+
+func (self *TcpClient) afterDial() {
+	if self.Adacb != nil {
+		self.Adacb()
+	}
+	self.sendRegisterMsg()
 }
