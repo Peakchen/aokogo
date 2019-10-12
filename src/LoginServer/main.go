@@ -24,7 +24,7 @@ func main() {
 		&mapsvr,
 		LogicMsg.LoginMessageCallBack,
 		nil,
-		tcpNet.GClientSessionPool)
+		nil)
 
 	gameSvr.Run()
 	return

@@ -54,6 +54,7 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	"sync/atomic"
 	"time"
 
 	//"common/S2SMessage"
@@ -81,7 +82,9 @@ type TcpSession struct {
 	//message pack
 	pack IMessagePack
 	//session manager
-	sessionMgr TMessageSession
+	SessionMgr IProcessConnSession
+	// session id
+	SessionID uint64
 }
 
 const (
@@ -125,7 +128,7 @@ func NewSession(addr string,
 	newcb MessageCb,
 	off chan *TcpSession,
 	pack IMessagePack,
-	sessionMgr TMessageSession) *TcpSession {
+	sessionMgr IProcessConnSession) *TcpSession {
 	return &TcpSession{
 		host:       addr,
 		conn:       conn,
@@ -136,7 +139,7 @@ func NewSession(addr string,
 		recvCb:     newcb,
 		pack:       pack,
 		off:        make(chan *TcpSession, maxOfflineSize),
-		sessionMgr: sessionMgr,
+		SessionMgr: sessionMgr,
 	}
 }
 
@@ -195,7 +198,7 @@ func (this *TcpSession) Recvloop(sw *sync.WaitGroup) {
 }
 
 func (this *TcpSession) writeMessage(data []byte) (succ bool) {
-	if !this.isAlive {
+	if !this.isAlive || len(data) == 0 {
 		return
 	}
 
@@ -247,18 +250,34 @@ func (this *TcpSession) readMessage() (succ bool) {
 		return
 	}
 
-	succ, err = MessageCallBack(this.pack)
+	succ, err = MessageCallBack(this)
 	if err != nil {
 		Log.Error("message pack call back: ", err)
 	}
 
-	this.sessionMgr.Push(this)
+	//this.SessionMgr.Push(this)
 	return
 }
 
 func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.isAlive = true
+	atomic.AddUint64(&this.SessionID, 1)
 	sw.Add(2)
 	go this.Recvloop(sw)
 	go this.Sendloop(sw)
+}
+
+func (this *TcpSession) Push(cmds []int32) {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.AddSessionBycmd(this, cmds)
+	this.SessionMgr.AddSessionByID(this, cmds)
+}
+
+func (this *TcpSession) Offline() {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.RemoveByID(this)
 }

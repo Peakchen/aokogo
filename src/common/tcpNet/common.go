@@ -104,7 +104,19 @@ type MessageCb func(c net.Conn, mainID uint16, subID uint16, msg proto.Message)
 // after dial connect todo action.
 type AfterDialAct func()
 
+type TConnSession struct {
+	Connsess *TcpSession
+	Svr      int32
+}
+
 type TMessageSession interface {
-	Push(s *TcpSession)
-	Get() (s *TcpSession)
+	Push(s *TConnSession)
+	Get() (s *TConnSession)
+}
+
+type IProcessConnSession interface {
+	AddSessionByID(session *TcpSession, cmd []int32)
+	AddSessionBycmd(session *TcpSession, cmds []int32)
+	RemoveByID(session *TcpSession)
+	RemoveByCmd(cmd int32)
 }

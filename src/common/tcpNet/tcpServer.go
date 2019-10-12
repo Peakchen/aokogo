@@ -73,16 +73,16 @@ type TcpServer struct {
 	person     int32
 	SvrType    Define.ERouteId
 	pack       IMessagePack
-	sessionMgr TMessageSession
+	SessionMgr IProcessConnSession
 }
 
-func NewTcpServer(addr string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, sessionMgr TMessageSession) *TcpServer {
+func NewTcpServer(addr string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
 	return &TcpServer{
 		host:       addr,
 		mapSvr:     *mapSvr,
 		cb:         cb,
 		SvrType:    SvrType,
-		sessionMgr: sessionMgr,
+		SessionMgr: sessionMgr,
 	}
 }
 
@@ -116,7 +116,7 @@ func (self *TcpServer) loop(sw *sync.WaitGroup) {
 			Log.FmtPrintf("connect here addr: %v.", c.RemoteAddr())
 			c.SetNoDelay(true)
 			c.SetKeepAlive(true)
-			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.pack, self.sessionMgr)
+			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.pack, self.SessionMgr)
 			self.on.HandleSession(sw)
 			self.online()
 		}

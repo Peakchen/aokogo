@@ -3,11 +3,10 @@ package tcpNet
 import (
 	"common/Log"
 	"common/msgProto/MSG_MainModule"
+	"common/msgProto/MSG_Server"
 	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/golang/protobuf/proto"
 )
 
 type TMessageProc struct {
@@ -55,10 +54,11 @@ func RegisterMessage(mainID, subID uint16, proc interface{}) {
 	paramtypes := []reflect.Type{}
 	for i := 0; i < cbref.NumIn(); i++ {
 		t := cbref.In(i)
-		if t.Kind() == reflect.String ||
-			t.Implements(reflect.TypeOf((*proto.Message)(nil)).Elem()) {
-			paramtypes = append(paramtypes, t)
-		}
+		// if t.Kind() == reflect.String ||
+		// 	t.Implements(reflect.TypeOf((*proto.Message)(nil)).Elem()) {
+		// 	paramtypes = append(paramtypes, t)
+		// }
+		paramtypes = append(paramtypes, t)
 	}
 
 	_MessageTab[_cmd] = &TMessageProc{
@@ -83,10 +83,10 @@ func GetAllMessageIDs() (msgs []int32) {
 	return
 }
 
-func MessageCallBack(packobj IMessagePack) (succ bool, err error) {
-	mainID, subID := packobj.GetMessageID()
+func MessageCallBack(session *TcpSession) (succ bool, err error) {
+	mainID, subID := session.pack.GetMessageID()
 	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
-	msg, cb, err := packobj.UnPackData()
+	msg, cb, err := session.pack.UnPackData()
 	if err != nil {
 		Log.Error("unpack data err: ", err)
 		return
@@ -94,13 +94,19 @@ func MessageCallBack(packobj IMessagePack) (succ bool, err error) {
 
 	switch mainID {
 	case uint16(MSG_MainModule.MAINMSG_SERVER):
+		Log.FmtPrintln("server message.")
+		if subID == uint16(MSG_Server.SUBMSG_CS_ServerRegister) {
 
+		}
+	case uint16(MSG_MainModule.MAINMSG_LOGIN):
+		Log.FmtPrintln("login message UserRegister.")
 	default:
 
 	}
 
 	params := []reflect.Value{
-		reflect.ValueOf("1"),
+		//reflect.ValueOf("1"),
+		reflect.ValueOf(session),
 		reflect.ValueOf(msg),
 	}
 

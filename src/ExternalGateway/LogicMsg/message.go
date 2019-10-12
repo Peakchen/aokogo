@@ -15,22 +15,26 @@ func ExternalGatewayMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg
 	Log.FmtPrintf("exec external gateway server message call back: %v, %v.", c.RemoteAddr(), c.LocalAddr())
 }
 
-func onServer(key string, req *MSG_Server.CS_EnterServer_Req) (succ bool, err error) {
-	Log.FmtPrintf("onServer recv: %v, %v.", key, req.Enter)
+func onServer(session *tcpNet.TcpSession, req *MSG_Server.CS_EnterServer_Req) (succ bool, err error) {
+	Log.FmtPrintf("onServer recv: %v.", req.Enter)
 	return
 }
 
-func onSvrRegister(key string, req *MSG_Server.CS_ServerRegister_Req) (succ bool, err error) {
-	Log.FmtPrintf("onSvrRegister recv: %v, %v.", key, req.ServerType)
+func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister_Req) (succ bool, err error) {
+	Log.FmtPrintf("onSvrRegister recv: %v.", req.ServerType)
 	var (
 		msgfmt string
 	)
+
+	session.Push(req.Msgs)
 	for _, id := range req.Msgs {
 		mainid, subid := tcpNet.DecodeCmd(uint32(id))
 		msgfmt += fmt.Sprintf("[mainid: %v, subid: %v]\t", mainid, subid)
 	}
+
 	msgfmt += "\n"
 	Log.FmtPrintln("message context: ", msgfmt)
+
 	return
 }
 

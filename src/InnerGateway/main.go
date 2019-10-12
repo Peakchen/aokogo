@@ -50,6 +50,7 @@ package main
 
 import (
 	"InnerGateway/LogicMsg"
+	"InnerGateway/SessionMgr"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -70,7 +71,7 @@ func main() {
 		Define.ERouteId_ER_ISG,
 		&mapsvr,
 		LogicMsg.InnerGatewayMessageCallBack,
-		tcpNet.GServerSessionPool)
+		SessionMgr.GInnerGateWaySession)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

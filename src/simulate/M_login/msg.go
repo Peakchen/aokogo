@@ -9,6 +9,16 @@ import (
 
 func LoginRun() {
 	Log.FmtPrintf("login msg test.")
+	Login_MessageRegister()
+	Login_UserRegister()
+}
+
+func Login_MessageRegister() {
+
+}
+
+func Login_UserRegister() {
+	Log.FmtPrintf("login user register.")
 	req := &MSG_Login.CS_UserRegister_Req{}
 	req.Account = "test"
 	req.Passwd = "abc"

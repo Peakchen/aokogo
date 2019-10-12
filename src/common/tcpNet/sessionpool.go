@@ -13,7 +13,7 @@ func init() {
 	GClientSessionPool = &TClientSession{
 		sessionpool: &sync.Pool{
 			New: func() interface{} {
-				return new(TcpSession)
+				return new(TConnSession)
 			},
 		},
 	}
@@ -21,22 +21,23 @@ func init() {
 	GServerSessionPool = &TServerSession{
 		sessionpool: &sync.Pool{
 			New: func() interface{} {
-				return new(TcpSession)
+				return new(TConnSession)
 			},
 		},
 	}
 }
 
+
 type TClientSession struct {
 	sessionpool *sync.Pool
 }
 
-func (this *TClientSession) Push(s *TcpSession) {
+func (this *TClientSession) Push(s *TConnSession) {
 	this.sessionpool.Put(s)
 }
 
-func (this *TClientSession) Get() (s *TcpSession) {
-	s = this.sessionpool.Get().(*TcpSession)
+func (this *TClientSession) Get() (s *TConnSession) {
+	s = this.sessionpool.Get().(*TConnSession)
 	return
 }
 
@@ -46,11 +47,11 @@ type TServerSession struct {
 	sessionpool *sync.Pool
 }
 
-func (this *TServerSession) Push(s *TcpSession) {
+func (this *TServerSession) Push(s *TConnSession) {
 	this.sessionpool.Put(s)
 }
 
-func (this *TServerSession) Get() (s *TcpSession) {
-	s = this.sessionpool.Get().(*TcpSession)
+func (this *TServerSession) Get() (s *TConnSession) {
+	s = this.sessionpool.Get().(*TConnSession)
 	return
 }
