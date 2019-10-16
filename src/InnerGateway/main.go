@@ -62,6 +62,7 @@ func main() {
 	Log.FmtPrintf("start InnerGateway.")
 	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
 		Define.ERouteId_ER_ISG,
+		Define.ERouteId_ER_ISG,
 		Define.ERouteId_ER_ESG,
 		LogicMsg.InnerGatewayMessageCallBack,
 		SessionMgr.GServer2ServerSession)

@@ -53,6 +53,7 @@ import (
 	"common/Define"
 	"common/Log"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 	"sync/atomic"
@@ -215,7 +216,6 @@ func (this *TcpSession) writeMessage(data []byte) (succ bool) {
 	Log.FmtPrintln("begin send response message to client.")
 	_, err := this.conn.Write(data)
 	if err != nil {
-		this.isAlive = false
 		Log.FmtPrintln("send data fail, err: ", err)
 		return false
 	}
@@ -231,6 +231,8 @@ func (this *TcpSession) readMessage() (succ bool) {
 	if err != nil || readn < EnMessage_NoDataLen {
 		if readn == 0 || err.Error() == "EOF" {
 			succ = true
+		} else {
+			Log.FmtPrintln("read data fail, err: ", err)
 		}
 		return
 	}
@@ -289,6 +291,10 @@ func (this *TcpSession) Offline() {
 }
 
 func (this *TcpSession) SendMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+	if !this.isAlive {
+		return false, fmt.Errorf("session disconnection, route: %v, mainid: %v, subid: %v.", route, mainid, subid)
+	}
+
 	data := this.pack.PackMsg(route,
 		mainid,
 		subid,

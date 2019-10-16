@@ -88,52 +88,71 @@ func MessageCallBack(session *TcpSession) (succ bool, err error) {
 
 	route := session.pack.GetRouteID()
 	Log.FmtPrintln("pack route: ", route)
-	mainID, subID := session.pack.GetMessageID()
-	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
-	_cmd := EncodeCmd(mainID, subID)
-	s := session.SessionMgr.GetByCmd(_cmd)
-
 	switch Define.ERouteId(route) {
 	case Define.ERouteId_ER_ESG:
 	case Define.ERouteId_ER_ISG:
 	case Define.ERouteId_ER_Login:
-		rsp := &MSG_Login.SC_UserRegister_Rsp{}
-		rsp.Ret = MSG_Login.ErrorCode_Success
-		session.SendMsg(uint16(s.SrcPoint),
-			uint16(MSG_MainModule.MAINMSG_LOGIN),
-			uint16(MSG_Login.SUBMSG_SC_UserRegister),
-			rsp)
+
 	case Define.ERouteId_ER_Game:
 
 	default:
 
 	}
 
-	switch mainID {
-	case uint16(MSG_MainModule.MAINMSG_SERVER):
-		Log.FmtPrintln("server message.")
-	case uint16(MSG_MainModule.MAINMSG_LOGIN):
-		Log.FmtPrintln("login message UserRegister.")
+	mainID, subID := session.pack.GetMessageID()
+	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+	_cmd := EncodeCmd(mainID, subID)
+	s := session.SessionMgr.GetByCmd(_cmd)
+	if s != nil {
+		switch Define.ERouteId(s.SrcPoint) {
+		case Define.ERouteId_ER_ESG:
+		case Define.ERouteId_ER_ISG:
+		case Define.ERouteId_ER_Login:
+			rsp := &MSG_Login.SC_UserRegister_Rsp{}
+			rsp.Ret = MSG_Login.ErrorCode_Success
+			s.SendMsg(uint16(s.SrcPoint),
+				uint16(MSG_MainModule.MAINMSG_LOGIN),
+				uint16(MSG_Login.SUBMSG_SC_UserRegister),
+				rsp)
+		case Define.ERouteId_ER_Game:
 
-	default:
+		default:
 
+		}
+
+		succ = true
+		err = nil
+	} else {
+		switch mainID {
+		case uint16(MSG_MainModule.MAINMSG_SERVER):
+			Log.FmtPrintln("server message.")
+		case uint16(MSG_MainModule.MAINMSG_LOGIN):
+			Log.FmtPrintln("login message UserRegister.")
+
+		default:
+
+		}
+
+		msg, cb, unpackerr := session.pack.UnPackData()
+		if unpackerr != nil {
+			err = unpackerr
+			Log.FmtPrintln("unpack data err: ", unpackerr)
+			return
+		}
+
+		params := []reflect.Value{
+			//reflect.ValueOf("1"),
+			reflect.ValueOf(session),
+			reflect.ValueOf(msg),
+		}
+
+		ret := cb.Call(params)
+		succ = ret[0].Interface().(bool)
+		reterr := ret[1].Interface()
+		if reterr != nil {
+			Log.FmtPrintln("message return err: ", reterr.(error).Error())
+		}
 	}
-
-	msg, cb, err := session.pack.UnPackData()
-	if err != nil {
-		Log.FmtPrintln("unpack data err: ", err)
-		return
-	}
-
-	params := []reflect.Value{
-		//reflect.ValueOf("1"),
-		reflect.ValueOf(session),
-		reflect.ValueOf(msg),
-	}
-
-	ret := cb.Call(params)
-	succ = ret[0].Interface().(bool)
-	err = ret[1].Interface().(error)
 
 	return
 }

@@ -17,6 +17,7 @@ func main() {
 	gameSvr := tcpNet.NewClient(Define.LoginServerHost,
 		Define.ERouteId_ER_Login,
 		Define.ERouteId_ER_Login,
+		Define.ERouteId_ER_ESG,
 		LogicMsg.LoginMessageCallBack,
 		nil,
 		nil)

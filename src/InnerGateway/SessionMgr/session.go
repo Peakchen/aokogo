@@ -32,11 +32,19 @@ func (this *TServer2ServerSession) RemoveByCmd(cmd uint32) {
 }
 
 func (this *TServer2ServerSession) GetByCmd(cmd uint32) (session *tcpNet.TcpSession) {
-	session, _ = this.s2sSession.Load(cmd)
+	val, exist := this.s2sSession.Load(cmd)
+	if exist {
+		session = val.(*tcpNet.TcpSession)
+	}
+	return
 }
 
 func (this *TServer2ServerSession) GetBySessionID(sessionID uint64) (session *tcpNet.TcpSession) {
-	session, _ = this.s2sSession.Load(sessionID)
+	val, exist := this.s2sSession.Load(sessionID)
+	if exist {
+		session = val.(*tcpNet.TcpSession)
+	}
+	return
 }
 
 func init() {

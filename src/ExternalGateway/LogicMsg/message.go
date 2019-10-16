@@ -38,11 +38,11 @@ func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister
 	Log.FmtPrintln("message context: ", msgfmt)
 	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
 	rsp.Ret = MSG_Server.ErrorCode_Success
-	session.SendMsg(uint16(req.ServerType),
+	return session.SendMsg(uint16(req.ServerType),
 		uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_SC_ServerRegister),
 		rsp)
-	return
+
 }
 
 func init() {
