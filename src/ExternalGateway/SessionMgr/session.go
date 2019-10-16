@@ -6,31 +6,47 @@ import (
 )
 
 var (
-	GExternalGateWaySession *TExternalGateWaySession
+	GClient2ServerSession *TClient2ServerSession
 )
 
-type TExternalGateWaySession struct {
-	client2SeverSession sync.Map
+type TClient2ServerSession struct {
+	c2sSession sync.Map
 }
 
-func (this *TExternalGateWaySession) AddSessionByID(session *tcpNet.TcpSession, cmd []int32) {
-	this.client2SeverSession.Store(session.SessionID, cmd)
+func (this *TClient2ServerSession) AddSessionByID(session *tcpNet.TcpSession, cmd []uint32) {
+	this.c2sSession.Store(session.SessionID, cmd)
 }
 
-func (this *TExternalGateWaySession) AddSessionBycmd(session *tcpNet.TcpSession, cmds []int32) {
+func (this *TClient2ServerSession) AddSessionByCmd(session *tcpNet.TcpSession, cmds []uint32) {
 	for _, cmd := range cmds {
-		this.client2SeverSession.Store(cmd, session)
+		this.c2sSession.Store(cmd, session)
 	}
 }
 
-func (this *TExternalGateWaySession) RemoveByID(session *tcpNet.TcpSession) {
-	this.client2SeverSession.Delete(session.SessionID)
+func (this *TClient2ServerSession) RemoveByID(session *tcpNet.TcpSession) {
+	this.c2sSession.Delete(session.SessionID)
 }
 
-func (this *TExternalGateWaySession) RemoveByCmd(cmd int32) {
-	this.client2SeverSession.Delete(cmd)
+func (this *TClient2ServerSession) RemoveByCmd(cmd uint32) {
+	this.c2sSession.Delete(cmd)
+}
+
+func (this *TClient2ServerSession) GetByCmd(cmd uint32) (session *tcpNet.TcpSession) {
+	val, exist := this.c2sSession.Load(cmd)
+	if exist {
+		session = val.(*tcpNet.TcpSession)
+	}
+	return
+}
+
+func (this *TClient2ServerSession) GetBySessionID(sessionID uint64) (session *tcpNet.TcpSession) {
+	val, exist := this.c2sSession.Load(sessionID)
+	if exist {
+		session = val.(*tcpNet.TcpSession)
+	}
+	return
 }
 
 func init() {
-	GExternalGateWaySession = &TExternalGateWaySession{}
+	GClient2ServerSession = &TClient2ServerSession{}
 }

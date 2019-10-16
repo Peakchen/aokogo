@@ -36,8 +36,9 @@ func NewModule(host, module string) *TModuleCommon {
 	}
 }
 
-func (self *TModuleCommon) PushMsg(mainid, subid uint16, msg proto.Message) {
-	buff := self.clientPack.PackMsg(mainid,
+func (self *TModuleCommon) PushMsg(dstpoint, mainid, subid uint16, msg proto.Message) {
+	buff := self.clientPack.PackMsg(dstpoint,
+		mainid,
 		subid,
 		msg)
 	self.data = make([]byte, len(buff))

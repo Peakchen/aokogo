@@ -50,6 +50,7 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package tcpNet
 
 import (
+	"common/Define"
 	"common/Log"
 	"encoding/binary"
 	"io"
@@ -60,6 +61,8 @@ import (
 	//"common/S2SMessage"
 	"context"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
 	//. "common/Define"
 )
 
@@ -73,8 +76,6 @@ type TcpSession struct {
 	// send/recv
 	sw  sync.WaitGroup
 	ctx context.Context
-	// source server or client/destination  server or client.
-	mapSvr map[int32][]int32
 	// receive message call back
 	recvCb MessageCb
 	// person offline flag
@@ -85,6 +86,10 @@ type TcpSession struct {
 	SessionMgr IProcessConnSession
 	// session id
 	SessionID uint64
+	//Dest point
+	DestPoint Define.ERouteId
+	//src point
+	SrcPoint Define.ERouteId
 }
 
 const (
@@ -124,7 +129,8 @@ func (this *TcpSession) Connect() {
 func NewSession(addr string,
 	conn *net.TCPConn,
 	ctx context.Context,
-	mapSvr *map[int32][]int32,
+	SvrRoute Define.ERouteId,
+	SrcPoint Define.ERouteId,
 	newcb MessageCb,
 	off chan *TcpSession,
 	pack IMessagePack,
@@ -135,11 +141,11 @@ func NewSession(addr string,
 		send:       make(chan []byte, maxMessageSize),
 		isAlive:    false,
 		ctx:        ctx,
-		mapSvr:     *mapSvr,
 		recvCb:     newcb,
 		pack:       pack,
 		off:        make(chan *TcpSession, maxOfflineSize),
 		SessionMgr: sessionMgr,
+		DestPoint:  SvrRoute,
 	}
 }
 
@@ -267,11 +273,11 @@ func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
 	go this.Sendloop(sw)
 }
 
-func (this *TcpSession) Push(cmds []int32) {
+func (this *TcpSession) Push(cmds []uint32) {
 	if this.SessionMgr == nil {
 		return
 	}
-	this.SessionMgr.AddSessionBycmd(this, cmds)
+	this.SessionMgr.AddSessionByCmd(this, cmds)
 	this.SessionMgr.AddSessionByID(this, cmds)
 }
 
@@ -280,4 +286,13 @@ func (this *TcpSession) Offline() {
 		return
 	}
 	this.SessionMgr.RemoveByID(this)
+}
+
+func (this *TcpSession) SendMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+	data := this.pack.PackMsg(route,
+		mainid,
+		subid,
+		msg)
+	this.SetSendCache(data)
+	return true, nil
 }

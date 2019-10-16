@@ -1,6 +1,7 @@
 package M_Server
 
 import (
+	"common/Define"
 	"common/Log"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
@@ -15,7 +16,8 @@ func TestServer(t *testing.T) {
 	req := &MSG_Server.CS_EnterServer_Req{}
 	req.Enter = 2
 	serverM := M_Common.NewModule(serverhost, "server")
-	serverM.PushMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
+	serverM.PushMsg(uint16(Define.ERouteId_ER_Login),
+		uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
 		req)
 	serverM.Run()

@@ -60,18 +60,11 @@ import (
 
 func main() {
 	Log.FmtPrintf("start InnerGateway.")
-	var (
-		mapsvr map[int32][]int32 = map[int32][]int32{
-			int32(Define.ERouteId_ER_Client): []int32{int32(Define.ERouteId_ER_Game)},
-			int32(Define.ERouteId_ER_Game):   []int32{int32(Define.ERouteId_ER_Client)},
-		}
-	)
-
 	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
 		Define.ERouteId_ER_ISG,
-		&mapsvr,
+		Define.ERouteId_ER_ESG,
 		LogicMsg.InnerGatewayMessageCallBack,
-		SessionMgr.GInnerGateWaySession)
+		SessionMgr.GServer2ServerSession)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

@@ -37,7 +37,7 @@ message SC_EnterServer_Rsp
 message CS_ServerRegister_Req
 {
     int32 ServerType = 1; //服务器类型
-    repeated int32 Msgs = 2; //消息列表
+    repeated uint32 Msgs = 2; //消息列表
 }
 
 //SC_ServerRegister

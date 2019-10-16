@@ -51,6 +51,7 @@ package main
 
 import (
 	"ExternalGateway/LogicMsg"
+	"ExternalGateway/SessionMgr"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -66,17 +67,12 @@ func init() {
 func main() {
 	Log.FmtPrintf("start ExternalGateWay.")
 
-	var (
-		mapsvr map[int32][]int32 = map[int32][]int32{
-			int32(Define.ERouteId_ER_Client): []int32{int32(Define.ERouteId_ER_Game)},
-		}
-	)
-
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
 		Define.ERouteId_ER_ESG,
-		&mapsvr,
+		Define.ERouteId_ER_ESG,
+		Define.ERouteId_ER_Client,
 		LogicMsg.ExternalGatewayMessageCallBack,
-		tcpNet.GServerSessionPool)
+		SessionMgr.GClient2ServerSession)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

@@ -1,6 +1,7 @@
 package LogicMsg
 
 import (
+	"common/Define"
 	"common/Log"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
@@ -26,6 +27,7 @@ func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister
 		msgfmt string
 	)
 
+	session.SrcPoint = Define.ERouteId(req.ServerType)
 	session.Push(req.Msgs)
 	for _, id := range req.Msgs {
 		mainid, subid := tcpNet.DecodeCmd(uint32(id))
@@ -34,7 +36,12 @@ func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister
 
 	msgfmt += "\n"
 	Log.FmtPrintln("message context: ", msgfmt)
-
+	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
+	rsp.Ret = MSG_Server.ErrorCode_Success
+	session.SendMsg(uint16(req.ServerType),
+		uint16(MSG_MainModule.MAINMSG_SERVER),
+		uint16(MSG_Server.SUBMSG_SC_ServerRegister),
+		rsp)
 	return
 }
 

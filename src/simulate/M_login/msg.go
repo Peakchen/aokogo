@@ -1,6 +1,7 @@
 package M_login
 
 import (
+	"common/Define"
 	"common/Log"
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
@@ -25,7 +26,8 @@ func Login_UserRegister() {
 	req.DeviceSerial = "123"
 	req.DeviceName = "androd"
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	loginM.PushMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
+	loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
+		uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_CS_UserRegister),
 		req)
 	loginM.Run()

@@ -63,18 +63,14 @@ func init() {
 
 func main() {
 	Log.FmtPrintf("start gameServer.")
-	var (
-		mapsvr map[int32][]int32 = map[int32][]int32{
-			int32(Define.ERouteId_ER_Game): []int32{int32(Define.ERouteId_ER_ISG), int32(Define.ERouteId_ER_ESG)},
-		}
-	)
 
 	gameSvr := tcpNet.NewClient(Define.GameServerHost,
 		Define.ERouteId_ER_Game,
-		&mapsvr,
+		Define.ERouteId_ER_Client,
+		Define.ERouteId_ER_ESG,
 		LogicMsg.GameMessageCallBack,
 		LogicMsg.AfterDialCallBack,
-		tcpNet.GClientSessionPool)
+		nil)
 
 	gameSvr.Run()
 	return

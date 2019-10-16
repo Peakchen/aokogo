@@ -1,9 +1,10 @@
 package tcpNet
 
 import (
+	"common/Define"
 	"common/Log"
+	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
-	"common/msgProto/MSG_Server"
 	"errors"
 	"fmt"
 	"reflect"
@@ -75,33 +76,53 @@ func GetMessageInfo(mainID, subID uint16) (proc *TMessageProc, finded bool) {
 	return
 }
 
-func GetAllMessageIDs() (msgs []int32) {
-	msgs = []int32{}
+func GetAllMessageIDs() (msgs []uint32) {
+	msgs = []uint32{}
 	for msgid, _ := range _MessageTab {
-		msgs = append(msgs, int32(msgid))
+		msgs = append(msgs, uint32(msgid))
 	}
 	return
 }
 
 func MessageCallBack(session *TcpSession) (succ bool, err error) {
+
+	route := session.pack.GetRouteID()
+	Log.FmtPrintln("pack route: ", route)
 	mainID, subID := session.pack.GetMessageID()
 	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
-	msg, cb, err := session.pack.UnPackData()
-	if err != nil {
-		Log.Error("unpack data err: ", err)
-		return
+	_cmd := EncodeCmd(mainID, subID)
+	s := session.SessionMgr.GetByCmd(_cmd)
+
+	switch Define.ERouteId(route) {
+	case Define.ERouteId_ER_ESG:
+	case Define.ERouteId_ER_ISG:
+	case Define.ERouteId_ER_Login:
+		rsp := &MSG_Login.SC_UserRegister_Rsp{}
+		rsp.Ret = MSG_Login.ErrorCode_Success
+		session.SendMsg(uint16(s.SrcPoint),
+			uint16(MSG_MainModule.MAINMSG_LOGIN),
+			uint16(MSG_Login.SUBMSG_SC_UserRegister),
+			rsp)
+	case Define.ERouteId_ER_Game:
+
+	default:
+
 	}
 
 	switch mainID {
 	case uint16(MSG_MainModule.MAINMSG_SERVER):
 		Log.FmtPrintln("server message.")
-		if subID == uint16(MSG_Server.SUBMSG_CS_ServerRegister) {
-
-		}
 	case uint16(MSG_MainModule.MAINMSG_LOGIN):
 		Log.FmtPrintln("login message UserRegister.")
+
 	default:
 
+	}
+
+	msg, cb, err := session.pack.UnPackData()
+	if err != nil {
+		Log.FmtPrintln("unpack data err: ", err)
+		return
 	}
 
 	params := []reflect.Value{

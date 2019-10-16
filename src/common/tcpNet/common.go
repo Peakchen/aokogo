@@ -61,10 +61,11 @@ type IMessagePack interface {
 	PackData(msg proto.Message) (data []byte, err error)
 	UnPackAction(InData []byte) (pos int32, err error)
 	UnPackData() (msg proto.Message, cb reflect.Value, err error)
+	GetRouteID() (route uint16)
 	GetMessageID() (mainID uint16, subID uint16)
 	Clean()
-	SetCmd(mainid, subid uint16, data []byte)
-	PackMsg(mainid, subid uint16, msg proto.Message) (out []byte)
+	SetCmd(routepoint, mainid, subid uint16, data []byte)
+	PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte)
 }
 
 /*
@@ -87,15 +88,16 @@ func DecodeCmd(cmd uint32) (uint16, uint16) {
 
 - 协议格式，小端字节序
 
-主命令号 | 次命令号 | 包长度 | 包体
---------| --------| -------- | ----
-2字节   |  2字节  | 4字节  | 包体
+转发目的位置 |主命令号 | 次命令号 | 包长度 | 包体
+------------|--------| --------| -------- | ----
+2字节   |2字节   |  2字节  | 4字节  | 包体
 */
 const (
-	EnMessage_MainIDPackLen = 2 //主命令
-	EnMessage_SubIDPackLen  = 2 //次命令
-	EnMessage_DataPackLen   = 4 //真实数据长度
-	EnMessage_NoDataLen     = 8 //非data数据长度(包体之前的)
+	EnMessage_RoutePoint    = 2  //转发位置
+	EnMessage_MainIDPackLen = 2  //主命令
+	EnMessage_SubIDPackLen  = 2  //次命令
+	EnMessage_DataPackLen   = 6  //真实数据长度
+	EnMessage_NoDataLen     = 10 //非data数据长度(包体之前的)
 )
 
 // session, data, data len
@@ -115,8 +117,10 @@ type TMessageSession interface {
 }
 
 type IProcessConnSession interface {
-	AddSessionByID(session *TcpSession, cmd []int32)
-	AddSessionBycmd(session *TcpSession, cmds []int32)
+	AddSessionByID(session *TcpSession, cmd []uint32)
+	AddSessionByCmd(session *TcpSession, cmds []uint32)
 	RemoveByID(session *TcpSession)
-	RemoveByCmd(cmd int32)
+	RemoveByCmd(cmd uint32)
+	GetByCmd(cmd uint32) (session *TcpSession)
+	GetBySessionID(sessionID uint64) (session *TcpSession)
 }

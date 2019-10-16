@@ -20,8 +20,8 @@ func onUserBind(key string, req *MSG_Login.CS_UserBind_Req) (succ bool, err erro
 	return
 }
 
-func onUserRegister(key string, req *MSG_Login.CS_UserRegister_Req) (succ bool, err error) {
-	Log.FmtPrintf("onUserRegister recv: %v, %v.", key, req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
+func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_Req) (succ bool, err error) {
+	Log.FmtPrintf("onUserRegister recv: %v, %v.", session.SessionID, req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
 
 	return
 }

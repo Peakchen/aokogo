@@ -20,24 +20,26 @@ type TcpClient struct {
 	cancel   context.CancelFunc
 	host     string
 	dialsess *TcpSession
-	mapSvr   map[int32][]int32
 	cb       MessageCb
 	// person offline flag
 	off chan *TcpSession
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
+	SrcRoute   Define.ERouteId
+	DstRoute   Define.ERouteId
 	Adacb      AfterDialAct
 	mpobj      IMessagePack
 	SessionMgr IProcessConnSession
 }
 
-func NewClient(host string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
+func NewClient(host string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
 	return &TcpClient{
 		host:       host,
-		mapSvr:     *mapSvr,
 		cb:         cb,
 		SvrType:    SvrType,
+		SrcRoute:   SrcRoute,
+		DstRoute:   DstRoute,
 		Adacb:      Ada,
 		SessionMgr: sessionMgr,
 	}
@@ -75,7 +77,7 @@ func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 	}
 
 	c.SetNoDelay(true)
-	self.dialsess = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.mpobj, self.SessionMgr)
+	self.dialsess = NewSession(self.host, c, self.ctx, self.SrcRoute, self.DstRoute, self.cb, self.off, self.mpobj, self.SessionMgr)
 	self.dialsess.HandleSession(sw)
 	self.afterDial()
 	return nil
@@ -141,7 +143,8 @@ func (self *TcpClient) sendRegisterMsg() {
 	req.ServerType = int32(self.SvrType)
 	req.Msgs = GetAllMessageIDs()
 	Log.FmtPrintln("register context: ", req.Msgs)
-	buff := self.mpobj.PackMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
+	buff := self.mpobj.PackMsg(uint16(self.DstRoute),
+		uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
 		req)
 	self.Send(buff)

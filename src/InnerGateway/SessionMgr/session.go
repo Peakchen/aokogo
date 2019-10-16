@@ -6,31 +6,39 @@ import (
 )
 
 var (
-	GInnerGateWaySession *TInnerGateWaySession
+	GServer2ServerSession *TServer2ServerSession
 )
 
-type TInnerGateWaySession struct {
-	client2SeverSession sync.Map
+type TServer2ServerSession struct {
+	s2sSession sync.Map
 }
 
-func (this *TInnerGateWaySession) AddSessionByID(session *tcpNet.TcpSession, cmd []int32) {
-	this.client2SeverSession.Store(session.SessionID, cmd)
+func (this *TServer2ServerSession) AddSessionByID(session *tcpNet.TcpSession, cmd []uint32) {
+	this.s2sSession.Store(session.SessionID, cmd)
 }
 
-func (this *TInnerGateWaySession) AddSessionBycmd(session *tcpNet.TcpSession, cmds []int32) {
+func (this *TServer2ServerSession) AddSessionByCmd(session *tcpNet.TcpSession, cmds []uint32) {
 	for _, cmd := range cmds {
-		this.client2SeverSession.Store(cmd, session)
+		this.s2sSession.Store(cmd, session)
 	}
 }
 
-func (this *TInnerGateWaySession) RemoveByID(session *tcpNet.TcpSession) {
-	this.client2SeverSession.Delete(session.SessionID)
+func (this *TServer2ServerSession) RemoveByID(session *tcpNet.TcpSession) {
+	this.s2sSession.Delete(session.SessionID)
 }
 
-func (this *TInnerGateWaySession) RemoveByCmd(cmd int32) {
-	this.client2SeverSession.Delete(cmd)
+func (this *TServer2ServerSession) RemoveByCmd(cmd uint32) {
+	this.s2sSession.Delete(cmd)
+}
+
+func (this *TServer2ServerSession) GetByCmd(cmd uint32) (session *tcpNet.TcpSession) {
+	session, _ = this.s2sSession.Load(cmd)
+}
+
+func (this *TServer2ServerSession) GetBySessionID(sessionID uint64) (session *tcpNet.TcpSession) {
+	session, _ = this.s2sSession.Load(sessionID)
 }
 
 func init() {
-	GInnerGateWaySession = &TInnerGateWaySession{}
+	GServer2ServerSession = &TServer2ServerSession{}
 }

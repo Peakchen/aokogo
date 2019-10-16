@@ -13,15 +13,10 @@ import (
 
 func main() {
 	Log.FmtPrintln("start login server.")
-	var (
-		mapsvr map[int32][]int32 = map[int32][]int32{
-			int32(Define.ERouteId_ER_ESG): []int32{int32(Define.ERouteId_ER_Login)},
-		}
-	)
 
 	gameSvr := tcpNet.NewClient(Define.LoginServerHost,
 		Define.ERouteId_ER_Login,
-		&mapsvr,
+		Define.ERouteId_ER_Login,
 		LogicMsg.LoginMessageCallBack,
 		nil,
 		nil)

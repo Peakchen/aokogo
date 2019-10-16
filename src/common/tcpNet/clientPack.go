@@ -13,14 +13,18 @@ import (
 	Client to Server, message
 */
 type ClientProtocol struct {
-	mainid uint16
-	subid  uint16
-	length uint32
-	data   []byte
+	routepoint uint16
+	mainid     uint16
+	subid      uint16
+	length     uint32
+	data       []byte
 }
 
 func (self *ClientProtocol) PackAction(Output []byte) {
-	var pos int32 = 0
+	var pos int32
+	binary.LittleEndian.PutUint16(Output[pos:], self.routepoint)
+	pos += 2
+
 	binary.LittleEndian.PutUint16(Output[pos:], self.mainid)
 	pos += 2
 
@@ -34,6 +38,9 @@ func (self *ClientProtocol) PackAction(Output []byte) {
 }
 
 func (self *ClientProtocol) UnPackAction(InData []byte) (pos int32, err error) {
+	self.routepoint = binary.LittleEndian.Uint16(InData[pos:])
+	pos += 2
+
 	self.mainid = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
@@ -57,11 +64,16 @@ func (self *ClientProtocol) PackData(msg proto.Message) (data []byte, err error)
 	return
 }
 
+func (self *ClientProtocol) GetRouteID() (route uint16) {
+	return self.routepoint
+}
+
 func (self *ClientProtocol) GetMessageID() (mainID uint16, subID uint16) {
 	return self.mainid, self.subid
 }
 
-func (self *ClientProtocol) SetCmd(mainid, subid uint16, data []byte) {
+func (self *ClientProtocol) SetCmd(routepoint, mainid, subid uint16, data []byte) {
+	self.routepoint = routepoint
 	self.mainid = mainid
 	self.subid = subid
 	self.data = data
@@ -74,16 +86,17 @@ func (self *ClientProtocol) Clean() {
 	self.data = make([]byte, maxMessageSize)
 	self.mainid = 0
 	self.subid = 0
+	self.routepoint = 0
 }
 
-func (self *ClientProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
+func (self *ClientProtocol) PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		Log.FmtPrintln("proto marshal fail, data: ", err)
 		return
 	}
 
-	self.SetCmd(mainid, subid, data)
+	self.SetCmd(routepoint, mainid, subid, data)
 	out = make([]byte, len(data)+EnMessage_NoDataLen)
 	self.PackAction(out)
 	return

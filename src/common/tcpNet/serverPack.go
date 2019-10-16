@@ -14,14 +14,18 @@ import (
 	server to server, message
 */
 type ServerProtocol struct {
-	mainid uint16
-	subid  uint16
-	length uint32
-	data   []byte
+	routepoint uint16
+	mainid     uint16
+	subid      uint16
+	length     uint32
+	data       []byte
 }
 
 func (self *ServerProtocol) PackAction(Output []byte) {
-	var pos int32 = 0
+	var pos int32
+	binary.LittleEndian.PutUint16(Output[pos:], self.routepoint)
+	pos += 2
+
 	binary.LittleEndian.PutUint16(Output[pos:], self.mainid)
 	pos += 2
 
@@ -36,6 +40,9 @@ func (self *ServerProtocol) PackAction(Output []byte) {
 }
 
 func (self *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
+	self.routepoint = binary.LittleEndian.Uint16(InData[pos:])
+	pos += 2
+
 	self.mainid = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
@@ -79,6 +86,10 @@ func (self *ServerProtocol) PackData(msg proto.Message) (data []byte, err error)
 	return
 }
 
+func (self *ServerProtocol) GetRouteID() (route uint16) {
+	return self.routepoint
+}
+
 func (self *ServerProtocol) GetMessageID() (mainID uint16, subID uint16) {
 	return self.mainid, self.subid
 }
@@ -90,7 +101,7 @@ func (self *ServerProtocol) Clean() {
 	self.subid = 0
 }
 
-func (self *ServerProtocol) SetCmd(mainid, subid uint16, data []byte) {
+func (self *ServerProtocol) SetCmd(routepoint, mainid, subid uint16, data []byte) {
 	self.mainid = mainid
 	self.subid = subid
 	self.data = data
@@ -98,14 +109,14 @@ func (self *ServerProtocol) SetCmd(mainid, subid uint16, data []byte) {
 	Log.FmtPrintln("SetCmd data len: ", self.length)
 }
 
-func (self *ServerProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (out []byte) {
+func (self *ServerProtocol) PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		Log.FmtPrintln("server proto marshal fail, data: ", err)
 		return
 	}
 
-	self.SetCmd(mainid, subid, data)
+	self.SetCmd(routepoint, mainid, subid, data)
 	out = make([]byte, len(data)+EnMessage_NoDataLen)
 	self.PackAction(out)
 	return

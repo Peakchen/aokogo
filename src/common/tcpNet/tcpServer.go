@@ -65,23 +65,25 @@ type TcpServer struct {
 	listener *net.TCPListener
 	ctx      context.Context
 	cancel   context.CancelFunc
-	mapSvr   map[int32][]int32
 	cb       MessageCb
 	off      chan *TcpSession
 	on       *TcpSession
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
+	SrcRoute   Define.ERouteId
+	DstRoute   Define.ERouteId
 	pack       IMessagePack
 	SessionMgr IProcessConnSession
 }
 
-func NewTcpServer(addr string, SvrType Define.ERouteId, mapSvr *map[int32][]int32, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
+func NewTcpServer(addr string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
 	return &TcpServer{
 		host:       addr,
-		mapSvr:     *mapSvr,
 		cb:         cb,
 		SvrType:    SvrType,
+		SrcRoute:   SrcRoute,
+		DstRoute:   DstRoute,
 		SessionMgr: sessionMgr,
 	}
 }
@@ -116,7 +118,7 @@ func (self *TcpServer) loop(sw *sync.WaitGroup) {
 			Log.FmtPrintf("connect here addr: %v.", c.RemoteAddr())
 			c.SetNoDelay(true)
 			c.SetKeepAlive(true)
-			self.on = NewSession(self.host, c, self.ctx, &self.mapSvr, self.cb, self.off, self.pack, self.SessionMgr)
+			self.on = NewSession(self.host, c, self.ctx, self.SrcRoute, self.DstRoute, self.cb, self.off, self.pack, self.SessionMgr)
 			self.on.HandleSession(sw)
 			self.online()
 		}
