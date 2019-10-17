@@ -52,10 +52,13 @@ package tcpNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/msgProto/MSG_MainModule"
+	"common/msgProto/MSG_Server"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
+	"reflect"
 	"sync/atomic"
 	"time"
 
@@ -83,8 +86,8 @@ type TcpSession struct {
 	off chan *TcpSession
 	//message pack
 	pack IMessagePack
-	//session manager
-	SessionMgr IProcessConnSession
+	//tcp session manager
+	Engine ITcpEngine
 	// session id
 	SessionID uint64
 	//Dest point
@@ -135,18 +138,19 @@ func NewSession(addr string,
 	newcb MessageCb,
 	off chan *TcpSession,
 	pack IMessagePack,
-	sessionMgr IProcessConnSession) *TcpSession {
+	Engine ITcpEngine) *TcpSession {
 	return &TcpSession{
-		host:       addr,
-		conn:       conn,
-		send:       make(chan []byte, maxMessageSize),
-		isAlive:    false,
-		ctx:        ctx,
-		recvCb:     newcb,
-		pack:       pack,
-		off:        make(chan *TcpSession, maxOfflineSize),
-		SessionMgr: sessionMgr,
-		DestPoint:  SvrRoute,
+		host:      addr,
+		conn:      conn,
+		send:      make(chan []byte, maxMessageSize),
+		isAlive:   false,
+		ctx:       ctx,
+		recvCb:    newcb,
+		pack:      pack,
+		off:       make(chan *TcpSession, maxOfflineSize),
+		Engine:    Engine,
+		DestPoint: SvrRoute,
+		SrcPoint:  SrcPoint,
 	}
 }
 
@@ -224,29 +228,28 @@ func (this *TcpSession) writeMessage(data []byte) (succ bool) {
 }
 
 func (this *TcpSession) readMessage() (succ bool) {
-	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
-
+	this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
 		if readn == 0 || err.Error() == "EOF" {
 			succ = true
 		} else {
-			Log.FmtPrintln("read data fail, err: ", err)
+			Log.FmtPrintln("read data fail, err: ", err, readn)
 		}
 		return
 	}
 
 	packlen := binary.LittleEndian.Uint32(packLenBuf[EnMessage_DataPackLen:EnMessage_NoDataLen])
 	if packlen > maxMessageSize {
-		Log.Error("error receiving packLen:", packlen)
+		Log.FmtPrintln("error receiving packLen:", packlen)
 		return
 	}
 
 	data := make([]byte, EnMessage_NoDataLen+packlen)
 	readn, err = io.ReadFull(this.conn, data[EnMessage_NoDataLen:])
 	if err != nil || readn < int(packlen) {
-		Log.Error("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
+		Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
 		return
 	}
 
@@ -254,40 +257,105 @@ func (this *TcpSession) readMessage() (succ bool) {
 	copy(data[:EnMessage_NoDataLen], packLenBuf[:])
 	_, err = this.pack.UnPackAction(data)
 	if err != nil {
-		Log.Error("unpack action err: ", err)
+		Log.FmtPrintln("unpack action err: ", err)
 		return
 	}
 
 	succ, err = MessageCallBack(this)
 	if err != nil {
-		Log.Error("message pack call back: ", err)
+		Log.FmtPrintln("message pack call back: ", err)
 	}
 
 	//this.SessionMgr.Push(this)
 	return
 }
 
+func MessageCallBack(session *TcpSession) (succ bool, err error) {
+	route := session.pack.GetRouteID()
+	Log.FmtPrintf("pack route: %v, sessionid: %v.", route, session.SessionID)
+	mainID, subID := session.pack.GetMessageID()
+	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+	_cmd := EncodeCmd(mainID, subID)
+	if session.Engine != nil {
+		s := session.Engine.GetSessionByCmd(_cmd)
+		if s != nil {
+			Log.FmtPrintf("route send SrcPoint: %v, mainid: %v, subID: %v, sessionid: %v.", s.SrcPoint, mainID, subID, s.SessionID)
+			s.SetSendCache(session.pack.GetSrcMsg())
+			succ = true
+			err = nil
+			return
+		}
+	}
+
+	switch mainID {
+	case uint16(MSG_MainModule.MAINMSG_SERVER):
+		Log.FmtPrintln("server message.")
+		if uint16(MSG_Server.SUBMSG_SC_ServerRegister) == subID {
+			succ = true
+			err = nil
+			return
+		}
+	case uint16(MSG_MainModule.MAINMSG_LOGIN):
+		Log.FmtPrintln("Login message.")
+	default:
+
+	}
+
+	if session.pack == nil {
+		Log.FmtPrintln("pack is nil.")
+		return
+	}
+
+	msg, cb, unpackerr := session.pack.UnPackData()
+	if unpackerr != nil {
+		//err = unpackerr
+		//Log.FmtPrintln("unpack data err: ", unpackerr)
+		Log.FmtPrintf("direct send SrcPoint: %v, mainid: %v, subID: %v, sessionid: %v.", session.SrcPoint, mainID, subID, session.SessionID)
+		sendsess := session.Engine.GetSessionByID(session.SessionID)
+		if sendsess != nil {
+			sendsess.SetSendCache(session.pack.GetSrcMsg())
+			succ = true
+			err = nil
+		}
+
+		return
+	}
+
+	params := []reflect.Value{
+		//reflect.ValueOf("1"),
+		reflect.ValueOf(session),
+		reflect.ValueOf(msg),
+	}
+
+	ret := cb.Call(params)
+	succ = ret[0].Interface().(bool)
+	reterr := ret[1].Interface()
+	if reterr != nil {
+		Log.FmtPrintln("message return err: ", reterr.(error).Error())
+	}
+
+	return
+}
+
 func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.isAlive = true
 	atomic.AddUint64(&this.SessionID, 1)
+	Log.FmtPrintln("handle new session: ", this.SessionID)
 	sw.Add(2)
 	go this.Recvloop(sw)
 	go this.Sendloop(sw)
 }
 
-func (this *TcpSession) Push(cmds []uint32) {
-	if this.SessionMgr == nil {
+func (this *TcpSession) Push(SrcPoint Define.ERouteId, cmds []uint32) {
+	if this.Engine == nil {
 		return
 	}
-	this.SessionMgr.AddSessionByCmd(this, cmds)
-	this.SessionMgr.AddSessionByID(this, cmds)
+	this.SrcPoint = SrcPoint
+	this.Engine.PushCmdSession(this, cmds)
 }
 
 func (this *TcpSession) Offline() {
-	if this.SessionMgr == nil {
-		return
-	}
-	this.SessionMgr.RemoveByID(this)
+
 }
 
 func (this *TcpSession) SendMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error) {

@@ -66,6 +66,7 @@ type IMessagePack interface {
 	Clean()
 	SetCmd(routepoint, mainid, subid uint16, data []byte)
 	PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte)
+	GetSrcMsg() (data []byte)
 }
 
 /*
@@ -111,16 +112,19 @@ type TConnSession struct {
 	Svr      int32
 }
 
-type TMessageSession interface {
-	Push(s *TConnSession)
-	Get() (s *TConnSession)
-}
-
 type IProcessConnSession interface {
 	AddSessionByID(session *TcpSession, cmd []uint32)
 	AddSessionByCmd(session *TcpSession, cmds []uint32)
 	RemoveByID(session *TcpSession)
 	RemoveByCmd(cmd uint32)
 	GetByCmd(cmd uint32) (session *TcpSession)
-	GetBySessionID(sessionID uint64) (session *TcpSession)
+	GetSessionByID(sessionID uint64) (session *TcpSession)
+	AddSession(session *TcpSession)
+}
+
+type ITcpEngine interface {
+	PushCmdSession(session *TcpSession, cmds []uint32)
+	GetSessionByCmd(cmd uint32) (session *TcpSession)
+	AddSession(session *TcpSession)
+	GetSessionByID(sessionID uint64) (session *TcpSession)
 }

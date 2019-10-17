@@ -5,6 +5,7 @@
 package main
 
 import (
+	"ExternalGateway/SessionMgr"
 	"LoginServer/LogicMsg"
 	"common/Define"
 	"common/Log"
@@ -20,7 +21,7 @@ func main() {
 		Define.ERouteId_ER_ESG,
 		LogicMsg.LoginMessageCallBack,
 		nil,
-		nil)
+		SessionMgr.GClient2ServerSession)
 
 	gameSvr.Run()
 	return

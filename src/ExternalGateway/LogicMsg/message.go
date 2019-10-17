@@ -27,8 +27,7 @@ func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister
 		msgfmt string
 	)
 
-	session.SrcPoint = Define.ERouteId(req.ServerType)
-	session.Push(req.Msgs)
+	session.Push(Define.ERouteId(req.ServerType), req.Msgs)
 	for _, id := range req.Msgs {
 		mainid, subid := tcpNet.DecodeCmd(uint32(id))
 		msgfmt += fmt.Sprintf("[mainid: %v, subid: %v]\t", mainid, subid)

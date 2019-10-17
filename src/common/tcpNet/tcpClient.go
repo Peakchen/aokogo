@@ -45,26 +45,26 @@ func NewClient(host string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb Mess
 	}
 }
 
-func (self *TcpClient) Run() {
-	self.ctx, self.cancel = context.WithCancel(context.Background())
+func (this *TcpClient) Run() {
+	this.ctx, this.cancel = context.WithCancel(context.Background())
 	sw := &sync.WaitGroup{}
-	self.mpobj = &ClientProtocol{}
-	self.connect(sw)
+	this.mpobj = &ClientProtocol{}
+	this.connect(sw)
 
-	self.wg.Add(2)
-	go self.loopconn(sw)
-	go self.loopoff(sw)
-	self.wg.Wait()
+	this.wg.Add(2)
+	go this.loopconn(sw)
+	go this.loopoff(sw)
+	this.wg.Wait()
 }
 
-func (self *TcpClient) connect(sw *sync.WaitGroup) error {
-	if self.dialsess != nil {
-		if self.dialsess.isAlive {
+func (this *TcpClient) connect(sw *sync.WaitGroup) error {
+	if this.dialsess != nil {
+		if this.dialsess.isAlive {
 			return nil
 		}
 	}
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
 		Log.Error("resolve tcp error: %v.", err.Error())
 		return err
@@ -77,24 +77,25 @@ func (self *TcpClient) connect(sw *sync.WaitGroup) error {
 	}
 
 	c.SetNoDelay(true)
-	self.dialsess = NewSession(self.host, c, self.ctx, self.SrcRoute, self.DstRoute, self.cb, self.off, self.mpobj, self.SessionMgr)
-	self.dialsess.HandleSession(sw)
-	self.afterDial()
+	this.dialsess = NewSession(this.host, c, this.ctx, this.SrcRoute, this.DstRoute, this.cb, this.off, this.mpobj, this)
+	this.dialsess.HandleSession(sw)
+	this.AddSession(this.dialsess)
+	this.afterDial()
 	return nil
 }
 
-func (self *TcpClient) loopconn(sw *sync.WaitGroup) {
+func (this *TcpClient) loopconn(sw *sync.WaitGroup) {
 	defer sw.Done()
-	defer self.Exit(sw)
+	defer this.Exit(sw)
 
 	conntick := time.NewTicker(time.Duration(3 * time.Second))
 	for {
 		select {
-		case <-self.ctx.Done():
+		case <-this.ctx.Done():
 			return
 		case <-conntick.C:
-			if err := self.connect(sw); err != nil {
-				Log.FmtPrintf("dail to server fail, host: %v.", self.host)
+			if err := this.connect(sw); err != nil {
+				Log.FmtPrintf("dail to server fail, host: %v.", this.host)
 				continue
 			}
 		default:
@@ -103,56 +104,82 @@ func (self *TcpClient) loopconn(sw *sync.WaitGroup) {
 	}
 }
 
-func (self *TcpClient) loopoff(sw *sync.WaitGroup) {
-	defer self.Exit(sw)
+func (this *TcpClient) loopoff(sw *sync.WaitGroup) {
+	defer this.Exit(sw)
 	for {
 		select {
-		case os, ok := <-self.off:
+		case os, ok := <-this.off:
 			if !ok {
 				return
 			}
-			self.offline(os)
-		case <-self.ctx.Done():
+			this.offline(os)
+		case <-this.ctx.Done():
 			return
 		}
 	}
 }
 
-func (self *TcpClient) offline(os *TcpSession) {
+func (this *TcpClient) offline(os *TcpSession) {
 	// process
 
 }
 
-func (self *TcpClient) Send(data []byte) {
-	self.dialsess.SetSendCache(data)
+func (this *TcpClient) Send(data []byte) {
+	this.dialsess.SetSendCache(data)
 }
 
-func (self *TcpClient) SendMessage() {
+func (this *TcpClient) SendMessage() {
 
 }
 
-func (self *TcpClient) Exit(sw *sync.WaitGroup) {
-	self.dialsess = nil
-	self.cancel()
+func (this *TcpClient) PushCmdSession(session *TcpSession, cmds []uint32) {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.AddSessionByCmd(session, cmds)
+	this.SessionMgr.AddSessionByID(session, cmds)
+}
+
+func (this *TcpClient) GetSessionByCmd(cmd uint32) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetByCmd(cmd)
+}
+
+func (this *TcpClient) AddSession(session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.AddSession(session)
+}
+
+func (this *TcpClient) GetSessionByID(sessionID uint64) (session *TcpSession) {
+	return this.SessionMgr.GetSessionByID(sessionID)
+}
+
+func (this *TcpClient) Exit(sw *sync.WaitGroup) {
+	this.dialsess = nil
+	this.cancel()
 	sw.Wait()
 }
 
-func (self *TcpClient) sendRegisterMsg() {
-	Log.FmtPrintf("after dial, send point: %v register message to server.", self.SvrType)
+func (this *TcpClient) sendRegisterMsg() {
+	Log.FmtPrintf("after dial, send point: %v register message to server.", this.SvrType)
 	req := &MSG_Server.CS_ServerRegister_Req{}
-	req.ServerType = int32(self.SvrType)
+	req.ServerType = int32(this.SvrType)
 	req.Msgs = GetAllMessageIDs()
 	Log.FmtPrintln("register context: ", req.Msgs)
-	buff := self.mpobj.PackMsg(uint16(self.DstRoute),
+	buff := this.mpobj.PackMsg(uint16(this.DstRoute),
 		uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
 		req)
-	self.Send(buff)
+	this.Send(buff)
 }
 
-func (self *TcpClient) afterDial() {
-	if self.Adacb != nil {
-		self.Adacb()
+func (this *TcpClient) afterDial() {
+	if this.Adacb != nil {
+		this.Adacb()
 	}
-	self.sendRegisterMsg()
+	this.sendRegisterMsg()
 }

@@ -18,7 +18,8 @@ type ServerProtocol struct {
 	mainid     uint16
 	subid      uint16
 	length     uint32
-	data       []byte
+	data       []byte //消息体
+	srcdata    []byte //源消息（未解包）
 }
 
 func (self *ServerProtocol) PackAction(Output []byte) {
@@ -54,12 +55,13 @@ func (self *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
 	pos += 4
 
 	if len(InData) < int(pos+int32(self.length)) {
-		err = fmt.Errorf("err: InData len: %v, pos: %v, data len: %v.", len(InData), pos, self.length)
+		err = fmt.Errorf("server err: InData len: %v, pos: %v, data len: %v.", len(InData), pos, self.length)
 		return
 	}
 
 	Log.FmtPrintf("normal: InData len: %v, pos: %v, data len: %v.", len(InData), pos, self.length)
 	self.data = InData[pos : pos+int32(self.length)]
+	self.srcdata = InData
 	return pos, nil
 }
 
@@ -120,4 +122,8 @@ func (self *ServerProtocol) PackMsg(routepoint, mainid, subid uint16, msg proto.
 	out = make([]byte, len(data)+EnMessage_NoDataLen)
 	self.PackAction(out)
 	return
+}
+
+func (self *ServerProtocol) GetSrcMsg() (data []byte) {
+	return self.srcdata
 }

@@ -74,13 +74,24 @@ func (self *TModuleCommon) readloop(conn net.Conn) {
 			return
 		default:
 			//接收服务端反馈
-			buffer := make([]byte, 2048)
+			buffer := make([]byte, 1024)
 			n, err := conn.Read(buffer)
-			if err != nil {
+			if err != nil || n == 0 {
 				Log.Error("waiting server back msg error: ", conn.RemoteAddr().String(), err)
 				continue
 			}
-			Log.FmtPrintf("receive server back, ip: %v, msg: %v.", conn.RemoteAddr().String(), string(buffer[:n]))
+
+			_, err = self.clientPack.UnPackAction(buffer)
+			if err != nil {
+				Log.Error("unpack action err: ", err)
+				return
+			}
+
+			route := self.clientPack.GetRouteID()
+			Log.FmtPrintln("pack route: ", route)
+			mainID, subID := self.clientPack.GetMessageID()
+			Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
+			Log.FmtPrintf("receive server back, ip: %v.", conn.RemoteAddr().String())
 		}
 	}
 
@@ -92,7 +103,7 @@ func (self *TModuleCommon) sendloop(conn net.Conn) {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		Log.FmtPrintln("time: ", i)
 		if !self.sender(conn) {
 			tick := time.NewTicker(time.Duration(3 * time.Second))

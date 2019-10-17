@@ -57,6 +57,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"sync/atomic"
 )
 
 type TcpServer struct {
@@ -67,7 +68,7 @@ type TcpServer struct {
 	cancel   context.CancelFunc
 	cb       MessageCb
 	off      chan *TcpSession
-	on       *TcpSession
+	session  *TcpSession
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
@@ -75,6 +76,8 @@ type TcpServer struct {
 	DstRoute   Define.ERouteId
 	pack       IMessagePack
 	SessionMgr IProcessConnSession
+	// session id
+	SessionID uint64
 }
 
 func NewTcpServer(addr string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
@@ -88,74 +91,105 @@ func NewTcpServer(addr string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb M
 	}
 }
 
-func (self *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+func (this *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
-	self.listener = listener
-	self.ctx, self.cancel = ctx, cancle
-	self.pack = &ServerProtocol{}
+	this.listener = listener
+	this.ctx, this.cancel = ctx, cancle
+	this.pack = &ServerProtocol{}
 	sw.Add(2)
-	go self.loop(sw)
-	go self.loopoff(sw)
+	go this.loop(sw)
+	go this.loopoff(sw)
 	sw.Wait()
 }
 
-func (self *TcpServer) loop(sw *sync.WaitGroup) {
-	defer self.Exit(sw)
+func (this *TcpServer) loop(sw *sync.WaitGroup) {
+	defer this.Exit(sw)
 	for {
 		select {
-		case <-self.ctx.Done():
+		case <-this.ctx.Done():
 			return
 		default:
-			c, err := self.listener.AcceptTCP()
+			c, err := this.listener.AcceptTCP()
 			if err != nil || c == nil {
 				Log.FmtPrintf("can not accept tcp.")
 				continue
 			}
 
-			Log.FmtPrintf("connect here addr: %v.", c.RemoteAddr())
 			c.SetNoDelay(true)
 			c.SetKeepAlive(true)
-			self.on = NewSession(self.host, c, self.ctx, self.SrcRoute, self.DstRoute, self.cb, self.off, self.pack, self.SessionMgr)
-			self.on.HandleSession(sw)
-			self.online()
+			atomic.AddUint64(&this.SessionID, 1)
+			Log.FmtPrintf("connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
+			this.session = NewSession(this.host, c, this.ctx, this.SrcRoute, this.DstRoute, this.cb, this.off, this.pack, this)
+			this.session.HandleSession(sw)
+			this.AddSession(this.session)
+			this.online()
 		}
 	}
 }
 
-func (self *TcpServer) loopoff(sw *sync.WaitGroup) {
-	defer self.Exit(sw)
+func (this *TcpServer) loopoff(sw *sync.WaitGroup) {
+	defer this.Exit(sw)
 	for {
 		select {
-		case os, ok := <-self.off:
+		case os, ok := <-this.off:
 			if !ok {
 				return
 			}
-			self.offline(os)
-		case <-self.ctx.Done():
+			this.offline(os)
+		case <-this.ctx.Done():
 			return
 		}
 	}
 }
 
-func (self *TcpServer) online() {
-	self.person++
+func (this *TcpServer) online() {
+	this.person++
 }
 
-func (self *TcpServer) offline(os *TcpSession) {
+func (this *TcpServer) offline(os *TcpSession) {
 	// process
-	self.person--
+	this.person--
 }
 
-func (self *TcpServer) SendMessage() {
+func (this *TcpServer) SendMessage() {
 
 }
 
-func (self *TcpServer) Exit(sw *sync.WaitGroup) {
-	self.listener.Close()
-	self.cancel()
+func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.AddSessionByCmd(session, cmds)
+	this.SessionMgr.AddSessionByID(session, cmds)
+}
+
+func (this *TcpServer) GetSessionByCmd(cmd uint32) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetByCmd(cmd)
+}
+
+func (this *TcpServer) AddSession(session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.AddSession(session)
+}
+
+func (this *TcpServer) GetSessionByID(sessionID uint64) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetSessionByID(sessionID)
+}
+
+func (this *TcpServer) Exit(sw *sync.WaitGroup) {
+	this.listener.Close()
+	this.cancel()
 	sw.Wait()
 }
 

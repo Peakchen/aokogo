@@ -39,12 +39,16 @@ func (this *TServer2ServerSession) GetByCmd(cmd uint32) (session *tcpNet.TcpSess
 	return
 }
 
-func (this *TServer2ServerSession) GetBySessionID(sessionID uint64) (session *tcpNet.TcpSession) {
+func (this *TServer2ServerSession) GetSessionByID(sessionID uint64) (session *tcpNet.TcpSession) {
 	val, exist := this.s2sSession.Load(sessionID)
 	if exist {
 		session = val.(*tcpNet.TcpSession)
 	}
 	return
+}
+
+func (this *TServer2ServerSession) AddSession(session *TcpSession) {
+	this.c2sSession.Store(session.SessionID, session)
 }
 
 func init() {

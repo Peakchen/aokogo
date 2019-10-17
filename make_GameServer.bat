@@ -16,5 +16,3 @@ go install -gcflags " -N -l" GameServer
 echo make ok
 
 set GOPATH=%GOPATH_BAK%
-
-pause

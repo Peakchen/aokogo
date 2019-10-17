@@ -1,6 +1,7 @@
 package SessionMgr
 
 import (
+	"common/Log"
 	"common/tcpNet"
 	"sync"
 )
@@ -32,6 +33,12 @@ func (this *TClient2ServerSession) RemoveByCmd(cmd uint32) {
 }
 
 func (this *TClient2ServerSession) GetByCmd(cmd uint32) (session *tcpNet.TcpSession) {
+	mf := func(k, v interface{}) bool {
+		Log.FmtPrintf("client to server, key: %v.", k)
+		return true
+	}
+
+	this.c2sSession.Range(mf)
 	val, exist := this.c2sSession.Load(cmd)
 	if exist {
 		session = val.(*tcpNet.TcpSession)
@@ -39,12 +46,16 @@ func (this *TClient2ServerSession) GetByCmd(cmd uint32) (session *tcpNet.TcpSess
 	return
 }
 
-func (this *TClient2ServerSession) GetBySessionID(sessionID uint64) (session *tcpNet.TcpSession) {
+func (this *TClient2ServerSession) GetSessionByID(sessionID uint64) (session *tcpNet.TcpSession) {
 	val, exist := this.c2sSession.Load(sessionID)
 	if exist {
 		session = val.(*tcpNet.TcpSession)
 	}
 	return
+}
+
+func (this *TClient2ServerSession) AddSession(session *tcpNet.TcpSession) {
+	this.c2sSession.Store(session.SessionID, session)
 }
 
 func init() {
