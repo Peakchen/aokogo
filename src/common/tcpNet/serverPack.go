@@ -65,7 +65,7 @@ func (self *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
 	return pos, nil
 }
 
-func (self *ServerProtocol) UnPackData() (msg proto.Message, cb reflect.Value, err error) {
+func (self *ServerProtocol) UnPackData() (msg proto.Message, cb reflect.Value, err error, exist bool) {
 	err = nil
 	mt, finded := GetMessageInfo(self.mainid, self.subid)
 	if !finded {
@@ -73,6 +73,7 @@ func (self *ServerProtocol) UnPackData() (msg proto.Message, cb reflect.Value, e
 		return
 	}
 
+	exist = true
 	dst := reflect.New(mt.paramTypes[1].Elem()).Interface()
 	err = proto.Unmarshal(self.data, dst.(proto.Message))
 	if err != nil {

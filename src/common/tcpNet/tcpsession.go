@@ -306,10 +306,8 @@ func MessageCallBack(session *TcpSession) (succ bool, err error) {
 		return
 	}
 
-	msg, cb, unpackerr := session.pack.UnPackData()
-	if unpackerr != nil {
-		//err = unpackerr
-		//Log.FmtPrintln("unpack data err: ", unpackerr)
+	msg, cb, unpackerr, exist := session.pack.UnPackData()
+	if unpackerr != nil && !exist {
 		Log.FmtPrintf("direct send SrcPoint: %v, mainid: %v, subID: %v, sessionid: %v.", session.SrcPoint, mainID, subID, session.SessionID)
 		sendsess := session.Engine.GetSessionByID(session.SessionID)
 		if sendsess != nil {
@@ -318,6 +316,12 @@ func MessageCallBack(session *TcpSession) (succ bool, err error) {
 			err = nil
 		}
 
+		return
+	}
+
+	if unpackerr != nil {
+		err = unpackerr
+		Log.FmtPrintln("unpack data err: ", unpackerr)
 		return
 	}
 

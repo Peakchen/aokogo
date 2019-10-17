@@ -60,7 +60,7 @@ type IMessagePack interface {
 	PackAction(Output []byte)
 	PackData(msg proto.Message) (data []byte, err error)
 	UnPackAction(InData []byte) (pos int32, err error)
-	UnPackData() (msg proto.Message, cb reflect.Value, err error)
+	UnPackData() (msg proto.Message, cb reflect.Value, err error, exist bool)
 	GetRouteID() (route uint16)
 	GetMessageID() (mainID uint16, subID uint16)
 	Clean()
