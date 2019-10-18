@@ -232,11 +232,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
-		if readn == 0 || err.Error() == "EOF" {
-			succ = true
-		} else {
-			Log.FmtPrintln("read data fail, err: ", err, readn)
-		}
+		Log.FmtPrintln("read data fail, err: ", err, readn)
 		return
 	}
 
@@ -266,7 +262,6 @@ func (this *TcpSession) readMessage() (succ bool) {
 		Log.FmtPrintln("message pack call back: ", err)
 	}
 
-	//this.SessionMgr.Push(this)
 	return
 }
 
