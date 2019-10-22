@@ -1,4 +1,3 @@
-package DBService
 /*
 Copyright (c) <year> <copyright holders>
 
@@ -9,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -47,25 +46,19 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
+package main
+
 import (
-
+	"common/Config"
+	"common/Log"
+	"common/ado/service"
 )
 
-// some data could be saved to cache or db for Persistence.
-type EDataUpdateType int32
+func main() {
+	Log.FmtPrintln("run db server.")
+	service.Run(Config.GRedisCfgProvider, Config.GMgoCfgProvider)
+}
 
-const (
-	ED_SYNC_DB EDataUpdateType = 1
-	ED_SYNC_REDIS EDataUpdateType = 2
-)
+func init() {
 
-const (
-	EDB_DATA_SAVE_INTERVAL int32 = 5*60
-)
-
-type EServerModel string
-
-const (
-	ES_Logic EServerModel = 1
-	// add other...
-)
+}

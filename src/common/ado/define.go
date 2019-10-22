@@ -1,3 +1,5 @@
+package ado
+
 /*
 Copyright (c) <year> <copyright holders>
 
@@ -8,11 +10,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -46,12 +48,40 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
-package main
 
-import (
-	"common/DBService"
+// some data could be saved to cache or db for Persistence.
+type EDataUpdateType int32
+
+const (
+	ED_SYNC_DB    EDataUpdateType = 1
+	ED_SYNC_REDIS EDataUpdateType = 2
 )
 
-func main(){
-	
+const (
+	EDB_DATA_SAVE_INTERVAL int32 = 5 * 60
+)
+
+/*
+
+ */
+type IDBModule interface {
+	// Get(module IDBModule) (err error)
+	// Insert(module IDBModule) (err error)
+	// Update(module IDBModule) (err error)
 }
+
+type EDBOperType int32
+
+const (
+	EDBOper_Insert EDBOperType = 1
+	EDBOper_Update EDBOperType = 2
+	EDBOper_Delete EDBOperType = 3
+	EDBOper_DB     EDBOperType = 4
+	// ...
+)
+
+type EServerModel string
+
+const (
+	EnServer1 EServerModel = ""
+)

@@ -1,11 +1,11 @@
 package DataProvider
 
 import (
-	"common/DBService"
+	"common/ado"
 )
 
 var (
-	GDBProvider *DBService.TDBProvider
+	GDBProvider *ado.TDBProvider
 )
 
 func A_DataGet(DBKey string, Out interface{}){

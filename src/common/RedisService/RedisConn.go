@@ -51,6 +51,8 @@ package RedisService
 
 import (
 	"common/Log"
+	"common/ado"
+	"common/public"
 	"fmt"
 	"time"
 
@@ -102,7 +104,7 @@ func MakeRedisModel(Identify, MainModel, SubModel string) string {
 	SaveType: EDBOper_Insert
 	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (self *TRedisConn) Insert(Input IDBCache, SaveType EDBOperType) error {
+func (self *TRedisConn) Insert(Input public.IDBCache, SaveType ado.EDBOperType) error {
 	return self.Update(Input, SaveType)
 }
 
@@ -111,7 +113,7 @@ func (self *TRedisConn) Insert(Input IDBCache, SaveType EDBOperType) error {
 	SaveType: EDBOper_Update
 	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
-func (self *TRedisConn) Update(Input IDBCache, SaveType EDBOperType) (err error) {
+func (self *TRedisConn) Update(Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
 	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
@@ -128,7 +130,7 @@ func (self *TRedisConn) Update(Input IDBCache, SaveType EDBOperType) (err error)
 	Redis Oper func: Query
 	purpose: in order to Get data from Redis Cache.
 */
-func (self *TRedisConn) Query(Output IDBCache) (ret error) {
+func (self *TRedisConn) Query(Output public.IDBCache) (ret error) {
 	ret = nil
 	RedisKey := MakeRedisModel(Output.CacheKey(), Output.MainModel(), Output.SubModel())
 	data, err := self.RedPool.Get().Do("GET", RedisKey)
@@ -148,10 +150,10 @@ func (self *TRedisConn) Query(Output IDBCache) (ret error) {
 	return
 }
 
-func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType EDBOperType) (ret error) {
+func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
 	ret = nil
 	switch SaveType {
-	case EDBOper_Insert:
+	case ado.EDBOper_Insert:
 		ExpendCmd := []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
 		Ret, err := self.RedPool.Get().Do("SETNX", ExpendCmd...)
 		if err != nil {
@@ -167,7 +169,7 @@ func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType EDBOper
 			}
 		}
 
-	case EDBOper_Update:
+	case ado.EDBOper_Update:
 		// connect key and value.
 		var ExpendCmd = []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
 		if _, err := self.RedPool.Get().Do("SET", ExpendCmd...); err != nil {
@@ -182,9 +184,9 @@ func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType EDBOper
 			return
 		}
 
-	case EDBOper_Delete:
+	case ado.EDBOper_Delete:
 		// nothing...
-	case EDBOper_DB: //it can be presisted to database.
+	case ado.EDBOper_DB: //it can be presisted to database.
 		// for mogo db.
 	default:
 		// nothing...

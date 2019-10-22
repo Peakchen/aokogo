@@ -1,3 +1,5 @@
+package service
+
 /*
 Copyright (c) <year> <copyright holders>
 
@@ -8,11 +10,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -47,12 +49,37 @@ OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
-package main
+import (
+	"common/ado"
+	"common/public"
+)
 
-func init(){
+/*
 
+ */
+func (this *TDBProvider) DBSet(data public.IDBCache, Oper ado.EDBOperType) (err error) {
+	err = this.rconn.Update(data, Oper)
+	if Oper == ado.EDBOper_DB {
+		err = this.mconn.SaveOne(data)
+	}
+	return
 }
 
-func main(){
+/*
 
+ */
+func (this *TDBProvider) DBGet(Output public.IDBCache) (err error) {
+	err = this.rconn.Query(Output)
+	if err != nil {
+		err = this.mconn.QueryOne(Output)
+	}
+	return
+}
+
+/*
+
+ */
+func (this *TDBProvider) DBGetSome(Output public.IDBCache) (err error) {
+	// has no func need.
+	return nil
 }

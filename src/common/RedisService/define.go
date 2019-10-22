@@ -99,13 +99,3 @@ const (
 	REDIS_SET_DEADLINE REDIS_INT32 = 600 //s
 
 )
-
-type EDBOperType int32
-
-const (
-	EDBOper_Insert EDBOperType = 1
-	EDBOper_Update EDBOperType = 2
-	EDBOper_Delete EDBOperType = 3
-	EDBOper_DB     EDBOperType = 4
-	// ...
-)

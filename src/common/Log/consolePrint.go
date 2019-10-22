@@ -31,3 +31,7 @@ func FmtPrintln(params ...interface{}) {
 	fmt.Println(content...)
 	WriteLog(EnLogType_Info, "[Info]", "", content...)
 }
+
+func RetError(context string, params ...interface{}) error {
+	return fmt.Errorf(context, params...)
+}

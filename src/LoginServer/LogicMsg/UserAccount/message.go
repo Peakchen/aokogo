@@ -1,18 +1,11 @@
-package LogicMsg
+package UserAccount
 
 import (
 	"common/Log"
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
 	"common/tcpNet"
-	"net"
-
-	"github.com/golang/protobuf/proto"
 )
-
-func LoginMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg proto.Message) {
-	Log.FmtPrintf("exec login server message call back.", c.RemoteAddr(), c.LocalAddr())
-}
 
 func onUserBind(key string, req *MSG_Login.CS_UserBind_Req) (succ bool, err error) {
 	Log.FmtPrintf("onUserBind recv: %v, %v.", key, req.Account, req.Passwd)
@@ -24,6 +17,7 @@ func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_R
 	Log.FmtPrintf("[onUserRegister recv] SessionID: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.SessionID, req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
 	rsp := &MSG_Login.SC_UserRegister_Rsp{}
 	rsp.Ret = MSG_Login.ErrorCode_Success
+
 	return session.SendMsg(uint16(session.SrcPoint),
 		uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_UserRegister),

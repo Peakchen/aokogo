@@ -47,13 +47,12 @@ func NewClient(host string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb Mess
 
 func (this *TcpClient) Run() {
 	this.ctx, this.cancel = context.WithCancel(context.Background())
-	sw := &sync.WaitGroup{}
 	this.mpobj = &ClientProtocol{}
-	this.connect(sw)
+	this.connect(&this.wg)
 
 	this.wg.Add(2)
-	go this.loopconn(sw)
-	go this.loopoff(sw)
+	go this.loopconn(&this.wg)
+	go this.loopoff(&this.wg)
 	this.wg.Wait()
 }
 

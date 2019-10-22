@@ -31,11 +31,24 @@ func NewMgoConn(Username, Passwd, Host string) *AokoMgo {
 	return aokomogo
 }
 
-func (self *AokoMgo) NewDial() {
+func (this *AokoMgo) NewDial() {
+
+	for i := 1; i <= this.PoolCnt; i++ {
+		session, err := this.getSession()
+		if err != nil {
+			Log.FmtPrintln(err)
+			continue
+		}
+		this.chSessions <- session
+	}
+	return
+}
+
+func (this *AokoMgo) getSession() (session *mgo.Session, err error) {
 	MdialInfo := &mgo.DialInfo{
-		Addrs:        []string{self.ServiceHost},
-		Username:     self.UserName,
-		Password:     self.Passwd,
+		Addrs:        []string{this.ServiceHost},
+		Username:     this.UserName,
+		Password:     this.Passwd,
 		Direct:       false,
 		Timeout:      time.Second * 3,
 		PoolLimit:    4096,
@@ -43,15 +56,17 @@ func (self *AokoMgo) NewDial() {
 		WriteTimeout: time.Second * 5,
 	}
 
-	session, err := mgo.DialWithInfo(MdialInfo)
+	session, err = mgo.DialWithInfo(MdialInfo)
 	if err != nil {
+		err = Log.RetError("mgo dial err: %v.\n", err)
 		Log.Error("mgo dial err: %v.\n", err)
 		return
 	}
 
 	err = session.Ping()
 	if err != nil {
-		Log.Error("session ping out, err: ", err)
+		err = Log.RetError("session ping out, err: %v.", err)
+		Log.Error("session ping out, err: %v.", err)
 		return
 	}
 
@@ -66,33 +81,31 @@ func (self *AokoMgo) NewDial() {
 	}
 	session.SetSafe(Safe)
 	//session.SetSocketTimeout(time.Duration(5 * time.Second()))
-	for i := 1; i <= self.PoolCnt; i++ {
-		self.chSessions <- self.session.Copy()
-	}
+	err = nil
 	return
 }
 
-func (self *AokoMgo) Stop() {
-	if self.session != nil {
-		self.session.Close()
+func (this *AokoMgo) Stop() {
+	if this.session != nil {
+		this.session.Close()
 	}
 }
 
-func (self *AokoMgo) GetDB() *mgo.Session {
-	if self.session == nil {
-		self.NewDial()
+func (this *AokoMgo) GetDB() *mgo.Session {
+	if this.session == nil {
+		this.NewDial()
 	}
 
-	return self.session.Clone()
+	return this.session.Clone()
 }
 
-func (self *AokoMgo) OnTimer2FlushDB() {
+func (this *AokoMgo) OnTimer2FlushDB() {
 	reach := time.NewTicker(100 * time.Millisecond)
 	for {
 		select {
 		case <-reach.C:
 			// todo:
-			self.FlushDB()
+			this.FlushDB()
 		default:
 			// nothing...
 
@@ -100,13 +113,13 @@ func (self *AokoMgo) OnTimer2FlushDB() {
 	}
 }
 
-func (self *AokoMgo) FlushDB() {
+func (this *AokoMgo) FlushDB() {
 
 }
 
-func (self *AokoMgo) GetSession() (sess *mgo.Session, err error) {
+func (this *AokoMgo) GetSession() (sess *mgo.Session, err error) {
 	select {
-	case s, _ := <-self.chSessions:
+	case s, _ := <-this.chSessions:
 		return s, nil
 	case <-time.After(time.Duration(time.Second)):
 	default:
@@ -118,8 +131,8 @@ func MakeMgoModel(Identify, MainModel, SubModel string) string {
 	return MainModel + "." + SubModel + "." + Identify
 }
 
-func (self *AokoMgo) QueryOne(OutParam IDBCache) (err error) {
-	session, err := self.GetSession()
+func (this *AokoMgo) QueryOne(OutParam IDBCache) (err error) {
+	session, err := this.GetSession()
 	if err != nil {
 		return err
 	}
@@ -134,8 +147,8 @@ func (self *AokoMgo) QueryOne(OutParam IDBCache) (err error) {
 	return
 }
 
-func (self *AokoMgo) QuerySome(OutParam IDBCache) (err error) {
-	session, err := self.GetSession()
+func (this *AokoMgo) QuerySome(OutParam IDBCache) (err error) {
+	session, err := this.GetSession()
 	if err != nil {
 		return err
 	}
@@ -150,8 +163,8 @@ func (self *AokoMgo) QuerySome(OutParam IDBCache) (err error) {
 	return
 }
 
-func (self *AokoMgo) SaveOne(InParam IDBCache) (err error) {
-	session, err := self.GetSession()
+func (this *AokoMgo) SaveOne(InParam IDBCache) (err error) {
+	session, err := this.GetSession()
 	if err != nil {
 		return err
 	}
@@ -167,8 +180,8 @@ func (self *AokoMgo) SaveOne(InParam IDBCache) (err error) {
 	return
 }
 
-func (self *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
-	session, err := self.GetSession()
+func (this *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
+	session, err := this.GetSession()
 	if err != nil {
 		return err
 	}
