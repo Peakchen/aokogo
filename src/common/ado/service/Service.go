@@ -1,7 +1,7 @@
 package service
 
 import (
-	"common/Config"
+	"common/Config/serverConfig"
 	"common/Log"
 	"common/MgoService"
 	"common/RedisService"
@@ -20,14 +20,16 @@ type TDBProvider struct {
 	wg          sync.WaitGroup
 }
 
-func (this *TDBProvider) StartDBService(RedisCfg *Config.TRedisConfig, MgoCfg *Config.TMgoConfig) {
+func (this *TDBProvider) StartDBService(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig, isOpenLoop bool) {
 	this.rconn = RedisService.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
 	this.mconn = MgoService.NewMgoConn(MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
 
-	this.ctx, this.cancle = context.WithCancel(context.Background())
-	this.wg.Add(1)
-	go this.LoopSyncDBHard(&this.wg)
-	this.wg.Wait()
+	if isOpenLoop {
+		this.ctx, this.cancle = context.WithCancel(context.Background())
+		this.wg.Add(1)
+		go this.LoopSyncDBHard(&this.wg)
+		this.wg.Wait()
+	}
 }
 
 func (this *TDBProvider) LoopSyncDBHard(wg *sync.WaitGroup) {

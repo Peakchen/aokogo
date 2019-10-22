@@ -47,8 +47,8 @@ func (this *TServer2ServerSession) GetSessionByID(sessionID uint64) (session *tc
 	return
 }
 
-func (this *TServer2ServerSession) AddSession(session *TcpSession) {
-	this.c2sSession.Store(session.SessionID, session)
+func (this *TServer2ServerSession) AddSession(session *tcpNet.TcpSession) {
+	this.s2sSession.Store(session.SessionID, session)
 }
 
 func init() {

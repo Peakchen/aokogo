@@ -50,10 +50,9 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"GameServer/LogicMsg"
-	"common/Define"
+	"GameServer/server"
+	"common/Config/serverConfig"
 	"common/Log"
-	"common/tcpNet"
 	//"log"
 )
 
@@ -64,14 +63,6 @@ func init() {
 func main() {
 	Log.FmtPrintf("start gameServer.")
 
-	gameSvr := tcpNet.NewClient(Define.GameServerHost,
-		Define.ERouteId_ER_Game,
-		Define.ERouteId_ER_Client,
-		Define.ERouteId_ER_ESG,
-		LogicMsg.GameMessageCallBack,
-		LogicMsg.AfterDialCallBack,
-		nil)
-
-	gameSvr.Run()
+	server.StartServer(serverConfig.GServerBaseConfig)
 	return
 }

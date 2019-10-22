@@ -5,24 +5,14 @@
 package main
 
 import (
-	"ExternalGateway/SessionMgr"
-	"LoginServer/LogicMsg"
-	"common/Define"
+	"LoginServer/server"
+	"common/Config/serverConfig"
 	"common/Log"
-	"common/tcpNet"
 )
 
 func main() {
 	Log.FmtPrintln("start login server.")
 
-	gameSvr := tcpNet.NewClient(Define.LoginServerHost,
-		Define.ERouteId_ER_Login,
-		Define.ERouteId_ER_Login,
-		Define.ERouteId_ER_ESG,
-		LogicMsg.LoginMessageCallBack,
-		nil,
-		SessionMgr.GClient2ServerSession)
-
-	gameSvr.Run()
+	server.StartServer(serverConfig.GServerBaseConfig)
 	return
 }

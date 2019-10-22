@@ -1,7 +1,7 @@
 package service
 
 import (
-	"common/Config"
+	"common/Config/serverConfig"
 )
 
 var (
@@ -12,8 +12,8 @@ func NewDBProvider() {
 	GDBProvider = &TDBProvider{}
 }
 
-func Run(RedisCfg *Config.TRedisConfig, MgoCfg *Config.TMgoConfig) {
-	GDBProvider.StartDBService(RedisCfg, MgoCfg)
+func Run(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+	GDBProvider.StartDBService(RedisCfg, MgoCfg, true)
 }
 
 func init() {
