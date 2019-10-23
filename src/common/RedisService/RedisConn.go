@@ -140,6 +140,12 @@ func (self *TRedisConn) Query(Output public.IDBCache) (ret error) {
 		return
 	}
 
+	if data == nil {
+		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
+		Log.Error("[Query] err: %v.\n", err)
+		return
+	}
+
 	BUmalErr := bson.Unmarshal(data.([]byte), &Output)
 	if BUmalErr != nil {
 		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)

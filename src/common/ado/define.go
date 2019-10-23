@@ -64,7 +64,8 @@ const (
 /*
 
  */
-type IDBModule interface {
+type IDBModule struct {
+	ModuleID string
 	// Get(module IDBModule) (err error)
 	// Insert(module IDBModule) (err error)
 	// Update(module IDBModule) (err error)

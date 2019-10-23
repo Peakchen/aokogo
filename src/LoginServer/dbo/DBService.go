@@ -11,14 +11,16 @@ var (
 	GDBProvider *service.TDBProvider
 )
 
-func A_DataGet(key string, Out public.IDBCache) {
+func A_DataGet(Out public.IDBCache) (err error) {
 	// check redis can get db data, if not exist, then from mogo.
-	GDBProvider.DBGet(key, Out)
+	err = GDBProvider.DBGet(Out)
+	return
 }
 
-func A_DataSet(key string, In public.IDBCache) {
+func A_DataSet(In public.IDBCache) (err error) {
 	// check save data to redis cache or db persistence.
-	GDBProvider.DBSet(key, In, ado.EDBOper_Update)
+	err = GDBProvider.DBSet(In, ado.EDBOper_Update)
+	return
 }
 
 func StartDBSerice(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {

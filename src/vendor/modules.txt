@@ -1,17 +1,17 @@
 # github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 github.com/axgle/mahonia
 # github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
-github.com/globalsign/mgo
 github.com/globalsign/mgo/bson
+github.com/globalsign/mgo
+github.com/globalsign/mgo/internal/json
 github.com/globalsign/mgo/internal/sasl
 github.com/globalsign/mgo/internal/scram
-github.com/globalsign/mgo/internal/json
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
 # github.com/gomodule/redigo v2.0.0+incompatible
 github.com/gomodule/redigo/redis
 github.com/gomodule/redigo/internal
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid

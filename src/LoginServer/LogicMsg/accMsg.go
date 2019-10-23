@@ -1,6 +1,7 @@
-package UserAccount
+package LogicMsg
 
 import (
+	"LoginServer/Logic/UserAccount"
 	"common/Log"
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
@@ -17,6 +18,15 @@ func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_R
 	Log.FmtPrintf("[onUserRegister recv] SessionID: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.SessionID, req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
 	rsp := &MSG_Login.SC_UserRegister_Rsp{}
 	rsp.Ret = MSG_Login.ErrorCode_Success
+
+	acc := &UserAccount.TUserAcc{
+		UserName:   req.Account,
+		Passwd:     req.Passwd,
+		DeviceNo:   req.DeviceSerial,
+		DeviceType: req.DeviceName,
+	}
+
+	UserAccount.FindUserAcc(acc)
 
 	return session.SendMsg(uint16(session.SrcPoint),
 		uint16(MSG_MainModule.MAINMSG_LOGIN),
