@@ -135,21 +135,21 @@ func (self *TRedisConn) Query(Output public.IDBCache) (ret error) {
 	RedisKey := MakeRedisModel(Output.CacheKey(), Output.MainModel(), Output.SubModel())
 	data, err := self.RedPool.Get().Do("GET", RedisKey)
 	if err != nil {
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
-		Log.Error("[Query] err: %v.\n", err)
+		ret = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
+		Log.Error("[Query] err: %v.\n", ret)
 		return
 	}
 
 	if data == nil {
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
-		Log.Error("[Query] err: %v.\n", err)
+		ret = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel())
+		Log.Error("[Query] err: %v.\n", ret)
 		return
 	}
 
-	BUmalErr := bson.Unmarshal(data.([]byte), &Output)
+	BUmalErr := bson.Unmarshal(data.([]byte), Output)
 	if BUmalErr != nil {
-		err = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
-		Log.Error("[Query] can not bson Unmarshal get data to Output, err: %v.\n", err)
+		ret = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
+		Log.Error("[Query] can not bson Unmarshal get data to Output, err: %v.\n", ret)
 		return
 	}
 

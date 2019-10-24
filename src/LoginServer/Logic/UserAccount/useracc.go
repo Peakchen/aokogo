@@ -3,8 +3,6 @@ package UserAccount
 import (
 	"LoginServer/dbo"
 	"common/ado"
-
-	"github.com/globalsign/mgo/bson"
 )
 
 /*
@@ -33,10 +31,14 @@ func (this *TUserAcc) SubModel() string {
 }
 
 func FindUserAcc(acc *TUserAcc) (exist bool) {
-	acc.ModuleID = bson.NewObjectId().Hex()
+	//acc.ModuleID = bson.NewObjectId().Hex()
+	acc.ModuleID = acc.UserName
 	err := dbo.A_DataGet(acc)
 	if err != nil {
+		err = dbo.A_DataSet(acc)
+		if err != nil {
 
+		}
 	}
 	return
 }
