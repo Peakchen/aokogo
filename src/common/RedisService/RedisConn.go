@@ -104,8 +104,8 @@ func MakeRedisModel(Identify, MainModel, SubModel string) string {
 	SaveType: EDBOper_Insert
 	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (self *TRedisConn) Insert(Input public.IDBCache, SaveType ado.EDBOperType) error {
-	return self.Update(Input, SaveType)
+func (self *TRedisConn) Insert(Input public.IDBCache) error {
+	return self.Update(Input, ado.EDBOper_Insert)
 }
 
 /*

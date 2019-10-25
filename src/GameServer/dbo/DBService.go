@@ -11,14 +11,14 @@ var (
 	GDBProvider *service.TDBProvider
 )
 
-func A_DataGet(Out public.IDBCache) {
+func A_DBRead(Out public.IDBCache) {
 	// check redis can get db data, if not exist, then from mogo.
-	GDBProvider.DBGet(Out)
+	GDBProvider.Get(Out)
 }
 
-func A_DataSet(In public.IDBCache) {
+func A_DBUpdate(In public.IDBCache) {
 	// check save data to redis cache or db persistence.
-	GDBProvider.DBSet(In, ado.EDBOper_Update)
+	GDBProvider.Update(In, ado.EDBOper_Update)
 }
 
 func StartDBSerice(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {

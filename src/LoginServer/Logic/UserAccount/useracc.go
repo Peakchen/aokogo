@@ -30,15 +30,25 @@ func (this *TUserAcc) SubModel() string {
 	return cstAccSubModule
 }
 
-func FindUserAcc(acc *TUserAcc) (exist bool) {
-	//acc.ModuleID = bson.NewObjectId().Hex()
+func RegisterUseAcc(acc *TUserAcc) (err error, exist bool) {
 	acc.ModuleID = acc.UserName
-	err := dbo.A_DataGet(acc)
+	err = dbo.A_DBRead(acc)
 	if err != nil {
-		err = dbo.A_DataSet(acc)
+		err = dbo.A_DBInsert(acc)
 		if err != nil {
-
+			return
 		}
+	} else {
+		exist = true
+	}
+	return
+}
+
+func GetUserAcc(acc *TUserAcc) (exist bool) {
+	acc.ModuleID = acc.UserName
+	err := dbo.A_DBRead(acc)
+	if err == nil {
+		exist = true
 	}
 	return
 }

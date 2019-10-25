@@ -57,9 +57,17 @@ import (
 /*
 
  */
-func (this *TDBProvider) DBSet(data public.IDBCache, Oper ado.EDBOperType) (err error) {
+func (this *TDBProvider) Update(data public.IDBCache, Oper ado.EDBOperType) (err error) {
 	err = this.rconn.Update(data, Oper)
 	if Oper == ado.EDBOper_DB {
+		err = this.mconn.SaveOne(data)
+	}
+	return
+}
+
+func (this *TDBProvider) Insert(data public.IDBCache) (err error) {
+	err = this.rconn.Insert(data)
+	if err == nil {
 		err = this.mconn.SaveOne(data)
 	}
 	return
@@ -68,7 +76,7 @@ func (this *TDBProvider) DBSet(data public.IDBCache, Oper ado.EDBOperType) (err 
 /*
 
  */
-func (this *TDBProvider) DBGet(Output public.IDBCache) (err error) {
+func (this *TDBProvider) Get(Output public.IDBCache) (err error) {
 	err = this.rconn.Query(Output)
 	if err != nil {
 		err = this.mconn.QueryOne(Output)
