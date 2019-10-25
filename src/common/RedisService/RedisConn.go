@@ -114,7 +114,7 @@ func (self *TRedisConn) Insert(Input public.IDBCache) error {
 	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
 func (self *TRedisConn) Update(Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
-	RedisKey := MakeRedisModel(Input.CacheKey(), Input.MainModel(), Input.SubModel())
+	RedisKey := MakeRedisModel(Input.Identify(), Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
 		err = fmt.Errorf("bson.Marshal err: %v.\n", err)
@@ -132,23 +132,23 @@ func (self *TRedisConn) Update(Input public.IDBCache, SaveType ado.EDBOperType) 
 */
 func (self *TRedisConn) Query(Output public.IDBCache) (ret error) {
 	ret = nil
-	RedisKey := MakeRedisModel(Output.CacheKey(), Output.MainModel(), Output.SubModel())
+	RedisKey := MakeRedisModel(Output.Identify(), Output.MainModel(), Output.SubModel())
 	data, err := self.RedPool.Get().Do("GET", RedisKey)
 	if err != nil {
-		ret = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
+		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.Identify(), Output.MainModel(), Output.SubModel(), data)
 		Log.Error("[Query] err: %v.\n", ret)
 		return
 	}
 
 	if data == nil {
-		ret = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel())
+		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Output.Identify(), Output.MainModel(), Output.SubModel())
 		Log.Error("[Query] err: %v.\n", ret)
 		return
 	}
 
 	BUmalErr := bson.Unmarshal(data.([]byte), Output)
 	if BUmalErr != nil {
-		ret = fmt.Errorf("CacheKey: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.CacheKey(), Output.MainModel(), Output.SubModel(), data)
+		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.Identify(), Output.MainModel(), Output.SubModel(), data)
 		Log.Error("[Query] can not bson Unmarshal get data to Output, err: %v.\n", ret)
 		return
 	}
@@ -161,7 +161,7 @@ func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType ado.EDB
 	switch SaveType {
 	case ado.EDBOper_Insert:
 		ExpendCmd := []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
-		Ret, err := self.RedPool.Get().Do("SETNX", ExpendCmd...)
+		Ret, err := self.RedPool.Get().Do("SET", ExpendCmd...)
 		if err != nil {
 			Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
 			return

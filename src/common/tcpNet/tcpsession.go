@@ -94,6 +94,8 @@ type TcpSession struct {
 	DestPoint Define.ERouteId
 	//src point
 	SrcPoint Define.ERouteId
+	//person StrIdentify
+	StrIdentify string
 }
 
 const (
@@ -351,6 +353,10 @@ func (this *TcpSession) Push(SrcPoint Define.ERouteId, cmds []uint32) {
 	}
 	this.SrcPoint = SrcPoint
 	this.Engine.PushCmdSession(this, cmds)
+}
+
+func (this *TcpSession) SetIdentify(StrIdentify string) {
+	this.StrIdentify = StrIdentify
 }
 
 func (this *TcpSession) Offline() {

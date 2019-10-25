@@ -103,7 +103,8 @@ func (self *TModuleCommon) sendloop(conn net.Conn) {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
-	for i := 0; i < 5; i++ {
+
+	for i := 0; i < 1; i++ {
 		Log.FmtPrintln("time: ", i)
 		if !self.sender(conn) {
 			tick := time.NewTicker(time.Duration(3 * time.Second))

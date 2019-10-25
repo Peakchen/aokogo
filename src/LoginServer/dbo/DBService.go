@@ -11,9 +11,9 @@ var (
 	GDBProvider *service.TDBProvider
 )
 
-func A_DBRead(Out public.IDBCache) (err error) {
+func A_DBRead(Out public.IDBCache) (err error, exist bool) {
 	// check redis can get db data, if not exist, then from mogo.
-	err = GDBProvider.Get(Out)
+	err, exist = GDBProvider.Get(Out)
 	return
 }
 

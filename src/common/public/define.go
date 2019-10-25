@@ -4,7 +4,7 @@ package public
 
  */
 type IDBCache interface {
-	CacheKey() string
+	Identify() string
 	MainModel() string
 	SubModel() string
 }

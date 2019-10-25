@@ -3,6 +3,8 @@ package UserAccount
 import (
 	"LoginServer/dbo"
 	"common/ado"
+
+	"github.com/globalsign/mgo/bson"
 )
 
 /*
@@ -18,8 +20,8 @@ type TUserAcc struct {
 	DeviceType string //device type (ios,androd)
 }
 
-func (this *TUserAcc) CacheKey() string {
-	return this.ModuleID
+func (this *TUserAcc) Identify() string {
+	return this.StrIdentify
 }
 
 func (this *TUserAcc) MainModel() string {
@@ -30,23 +32,26 @@ func (this *TUserAcc) SubModel() string {
 	return cstAccSubModule
 }
 
-func RegisterUseAcc(acc *TUserAcc) (err error, exist bool) {
-	acc.ModuleID = acc.UserName
-	err = dbo.A_DBRead(acc)
+func RegisterUseAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
+	if len(Identify) == 0 {
+		acc.StrIdentify = bson.NewObjectId().Hex()
+	} else {
+		acc.StrIdentify = Identify
+	}
+
+	err, exist = dbo.A_DBRead(acc)
 	if err != nil {
 		err = dbo.A_DBInsert(acc)
 		if err != nil {
 			return
 		}
-	} else {
-		exist = true
 	}
 	return
 }
 
-func GetUserAcc(acc *TUserAcc) (exist bool) {
-	acc.ModuleID = acc.UserName
-	err := dbo.A_DBRead(acc)
+func GetUserAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
+	acc.StrIdentify = Identify
+	err, exist = dbo.A_DBRead(acc)
 	if err == nil {
 		exist = true
 	}

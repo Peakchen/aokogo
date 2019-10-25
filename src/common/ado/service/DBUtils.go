@@ -68,7 +68,7 @@ func (this *TDBProvider) Update(data public.IDBCache, Oper ado.EDBOperType) (err
 func (this *TDBProvider) Insert(data public.IDBCache) (err error) {
 	err = this.rconn.Insert(data)
 	if err == nil {
-		err = this.mconn.SaveOne(data)
+		err = this.mconn.InsertOne(data)
 	}
 	return
 }
@@ -76,10 +76,12 @@ func (this *TDBProvider) Insert(data public.IDBCache) (err error) {
 /*
 
  */
-func (this *TDBProvider) Get(Output public.IDBCache) (err error) {
+func (this *TDBProvider) Get(Output public.IDBCache) (err error, exist bool) {
 	err = this.rconn.Query(Output)
 	if err != nil {
-		err = this.mconn.QueryOne(Output)
+		err, exist = this.mconn.QueryOne(Output)
+	} else {
+		exist = true
 	}
 	return
 }
