@@ -80,6 +80,8 @@ func (this *TDBProvider) Get(Output public.IDBCache) (err error, exist bool) {
 	err = this.rconn.Query(Output)
 	if err != nil {
 		err, exist = this.mconn.QueryOne(Output)
+		//redis not exist, then update
+		err = this.rconn.Update(Output, ado.EDBOper_Update)
 	} else {
 		exist = true
 	}
