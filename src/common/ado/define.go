@@ -65,10 +65,7 @@ const (
 
  */
 type IDBModule struct {
-	StrIdentify string
-	// Get(module IDBModule) (err error)
-	// Insert(module IDBModule) (err error)
-	// Update(module IDBModule) (err error)
+	StrIdentify string `bson:"_id" json:"_id"`
 }
 
 type EDBOperType int32

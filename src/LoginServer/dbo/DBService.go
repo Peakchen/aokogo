@@ -11,6 +11,12 @@ var (
 	GDBProvider *service.TDBProvider
 )
 
+func A_DBReadAcc(Out public.IDBCache) (err error, exist bool) {
+	// check redis can get db data, if not exist, then from mogo.
+	err, exist = GDBProvider.GetAcc(Out)
+	return
+}
+
 func A_DBRead(Out public.IDBCache) (err error, exist bool) {
 	// check redis can get db data, if not exist, then from mogo.
 	err, exist = GDBProvider.Get(Out)
@@ -30,8 +36,8 @@ func A_DBInsert(In public.IDBCache) (err error) {
 
 }
 
-func StartDBSerice(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	GDBProvider.StartDBService(RedisCfg, MgoCfg, false)
+func StartDBSerice(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+	GDBProvider.StartDBService(server, RedisCfg, MgoCfg, false)
 }
 
 func init() {

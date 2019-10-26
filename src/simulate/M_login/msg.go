@@ -44,8 +44,8 @@ func UserLogin() {
 	req := &MSG_Login.CS_UserRegister_Req{}
 	req.Account = "test"
 	req.Passwd = "abc"
-	req.DeviceSerial = "123"
-	req.DeviceName = "androd"
+	req.DeviceSerial = "456"
+	req.DeviceName = "iso"
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
 	loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
 		uint16(MSG_MainModule.MAINMSG_LOGIN),

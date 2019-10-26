@@ -4,6 +4,7 @@ import (
 	"common/Log"
 	. "common/public"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/globalsign/mgo"
@@ -17,13 +18,15 @@ type AokoMgo struct {
 	ServiceHost string
 	chSessions  chan *mgo.Session
 	PoolCnt     int
+	server      string
 }
 
-func NewMgoConn(Username, Passwd, Host string) *AokoMgo {
+func NewMgoConn(server, Username, Passwd, Host string) *AokoMgo {
 	aokomogo := &AokoMgo{}
 	aokomogo.UserName = Username
 	aokomogo.Passwd = Passwd
 	aokomogo.ServiceHost = Host
+	aokomogo.server = server
 	//template set 10 session.
 	aokomogo.PoolCnt = 10
 	aokomogo.chSessions = make(chan *mgo.Session, aokomogo.PoolCnt)
@@ -131,26 +134,54 @@ func MakeMgoModel(Identify, MainModel, SubModel string) string {
 	return MainModel + "." + SubModel + "." + Identify
 }
 
+func (this *AokoMgo) QueryAcc(OutParam IDBCache) (err error, exist bool) {
+	condition := bson.M{OutParam.SubModel() + "." + "username": OutParam.Identify()}
+	return this.QueryByCondition(condition, OutParam)
+}
+
 func (this *AokoMgo) QueryOne(OutParam IDBCache) (err error, exist bool) {
+	condition := bson.M{"_id": OutParam.Identify()}
+	return this.QueryByCondition(condition, OutParam)
+}
+
+func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err error, exist bool) {
 	session, err := this.GetSession()
 	if err != nil {
-		return
-	}
-	s := session.Clone()
-	defer s.Close()
-	collection := s.DB(OutParam.MainModel()).C(OutParam.SubModel())
-	err = collection.Find(bson.M{"_id": OutParam.Identify()}).One(&OutParam)
-	if err != nil {
-		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.Identify(), OutParam.MainModel(), OutParam.SubModel(), err)
-		Log.Error("[QueryOne] err: %v.\n", err)
+		err = Log.RetError("get sesson err: %v.", err)
 		return
 	}
 
-	if err == mgo.ErrNotFound {
-		exist = false
-	} else {
-		exist = true
+	s := session.Clone()
+	defer s.Close()
+	collection := s.DB(this.server).C(OutParam.MainModel())
+	retQuerys := collection.Find(condition)
+	count, ret := retQuerys.Count()
+	if ret != nil || count == 0 {
+		err = Log.RetError("[mgo] query data err: %v, %v.", ret, count)
+		return
 	}
+
+	selectRet := retQuerys.Select(bson.M{OutParam.SubModel(): 1, "_id": 1}).Limit(1)
+	if selectRet == nil {
+		err = Log.RetError("[mgo] selectRet invalid, submodule: %v.", OutParam.SubModel())
+		return
+	}
+
+	outval := reflect.MakeMap(reflect.MapOf(reflect.TypeOf(""), reflect.TypeOf(OutParam)))
+	ret = selectRet.One(outval.Interface())
+	if ret != nil {
+		err = Log.RetError("[mgo] select one error: %v.", ret)
+		return
+	}
+
+	retIdxVal := outval.MapIndex(reflect.ValueOf(OutParam.SubModel()))
+	if !retIdxVal.IsValid() {
+		err = Log.RetError("[mgo] outval MapIndex invalid.")
+		return
+	}
+
+	reflect.ValueOf(OutParam).Elem().Set(retIdxVal.Elem())
+	exist = true
 	return
 }
 
@@ -159,9 +190,10 @@ func (this *AokoMgo) QuerySome(OutParam IDBCache) (err error) {
 	if err != nil {
 		return err
 	}
+
 	s := session.Clone()
 	defer s.Close()
-	collection := s.DB(OutParam.MainModel()).C(OutParam.SubModel())
+	collection := s.DB(this.server).C(OutParam.MainModel())
 	err = collection.Find(bson.M{"_id": OutParam.Identify()}).All(&OutParam)
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", OutParam.Identify(), OutParam.MainModel(), OutParam.SubModel(), err)
@@ -177,10 +209,9 @@ func (this *AokoMgo) InsertOne(InParam IDBCache) (err error) {
 	}
 	s := session.Clone()
 	defer s.Close()
-	collection := s.DB(InParam.MainModel()).C(InParam.SubModel())
-	operkey := bson.M{"_id": InParam.Identify()}
-	operAction := bson.M{"set": bson.M{InParam.SubModel(): InParam}}
-	err = collection.Insert(operkey, operAction)
+	collection := s.DB(this.server).C(InParam.MainModel())
+	operAction := bson.M{"_id": InParam.Identify(), InParam.SubModel(): InParam}
+	err = collection.Insert(operAction)
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", InParam.Identify(), InParam.MainModel(), InParam.SubModel(), err)
 		Log.Error("[SaveOne] err: %v.\n", err)
@@ -195,8 +226,8 @@ func (this *AokoMgo) SaveOne(InParam IDBCache) (err error) {
 	}
 	s := session.Clone()
 	defer s.Close()
-	collection := s.DB(InParam.MainModel()).C(InParam.SubModel())
-	operAction := bson.M{"$set": bson.M{InParam.SubModel(): InParam}}
+	collection := s.DB(this.server).C(InParam.MainModel())
+	operAction := bson.M{InParam.SubModel(): InParam}
 	err = collection.Update(bson.M{"_id": InParam.Identify()}, operAction)
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", InParam.Identify(), InParam.MainModel(), InParam.SubModel(), err)
@@ -212,7 +243,7 @@ func (this *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
 	}
 	s := session.Clone()
 	defer s.Close()
-	c := s.DB(InParam.MainModel()).C(InParam.SubModel())
+	c := s.DB(this.server).C(InParam.SubModel())
 	err = c.EnsureIndex(mgo.Index{Key: idxs})
 	return err
 }

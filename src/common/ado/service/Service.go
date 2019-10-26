@@ -12,17 +12,18 @@ import (
 )
 
 type TDBProvider struct {
-	rconn       *RedisService.TRedisConn
-	mconn       *MgoService.AokoMgo
-	ServerModel ado.EServerModel
-	ctx         context.Context
-	cancle      context.CancelFunc
-	wg          sync.WaitGroup
+	rconn  *RedisService.TRedisConn
+	mconn  *MgoService.AokoMgo
+	Server string
+	ctx    context.Context
+	cancle context.CancelFunc
+	wg     sync.WaitGroup
 }
 
-func (this *TDBProvider) StartDBService(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig, isOpenLoop bool) {
+func (this *TDBProvider) StartDBService(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig, isOpenLoop bool) {
+	this.Server = Server
 	this.rconn = RedisService.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
-	this.mconn = MgoService.NewMgoConn(MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
+	this.mconn = MgoService.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
 
 	if isOpenLoop {
 		this.ctx, this.cancle = context.WithCancel(context.Background())
@@ -55,7 +56,7 @@ func (this *TDBProvider) SyncDBHard() {
 		return
 	}
 
-	DBKey := ":" + this.ServerModel + "_Update_Oper"
+	DBKey := ":" + this.Server + "_Update_Oper"
 	_, err := this.rconn.RedPool.Get().Do("SMEMBERS", DBKey)
 	if err != nil {
 		Log.Error("DBProvider get redis ", err)

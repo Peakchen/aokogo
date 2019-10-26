@@ -49,14 +49,15 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"common/Config"
+	"common/Config/serverConfig"
 	"common/Log"
 	"common/ado/service"
 )
 
 func main() {
 	Log.FmtPrintln("run db server.")
-	service.Run(Config.GRedisCfgProvider, Config.GMgoCfgProvider)
+	server := serverConfig.GServerBaseConfig.LoginConfig.Zone + serverConfig.GServerBaseConfig.LoginConfig.No
+	service.Run(server, serverConfig.GRedisCfgProvider, serverConfig.GMgoCfgProvider)
 }
 
 func init() {

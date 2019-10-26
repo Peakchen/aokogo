@@ -5,6 +5,6 @@ package UserAccount
  */
 
 const (
-	cstAccMainModule = string("AccMainModule")
-	cstAccSubModule  = string("AccSubModule")
+	cstAccMainModule = string("AccMain")
+	cstAccSubModule  = string("AccSub")
 )

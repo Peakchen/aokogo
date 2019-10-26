@@ -86,6 +86,11 @@ func (this *TDBProvider) Get(Output public.IDBCache) (err error, exist bool) {
 	return
 }
 
+func (this *TDBProvider) GetAcc(Output public.IDBCache) (err error, exist bool) {
+	err, exist = this.mconn.QueryAcc(Output)
+	return
+}
+
 /*
 
  */

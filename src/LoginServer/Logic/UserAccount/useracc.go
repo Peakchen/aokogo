@@ -33,14 +33,10 @@ func (this *TUserAcc) SubModel() string {
 }
 
 func RegisterUseAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
-	if len(Identify) == 0 {
-		acc.StrIdentify = bson.NewObjectId().Hex()
-	} else {
-		acc.StrIdentify = Identify
-	}
-
-	err, exist = dbo.A_DBRead(acc)
+	acc.StrIdentify = acc.UserName
+	err, exist = dbo.A_DBReadAcc(acc)
 	if err != nil {
+		acc.StrIdentify = bson.NewObjectId().Hex()
 		err = dbo.A_DBInsert(acc)
 		if err != nil {
 			return
@@ -50,6 +46,10 @@ func RegisterUseAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
 }
 
 func GetUserAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
+	if len(Identify) == 0 {
+		return
+	}
+
 	acc.StrIdentify = Identify
 	err, exist = dbo.A_DBRead(acc)
 	if err == nil {

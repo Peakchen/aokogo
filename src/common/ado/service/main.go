@@ -12,8 +12,8 @@ func NewDBProvider() {
 	GDBProvider = &TDBProvider{}
 }
 
-func Run(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	GDBProvider.StartDBService(RedisCfg, MgoCfg, true)
+func Run(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+	GDBProvider.StartDBService(server, RedisCfg, MgoCfg, true)
 }
 
 func init() {
