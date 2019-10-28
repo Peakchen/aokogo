@@ -161,7 +161,7 @@ func (self *TRedisConn) Save(RedisKey string, data interface{}, SaveType ado.EDB
 	switch SaveType {
 	case ado.EDBOper_Insert:
 		ExpendCmd := []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
-		Ret, err := self.RedPool.Get().Do("SET", ExpendCmd...)
+		Ret, err := self.RedPool.Get().Do("SETNX", ExpendCmd...) // set if not exist
 		if err != nil {
 			Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
 			return

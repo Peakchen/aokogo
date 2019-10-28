@@ -32,10 +32,9 @@ func (this *TUserAcc) SubModel() string {
 	return cstAccSubModule
 }
 
-func RegisterUseAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
-	acc.StrIdentify = acc.UserName
-	err, exist = dbo.A_DBReadAcc(acc)
-	if err != nil {
+func RegisterUseAcc(acc *TUserAcc) (err error, exist bool) {
+	err, exist = GetUserAcc(acc)
+	if !exist {
 		acc.StrIdentify = bson.NewObjectId().Hex()
 		err = dbo.A_DBInsert(acc)
 		if err != nil {
@@ -45,13 +44,9 @@ func RegisterUseAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
 	return
 }
 
-func GetUserAcc(acc *TUserAcc, Identify string) (err error, exist bool) {
-	if len(Identify) == 0 {
-		return
-	}
-
-	acc.StrIdentify = Identify
-	err, exist = dbo.A_DBRead(acc)
+func GetUserAcc(acc *TUserAcc) (err error, exist bool) {
+	acc.StrIdentify = acc.UserName
+	err, exist = dbo.A_DBReadAcc(acc)
 	if err == nil {
 		exist = true
 	}

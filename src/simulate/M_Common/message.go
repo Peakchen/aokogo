@@ -36,27 +36,31 @@ func NewModule(host, module string) *TModuleCommon {
 	}
 }
 
-func (self *TModuleCommon) PushMsg(dstpoint, mainid, subid uint16, msg proto.Message) {
-	buff := self.clientPack.PackMsg(dstpoint,
+func (this *TModuleCommon) PushMsg(dstpoint, mainid, subid uint16, msg proto.Message) {
+	buff := this.clientPack.PackMsg(dstpoint,
 		mainid,
 		subid,
 		msg)
-	self.data = make([]byte, len(buff))
-	copy(self.data, buff)
-	Log.FmtPrintln("msg len: ", len(self.data))
+	this.data = make([]byte, len(buff))
+	copy(this.data, buff)
+	Log.FmtPrintln("msg len: ", len(this.data))
 }
 
-func (self *TModuleCommon) Run() {
-	self.dialSend()
+func (this *TModuleCommon) Run() {
+	this.dialSend()
+}
+
+func (this *TModuleCommon) RunEx() {
+	this.sendDirectNoRecv()
 }
 
 //发送信息
-func (self *TModuleCommon) sender(conn net.Conn) (succ bool) {
-	if len(self.data) == 0 {
+func (this *TModuleCommon) sender(conn net.Conn) (succ bool) {
+	if len(this.data) == 0 {
 		succ = true
 		return
 	}
-	n, err := conn.Write(self.data)
+	n, err := conn.Write(this.data)
 	if n == 0 || err != nil {
 		Log.Error("Write fail, data: ", n, err)
 		return false
@@ -66,11 +70,11 @@ func (self *TModuleCommon) sender(conn net.Conn) (succ bool) {
 	return
 }
 
-func (self *TModuleCommon) readloop(conn net.Conn) {
+func (this *TModuleCommon) readloop(conn net.Conn) {
 	for {
 		select {
-		case <-self.ctx.Done():
-			self.sw.Done()
+		case <-this.ctx.Done():
+			this.sw.Done()
 			return
 		default:
 			//接收服务端反馈
@@ -81,15 +85,15 @@ func (self *TModuleCommon) readloop(conn net.Conn) {
 				continue
 			}
 
-			_, err = self.clientPack.UnPackAction(buffer)
+			_, err = this.clientPack.UnPackAction(buffer)
 			if err != nil {
 				Log.Error("unpack action err: ", err)
 				return
 			}
 
-			route := self.clientPack.GetRouteID()
+			route := this.clientPack.GetRouteID()
 			Log.FmtPrintln("pack route: ", route)
-			mainID, subID := self.clientPack.GetMessageID()
+			mainID, subID := this.clientPack.GetMessageID()
 			Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
 			Log.FmtPrintf("receive server back, ip: %v.", conn.RemoteAddr().String())
 		}
@@ -97,8 +101,8 @@ func (self *TModuleCommon) readloop(conn net.Conn) {
 
 }
 
-func (self *TModuleCommon) sendloop(conn net.Conn) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+func (this *TModuleCommon) sendloop(conn net.Conn) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
 		Log.FmtPrintf("Fatal error: %s", err.Error())
 		os.Exit(1)
@@ -106,14 +110,14 @@ func (self *TModuleCommon) sendloop(conn net.Conn) {
 
 	for i := 0; i < 1; i++ {
 		Log.FmtPrintln("time: ", i)
-		if !self.sender(conn) {
+		if !this.sender(conn) {
 			tick := time.NewTicker(time.Duration(3 * time.Second))
 			for {
 				select {
 				case <-tick.C:
 					conn, err = net.DialTCP("tcp", nil, tcpAddr)
 					if err != nil {
-						Log.FmtPrintf("dial to server, host: %v.", self.host)
+						Log.FmtPrintf("dial to server, host: %v.", this.host)
 						Log.Error("err: ", err.Error())
 						continue
 					}
@@ -128,8 +132,8 @@ func (self *TModuleCommon) sendloop(conn net.Conn) {
 	}
 }
 
-func (self *TModuleCommon) dialSend() {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+func (this *TModuleCommon) dialSend() {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
 		Log.Error("resolve error: %s", err.Error())
 		return
@@ -141,18 +145,38 @@ func (self *TModuleCommon) dialSend() {
 		return
 	}
 
-	self.ctx, self.cancle = context.WithCancel(context.Background())
+	this.ctx, this.cancle = context.WithCancel(context.Background())
 	Log.FmtPrintln("connection success")
 	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
 
-	self.sw.Add(3)
-	go self.readloop(conn)
-	go self.sendloop(conn)
-	go self.exitloop()
-	self.sw.Wait()
+	this.sw.Add(3)
+	go this.readloop(conn)
+	go this.sendloop(conn)
+	go this.exitloop()
+	this.sw.Wait()
 }
 
-func (self *TModuleCommon) exitloop() {
+func (this *TModuleCommon) sendDirectNoRecv() {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
+	if err != nil {
+		Log.Error("resolve error: %s", err.Error())
+		return
+	}
+
+	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	if err != nil {
+		Log.Error("dial error: %s", err.Error())
+		return
+	}
+
+	this.ctx, this.cancle = context.WithCancel(context.Background())
+	Log.FmtPrintln("connection success")
+	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
+
+	this.sendloop(conn)
+}
+
+func (this *TModuleCommon) exitloop() {
 	for {
 		//Block until a signal is received.
 		if s, ok := <-exitchan; ok {
@@ -160,8 +184,8 @@ func (self *TModuleCommon) exitloop() {
 		}
 		os.Exit(1)
 		select {
-		case <-self.ctx.Done():
-			self.sw.Done()
+		case <-this.ctx.Done():
+			this.sw.Done()
 			return
 		default:
 

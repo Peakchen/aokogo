@@ -26,7 +26,7 @@ func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_R
 		DeviceType: req.DeviceName,
 	}
 
-	if err, exist := UserAccount.RegisterUseAcc(acc, session.StrIdentify); err != nil && !exist {
+	if err, exist := UserAccount.RegisterUseAcc(acc); err != nil && !exist {
 		rsp.Ret = MSG_Login.ErrorCode_Fail
 	} else {
 		session.SetIdentify(acc.Identify())
@@ -51,7 +51,7 @@ func onUserLogin(session *tcpNet.TcpSession, req *MSG_Login.CS_Login_Req) (succ 
 		DeviceType: req.DeviceName,
 	}
 
-	if _, exist := UserAccount.GetUserAcc(acc, session.StrIdentify); !exist {
+	if _, exist := UserAccount.GetUserAcc(acc); !exist {
 		rsp.Ret = MSG_Login.ErrorCode_UserNotExistOrPasswdErr
 	}
 
