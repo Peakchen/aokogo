@@ -44,6 +44,9 @@ func RegisterUseAcc(acc *TUserAcc) (err error, exist bool) {
 	return
 }
 
+/*
+	find user account by user name.
+*/
 func GetUserAcc(acc *TUserAcc) (err error, exist bool) {
 	acc.StrIdentify = acc.UserName
 	err, exist = dbo.A_DBReadAcc(acc)
@@ -54,31 +57,11 @@ func GetUserAcc(acc *TUserAcc) (err error, exist bool) {
 }
 
 /*
-
- */
-func (this *TUserAcc) Get(module ado.IDBModule) (err error) {
-
-	return
-}
-
-/*
-
- */
-func (this *TUserAcc) Insert(module ado.IDBModule) (err error) {
-
-	return
-}
-
-/*
- */
-func (this *TUserAcc) Update(module ado.IDBModule) (err error) {
-
-	return
-}
-
-/*
- */
-func (this *TUserAcc) Delete(module ado.IDBModule) (err error) {
-
+	find user account by user identify.
+*/
+func LoadUserAcc(Identify string) (data *TUserAcc, err error, exist bool) {
+	data = &TUserAcc{}
+	data.StrIdentify = Identify
+	err, exist = dbo.A_DBRead(data)
 	return
 }
