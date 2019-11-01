@@ -1,2 +1,2 @@
-//db.AccMainModule.createIndex({"UserName":1}, {"unique":true}) //对用户名建立唯一索引
-db.Account.ensureIndex({"UserName":1}, {"unique":true})
+## 
+### db.Account.ensureIndex({"username":1}, {"unique":true})  //对用户名建立唯一索引
