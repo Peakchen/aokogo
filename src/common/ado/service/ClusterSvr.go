@@ -28,25 +28,20 @@ type TClusterDBProvider struct {
 	ctx     context.Context
 	cancle  context.CancelFunc
 	wg      sync.WaitGroup
-
-	rediscfg *serverConfig.TRedisConfig
-	mgocfg   *serverConfig.TMgoConfig
 }
 
 func (this *TClusterDBProvider) init(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
 	this.Server = Server
-	this.rediscfg = RedisCfg
-	this.mgocfg = MgoCfg
 	this.redConn = []*RedisService.TRedisConn{}
 	this.mgoConn = MgoService.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
 }
 
 func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
 	this.init(Server, RedisCfg, MgoCfg)
-	this.runDBloop()
+	this.runDBloop(RedisCfg)
 }
 
-func (this *TClusterDBProvider) runDBloop() {
+func (this *TClusterDBProvider) runDBloop(RedisCfg *serverConfig.TRedisConfig) {
 	var (
 		cnt int32
 	)
@@ -55,7 +50,7 @@ func (this *TClusterDBProvider) runDBloop() {
 			break
 		}
 
-		rc := RedisService.NewRedisConn(this.rediscfg.ConnAddr, this.rediscfg.DBIndex, this.rediscfg.Passwd)
+		rc := RedisService.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
 		if rc != nil {
 			this.redConn = append(this.redConn, rc)
 		}
