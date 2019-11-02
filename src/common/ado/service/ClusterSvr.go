@@ -3,8 +3,8 @@ package service
 import (
 	"common/Config/serverConfig"
 	"common/Log"
-	"common/MgoService"
-	"common/RedisService"
+	"common/MgoConn"
+	"common/RedisConn"
 	"common/ado"
 	"common/public"
 	"context"
@@ -22,8 +22,8 @@ import (
 */
 
 type TClusterDBProvider struct {
-	redConn []*RedisService.TRedisConn
-	mgoConn *MgoService.AokoMgo
+	redConn []*RedisConn.TRedisConn
+	mgoConn *MgoConn.AokoMgo
 	Server  string
 	ctx     context.Context
 	cancle  context.CancelFunc
@@ -32,8 +32,8 @@ type TClusterDBProvider struct {
 
 func (this *TClusterDBProvider) init(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
 	this.Server = Server
-	this.redConn = []*RedisService.TRedisConn{}
-	this.mgoConn = MgoService.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
+	this.redConn = []*RedisConn.TRedisConn{}
+	this.mgoConn = MgoConn.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
 }
 
 func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
@@ -50,7 +50,7 @@ func (this *TClusterDBProvider) runDBloop(RedisCfg *serverConfig.TRedisConfig) {
 			break
 		}
 
-		rc := RedisService.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
+		rc := RedisConn.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
 		if rc != nil {
 			this.redConn = append(this.redConn, rc)
 		}

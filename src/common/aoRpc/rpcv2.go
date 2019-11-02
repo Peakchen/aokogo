@@ -5,7 +5,7 @@ package aoRpc
 import (
 	"context"
 	"sync"
-	. "common/RedisService"
+	. "common/RedisConn"
 	"log"
 	"fmt"
 )

@@ -1,4 +1,4 @@
-package RedisService
+package RedisConn
 
 /*
 	ctrl some redis server change channl.

@@ -1,4 +1,4 @@
-package MgoService
+package MgoConn
 
 import (
 	"common/Log"

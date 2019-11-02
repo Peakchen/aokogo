@@ -2,7 +2,7 @@ package timer
 
 import (
 	"common/Log"
-	. "common/RedisService"
+	. "common/RedisConn"
 	"context"
 	"encoding/json"
 	"fmt"

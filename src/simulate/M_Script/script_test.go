@@ -3,7 +3,7 @@ package M_Script
 import (
 	"common/Config/serverConfig"
 	"common/Log"
-	"common/RedisService"
+	"common/RedisConn"
 	"fmt"
 	"reflect"
 	"testing"
@@ -31,7 +31,7 @@ func ExampleScript() {
 }
 
 func TestScript(t *testing.T) {
-	redisconn := RedisService.NewRedisConn(serverConfig.GRedisCfgProvider.ConnAddr,
+	redisconn := RedisConn.NewRedisConn(serverConfig.GRedisCfgProvider.ConnAddr,
 		serverConfig.GRedisCfgProvider.DBIndex,
 		serverConfig.GRedisCfgProvider.Passwd)
 
@@ -66,7 +66,7 @@ func TestScript(t *testing.T) {
 }
 
 func TestScript1(t *testing.T) {
-	redisconn := RedisService.NewRedisConn(serverConfig.GRedisCfgProvider.ConnAddr,
+	redisconn := RedisConn.NewRedisConn(serverConfig.GRedisCfgProvider.ConnAddr,
 		serverConfig.GRedisCfgProvider.DBIndex,
 		serverConfig.GRedisCfgProvider.Passwd)
 
