@@ -9,8 +9,8 @@ import (
 )
 
 func StartServer(servercfg *serverConfig.TServerBaseConfig) {
-
-	dbo.StartDBSerice(servercfg.RedisConfig, servercfg.MgoConfig)
+	server := servercfg.GameConfig.Zone + servercfg.GameConfig.No
+	dbo.StartDBSerice(server, servercfg.RedisConfig, servercfg.MgoConfig)
 	gameSvr := tcpNet.NewClient(servercfg.GameConfig.ListenAddr,
 		Define.ERouteId_ER_Game,
 		Define.ERouteId_ER_Client,

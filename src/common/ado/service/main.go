@@ -13,7 +13,7 @@ func NewDBProvider() {
 }
 
 func Run(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	GDBProvider.StartDBService(server, RedisCfg, MgoCfg, true)
+	GDBProvider.StartDBService(server, RedisCfg, MgoCfg)
 }
 
 func init() {

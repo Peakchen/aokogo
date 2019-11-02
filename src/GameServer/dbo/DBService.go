@@ -21,8 +21,8 @@ func A_DBUpdate(In public.IDBCache) {
 	GDBProvider.Update(In, ado.EDBOper_Update)
 }
 
-func StartDBSerice(RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	GDBProvider.StartDBService(RedisCfg, MgoCfg, false)
+func StartDBSerice(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+	GDBProvider.StartDBService(server, RedisCfg, MgoCfg)
 }
 
 func init() {

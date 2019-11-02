@@ -37,7 +37,7 @@ func A_DBInsert(In public.IDBCache) (err error) {
 }
 
 func StartDBSerice(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	GDBProvider.StartDBService(server, RedisCfg, MgoCfg, false)
+	GDBProvider.StartDBService(server, RedisCfg, MgoCfg)
 }
 
 func init() {

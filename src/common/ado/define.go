@@ -61,6 +61,10 @@ const (
 	EDB_DATA_SAVE_INTERVAL int32 = 5 * 60
 )
 
+const (
+	EMgo_Thread_Cnt = int32(1000)
+)
+
 /*
 
  */
@@ -78,8 +82,6 @@ const (
 	// ...
 )
 
-type EServerModel string
-
 const (
-	EnServer1 EServerModel = ""
+	EDBMgoOper_Update = string("MgoUpdate")
 )
