@@ -32,14 +32,14 @@ func NewBigWord(host string) *TBigWordMgr {
 	}
 }
 
-func (self *TBigWordMgr) Run() {
-	self.ctx, self.cancle = context.WithCancel(context.Background())
-	self.wg.Add(1)
-	self.tcpsvr = NewTcpServer(self.host, self.srcSvr, self.dstSvr, self.Recv)
-	self.tcpsvr.StartTcpServer()
+func (this *TBigWordMgr) Run() {
+	this.ctx, this.cancle = context.WithCancel(context.Background())
+	this.wg.Add(1)
+	this.tcpsvr = NewTcpServer(this.host, this.srcSvr, this.dstSvr, this.Recv)
+	this.tcpsvr.StartTcpServer()
 }
 //tcp net message recv call back.
-func (self *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
+func (this *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
 	var recv = &SS_BaseMessage_Req{}
 	pm := proto.Unmarshal(data, recv)
 	if pm != nil {
@@ -67,13 +67,13 @@ func (self *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
 	}
 	// do another action...
 	var outparams interface{} = nil
-	self.cacheAction(recv.Data, outparams)
+	this.cacheAction(recv.Data, outparams)
 	if outparams != nil {
-		self.send(recv.Srcid, outparams)
+		this.send(recv.Srcid, outparams)
 	}
 }
 
-func (self *TBigWordMgr) cacheAction(data []byte, outparams interface{}){
+func (this *TBigWordMgr) cacheAction(data []byte, outparams interface{}){
 	var secDatas = &CacheOperation{}
 	secpack := proto.Unmarshal(data, secDatas)
 	if secpack != nil {
@@ -83,7 +83,7 @@ func (self *TBigWordMgr) cacheAction(data []byte, outparams interface{}){
 	SelectOper("", secDatas, outparams)
 }
 
-func (self *TBigWordMgr) send(srcSvr int32, outparams interface{}){
+func (this *TBigWordMgr) send(srcSvr int32, outparams interface{}){
 	if _, ok := ERouteId_name[srcSvr]; !ok {
 		return
 	}
@@ -97,12 +97,12 @@ func (self *TBigWordMgr) send(srcSvr int32, outparams interface{}){
 	}
 }
 
-func (self *TBigWordMgr) loop(){
-	defer self.wg.Done()
+func (this *TBigWordMgr) loop(){
+	defer this.wg.Done()
 	for {
 		select {
-		case <-self.ctx.Done():
-			self.Exit()
+		case <-this.ctx.Done():
+			this.Exit()
 			return
 		default:
 			//...
@@ -110,8 +110,8 @@ func (self *TBigWordMgr) loop(){
 	}
 }
 
-func (self *TBigWordMgr) Exit(){
-	self.tcpsvr.Exit()
-	self.cancle()
-	self.wg.Wait()
+func (this *TBigWordMgr) Exit(){
+	this.tcpsvr.Exit()
+	this.cancle()
+	this.wg.Wait()
 }

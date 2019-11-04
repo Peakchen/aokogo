@@ -25,23 +25,23 @@ type TSvrBalanceV3 struct {
 	sb  map[string]*TExternal
 }
 
-func (self *TSvrBalanceV3) NewBalance(){
+func (this *TSvrBalanceV3) NewBalance(){
 
 }
 
-func (self *TSvrBalanceV3) AddSvr(svr string){
-	_, ok := self.sb[svr]
+func (this *TSvrBalanceV3) AddSvr(svr string){
+	_, ok := this.sb[svr]
 	if ok {
 		return
 	}
 
-	self.sb[svr] = &TExternal{
+	this.sb[svr] = &TExternal{
 		Persons: 0,
 	}
 }
 // some one connect gateway to balance route push one server.
-func (self *TSvrBalanceV3) Push(svr string) {
-	ex, ok := self.sb[svr]
+func (this *TSvrBalanceV3) Push(svr string) {
+	ex, ok := this.sb[svr]
 	if ok {
 		return
 	}
@@ -50,13 +50,13 @@ func (self *TSvrBalanceV3) Push(svr string) {
 }
 
 // get min server persons
-func (self *TSvrBalanceV3) GetSvr() (s string) {
+func (this *TSvrBalanceV3) GetSvr() (s string) {
 	var (
 		min int32 = 0
 		loop int = 0
-		sblen int = len(self.sb)
+		sblen int = len(this.sb)
 	)
-	for svr, ex := range self.sb {
+	for svr, ex := range this.sb {
 		loop++
 		if min < ex.Persons{
 			min = ex.Persons

@@ -22,57 +22,57 @@ type ClientProtocol struct {
 	srcdata    []byte
 }
 
-func (self *ClientProtocol) PackAction(Output []byte) {
+func (this *ClientProtocol) PackAction(Output []byte) {
 	var pos int32
-	binary.LittleEndian.PutUint16(Output[pos:], self.routepoint)
+	binary.LittleEndian.PutUint16(Output[pos:], this.routepoint)
 	pos += 2
 
-	binary.LittleEndian.PutUint16(Output[pos:], self.mainid)
+	binary.LittleEndian.PutUint16(Output[pos:], this.mainid)
 	pos += 2
 
-	binary.LittleEndian.PutUint16(Output[pos:], self.subid)
+	binary.LittleEndian.PutUint16(Output[pos:], this.subid)
 	pos += 2
 
-	binary.LittleEndian.PutUint32(Output[pos:], self.length)
+	binary.LittleEndian.PutUint32(Output[pos:], this.length)
 	pos += 4
-	Log.FmtPrintln("client PackAction-> data len: ", self.length)
-	copy(Output[pos:], self.data)
+	Log.FmtPrintln("client PackAction-> data len: ", this.length)
+	copy(Output[pos:], this.data)
 }
 
-func (self *ClientProtocol) UnPackAction(InData []byte) (pos int32, err error) {
-	self.routepoint = binary.LittleEndian.Uint16(InData[pos:])
+func (this *ClientProtocol) UnPackAction(InData []byte) (pos int32, err error) {
+	this.routepoint = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
-	self.mainid = binary.LittleEndian.Uint16(InData[pos:])
+	this.mainid = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
-	self.subid = binary.LittleEndian.Uint16(InData[pos:])
+	this.subid = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
-	self.length = binary.LittleEndian.Uint32(InData[pos:])
+	this.length = binary.LittleEndian.Uint32(InData[pos:])
 	pos += 4
 
-	if len(InData) < int(pos+int32(self.length)) {
-		err = fmt.Errorf("client err: InData len: %v, pos: %v, data len: %v.", len(InData), pos, self.length)
+	if len(InData) < int(pos+int32(this.length)) {
+		err = fmt.Errorf("client err: InData len: %v, pos: %v, data len: %v.", len(InData), pos, this.length)
 		return
 	}
 
-	self.data = InData[pos : pos+int32(self.length)]
-	self.srcdata = InData
+	this.data = InData[pos : pos+int32(this.length)]
+	this.srcdata = InData
 	return pos, nil
 }
 
-func (self *ClientProtocol) UnPackData() (msg proto.Message, cb reflect.Value, err error, exist bool) {
+func (this *ClientProtocol) UnPackData() (msg proto.Message, cb reflect.Value, err error, exist bool) {
 	err = nil
-	mt, finded := GetMessageInfo(self.mainid, self.subid)
+	mt, finded := GetMessageInfo(this.mainid, this.subid)
 	if !finded {
-		err = fmt.Errorf("can not regist message, mainid: %v, subid: %v.", self.mainid, self.subid)
+		err = fmt.Errorf("can not regist message, mainid: %v, subid: %v.", this.mainid, this.subid)
 		return
 	}
 
 	exist = true
 	dst := reflect.New(mt.paramTypes[1].Elem()).Interface()
-	err = proto.Unmarshal(self.data, dst.(proto.Message))
+	err = proto.Unmarshal(this.data, dst.(proto.Message))
 	if err != nil {
 		return
 	}
@@ -81,49 +81,49 @@ func (self *ClientProtocol) UnPackData() (msg proto.Message, cb reflect.Value, e
 	return
 }
 
-func (self *ClientProtocol) PackData(msg proto.Message) (data []byte, err error) {
+func (this *ClientProtocol) PackData(msg proto.Message) (data []byte, err error) {
 	data, err = proto.Marshal(msg)
 	return
 }
 
-func (self *ClientProtocol) GetRouteID() (route uint16) {
-	return self.routepoint
+func (this *ClientProtocol) GetRouteID() (route uint16) {
+	return this.routepoint
 }
 
-func (self *ClientProtocol) GetMessageID() (mainID uint16, subID uint16) {
-	return self.mainid, self.subid
+func (this *ClientProtocol) GetMessageID() (mainID uint16, subID uint16) {
+	return this.mainid, this.subid
 }
 
-func (self *ClientProtocol) SetCmd(routepoint, mainid, subid uint16, data []byte) {
-	self.routepoint = routepoint
-	self.mainid = mainid
-	self.subid = subid
-	self.data = data
-	self.length = uint32(len(data))
-	Log.FmtPrintln("SetCmd data len: ", self.length)
+func (this *ClientProtocol) SetCmd(routepoint, mainid, subid uint16, data []byte) {
+	this.routepoint = routepoint
+	this.mainid = mainid
+	this.subid = subid
+	this.data = data
+	this.length = uint32(len(data))
+	Log.FmtPrintln("SetCmd data len: ", this.length)
 }
 
-func (self *ClientProtocol) Clean() {
-	self.length = 0
-	self.data = make([]byte, maxMessageSize)
-	self.mainid = 0
-	self.subid = 0
-	self.routepoint = 0
+func (this *ClientProtocol) Clean() {
+	this.length = 0
+	this.data = make([]byte, maxMessageSize)
+	this.mainid = 0
+	this.subid = 0
+	this.routepoint = 0
 }
 
-func (self *ClientProtocol) PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte) {
+func (this *ClientProtocol) PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		Log.FmtPrintln("proto marshal fail, data: ", err)
 		return
 	}
 
-	self.SetCmd(routepoint, mainid, subid, data)
+	this.SetCmd(routepoint, mainid, subid, data)
 	out = make([]byte, len(data)+EnMessage_NoDataLen)
-	self.PackAction(out)
+	this.PackAction(out)
 	return
 }
 
-func (self *ClientProtocol) GetSrcMsg() (data []byte) {
-	return self.srcdata
+func (this *ClientProtocol) GetSrcMsg() (data []byte) {
+	return this.srcdata
 }

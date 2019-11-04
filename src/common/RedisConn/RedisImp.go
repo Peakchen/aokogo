@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,3 +49,40 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package RedisConn
 
+import "github.com/gomodule/redigo/redis"
+
+func updateScript() (us *redis.Script) {
+	us = redis.NewScript(2, `
+	local key1 = KEYS[1] -- hash val
+	local key2 = KEYS[2] -- key or hash field
+	local ag1 = ARGV[1] -- field's value
+	local ag2 = ARGV[2] -- value
+	local ag3 = ARGV[3]	-- "ex" flag
+	local ag4 = ARGV[4] -- exist time
+	redis.call('HSET', key1, key2, ag1)
+	if ag3 == "ex" then
+		redis.call('SETEX', key2, ag4, ag2) 
+	else
+		redis.call('SET', key2, ag2)
+	end
+	`)
+	return
+}
+
+/*
+	key is 21 length string
+	min key: "111111111111111111111" string to int32 val:1029
+	max key: "fffffffffffffffffffff" string to int32 val:2142
+	sub number : 1675
+	key transfer interge %1000 with 1-1000
+*/
+func RoleKey2Haskey(key string) (hashk int) {
+	for _, ki := range key {
+		hashk += int(ki)
+	}
+	hashk = hashk % ERedHasKeyTransferMultiNum
+	if hashk == 0 {
+		hashk = 1
+	}
+	return
+}

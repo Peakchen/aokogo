@@ -51,6 +51,8 @@ package RedisConn
 
 import (
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // pool Idl
@@ -98,4 +100,19 @@ type REDIS_INT32 int32
 const (
 	REDIS_SET_DEADLINE REDIS_INT32 = 600 //s
 
+)
+
+type TRedisScript struct {
+	name   string
+	script *redis.Script
+}
+
+// script name define...
+const (
+	ERedScript_Update string = "update"
+)
+
+//role key transfer redis hash key multi
+const (
+	ERedHasKeyTransferMultiNum = 1000
 )

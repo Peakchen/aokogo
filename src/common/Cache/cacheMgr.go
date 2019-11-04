@@ -31,52 +31,52 @@ type TCacheMgr struct {
 	// add cache obj ...
 }
 
-func (self *TCacheMgr) connect() error {
+func (this *TCacheMgr) connect() error {
 	c, err := net.Dial("tcp", ConstBigWordHost)
 	if err != nil {
 		fmt.Println("net dial err: ", err)
 		return err
 	}
 	c.(*net.TCPConn).SetNoDelay(true)
-	self.s = NewSession(ConstBigWordHost, c, self.ctx, self.mapSvr, self.cb)
-	self.s.HandleSession()
-	self.sessAlive = true
+	this.s = NewSession(ConstBigWordHost, c, this.ctx, this.mapSvr, this.cb)
+	this.s.HandleSession()
+	this.sessAlive = true
 	return nil
 }
 
-func (self *TCacheMgr) run(srcSev, dstSvr int32, cb MessageCb) {
-	self.ctx, self.cancel = context.WithCancel(context.Background())
-	self.srcSvr = srcSev
-	self.dstSvr = dstSvr
-	self.cb = cb
+func (this *TCacheMgr) run(srcSev, dstSvr int32, cb MessageCb) {
+	this.ctx, this.cancel = context.WithCancel(context.Background())
+	this.srcSvr = srcSev
+	this.dstSvr = dstSvr
+	this.cb = cb
 
-	self.c = &TCache{}
-	self.c.Init(ConstCacheOverTime, self.ctx)
-	self.c.Run()
-	self.connect()
+	this.c = &TCache{}
+	this.c.Init(ConstCacheOverTime, this.ctx)
+	this.c.Run()
+	this.connect()
 
-	self.wg.Add(1)
-	go self.loopc()
+	this.wg.Add(1)
+	go this.loopc()
 	// add ...
 }
 
-func (self *TCacheMgr) exit() {
-	self.cancel()
-	self.wg.Wait()
+func (this *TCacheMgr) exit() {
+	this.cancel()
+	this.wg.Wait()
 }
 
-func (self *TCacheMgr) loopc() {
-	defer self.wg.Done()
+func (this *TCacheMgr) loopc() {
+	defer this.wg.Done()
 	t := time.NewTicker(time.Duration(ConstCacheUpdateTime))
 	for {
 		select {
-		case <-self.ctx.Done():
-			self.exit()
+		case <-this.ctx.Done():
+			this.exit()
 			return
 		case <-t.C:
 			//begin request data from bigword server.
 			msg := &SS_BaseMessage_Req{
-				Srcid: self.srcSvr,
+				Srcid: this.srcSvr,
 				Dstid: int32(ERouteId_ER_BigWorld),
 			}
 			data, err := proto.Marshal(msg)
@@ -84,10 +84,10 @@ func (self *TCacheMgr) loopc() {
 				fmt.Println("Marshal message fail.")
 				return
 			}
-			self.s.SetSendCache(data)
+			this.s.SetSendCache(data)
 		default:
-			if !self.sessAlive {
-				self.connect()
+			if !this.sessAlive {
+				this.connect()
 			}
 		}
 	}

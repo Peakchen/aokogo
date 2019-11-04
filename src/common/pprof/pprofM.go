@@ -21,15 +21,15 @@ type TPProfMgr struct {
 	wg  	sync.WaitGroup
 }
 
-func (self *TPProfMgr) StartPProf(ctx context.Context){
-	self.ctx = ctx
-	self.wg.Add(1)
+func (this *TPProfMgr) StartPProf(ctx context.Context){
+	this.ctx = ctx
+	this.wg.Add(1)
 	cpu := createCpu()
 	mem := createMem()
-	go self.loop(cpu, mem)
+	go this.loop(cpu, mem)
 }
 
-func (self *TPProfMgr) exitPProf(cpu, mem *os.File){
+func (this *TPProfMgr) exitPProf(cpu, mem *os.File){
 	if cpu != nil {
 		pprof.StopCPUProfile()
 		cpu.Close()
@@ -38,16 +38,16 @@ func (self *TPProfMgr) exitPProf(cpu, mem *os.File){
 		pprof.WriteHeapProfile(mem)
 		mem.Close()
 	}
-	self.wg.Wait()
+	this.wg.Wait()
 }
 
-func (self *TPProfMgr) loop(cpu, mem *os.File){
-	defer self.wg.Done()
+func (this *TPProfMgr) loop(cpu, mem *os.File){
+	defer this.wg.Done()
 	t := time.NewTicker(time.Duration(const_PProfWriteInterval))
 	for {
 		select {
-		case <-self.ctx.Done():
-			self.exitPProf(cpu, mem)
+		case <-this.ctx.Done():
+			this.exitPProf(cpu, mem)
 		case <-t.C:
 			// do nothing...
 		}

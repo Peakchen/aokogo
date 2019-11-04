@@ -12,28 +12,28 @@ type TBigCache struct {
 	cancel 	context.CancelFunc
 }
 
-func (self *TBigCache) StartCache(){
-	self.ctx, self.cancel = context.WithCancel(context.Background())
-	self.c = &TCache{}
-	self.c.Init(ConstCacheOverTime, self.ctx)
-	self.c.Run()
+func (this *TBigCache) StartCache(){
+	this.ctx, this.cancel = context.WithCancel(context.Background())
+	this.c = &TCache{}
+	this.c.Init(ConstCacheOverTime, this.ctx)
+	this.c.Run()
 }
 
-func (self *TBigCache) Exit(){
-	self.cancel()
+func (this *TBigCache) Exit(){
+	this.cancel()
 }
 
-func (self *TBigCache) Set(key, name string, data interface{}){
+func (this *TBigCache) Set(key, name string, data interface{}){
 	cid := key+":"+name
-	self.c.Set(cid, data)
+	this.c.Set(cid, data)
 }
 
-func (self *TBigCache) Get(key, name string) interface{}{
+func (this *TBigCache) Get(key, name string) interface{}{
 	cid := key+":"+name
-	return self.c.Get(cid)
+	return this.c.Get(cid)
 }
 
-func (self *TBigCache) Del(key, name string) {
+func (this *TBigCache) Del(key, name string) {
 	cid := key+":"+name
-	self.c.Remove(cid)
+	this.c.Remove(cid)
 }

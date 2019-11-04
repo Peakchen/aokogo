@@ -102,7 +102,7 @@ func (this *TClusterDBProvider) dbupdate(ridx int32) {
 	}
 
 	updateidx := strconv.Itoa(int(ridx))
-	onekey := this.Server + ado.EDBMgoOper_Update + updateidx
+	onekey := RedisConn.ERedScript_Update + updateidx
 	c := this.redConn[ridx].RedPool.Get()
 	if c == nil {
 		Log.Error("redis invalid or disconntion, redis conn idx: ", ridx)
