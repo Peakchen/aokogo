@@ -154,3 +154,14 @@ func GetExeFileName() (filename string) {
 	filename = arrfile[0]
 	return
 }
+
+func GetExeFilePath() (execpath string) {
+	execpath, err := os.Executable()
+	if err != nil {
+		return
+	}
+	execpath = strings.Replace(execpath, "\\", "/", -1)
+	idx := strings.LastIndex(execpath, "/")
+	execpath = execpath[:idx]
+	return
+}

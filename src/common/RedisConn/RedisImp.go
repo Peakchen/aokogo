@@ -49,7 +49,11 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package RedisConn
 
-import "github.com/gomodule/redigo/redis"
+import (
+	"strings"
+
+	"github.com/gomodule/redigo/redis"
+)
 
 func updateScript() (us *redis.Script) {
 	us = redis.NewScript(2, `
@@ -84,5 +88,17 @@ func RoleKey2Haskey(key string) (hashk int) {
 	if hashk == 0 {
 		hashk = 1
 	}
+	return
+}
+
+func MakeRedisModel(Identify, MainModel, SubModel string) string {
+	return MainModel + "." + SubModel + "." + Identify
+}
+
+func ParseRedisKey(redkey string) (Identify, MainModel, SubModel string) {
+	rediskeys := strings.Split(redkey, ".")
+	MainModel = rediskeys[0]
+	SubModel = rediskeys[1]
+	Identify = rediskeys[2]
 	return
 }

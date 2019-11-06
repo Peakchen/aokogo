@@ -173,7 +173,8 @@ func (this *TModuleCommon) sendDirectNoRecv() {
 	Log.FmtPrintln("connection success")
 	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
 
-	this.sendloop(conn)
+	go this.readloop(conn)
+	go this.sendloop(conn)
 }
 
 func (this *TModuleCommon) exitloop() {

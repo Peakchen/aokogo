@@ -2,6 +2,7 @@ package MgoConn
 
 import (
 	"common/Log"
+	"common/RedisConn"
 	. "common/public"
 	"fmt"
 	"reflect"
@@ -232,6 +233,25 @@ func (this *AokoMgo) SaveOne(InParam IDBCache) (err error) {
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", InParam.Identify(), InParam.MainModel(), InParam.SubModel(), err)
 		Log.Error("[SaveOne] err: %v.\n", err)
+	}
+	return
+}
+
+func (this *AokoMgo) Save(redkey string, data interface{}) (err error) {
+	session, err := this.GetSession()
+	if err != nil {
+		return err
+	}
+	s := session.Clone()
+	defer s.Close()
+
+	main, sub, key := RedisConn.ParseRedisKey(redkey)
+	collection := s.DB(this.server).C(main)
+	operAction := bson.M{sub: data}
+	_, err = collection.UpsertId(key, operAction)
+	if err != nil {
+		err = fmt.Errorf("main: %v, sub: %v, key: %v, err: %v.\n", main, sub, key, err)
+		Log.Error("[Save] err: %v.\n", err)
 	}
 	return
 }

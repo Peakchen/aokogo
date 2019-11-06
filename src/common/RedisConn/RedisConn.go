@@ -101,10 +101,6 @@ func (this *TRedisConn) NewDial() error {
 	return nil
 }
 
-func MakeRedisModel(Identify, MainModel, SubModel string) string {
-	return MainModel + "." + SubModel + "." + Identify
-}
-
 /*
 	Redis Oper func: Insert
 	SaveType: EDBOper_Insert
@@ -216,6 +212,7 @@ func (this *TRedisConn) SaveEx(rolekey, RedisKey string, data interface{}, SaveT
 func (this *TRedisConn) redSetAct(key string, fieldkey string, data interface{}, bsetEx bool, extime int32) (err error) {
 	nhashk := RoleKey2Haskey(key)
 	strkey := ERedScript_Update + strconv.Itoa(nhashk)
+	Log.FmtPrintf("redis act, hashKey: %v, fieldkey: %v.", strkey, fieldkey)
 	c := this.RedPool.Get()
 	if c == nil {
 		err = Log.RetError("red pool get session fail.")

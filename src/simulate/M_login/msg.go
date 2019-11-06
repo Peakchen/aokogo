@@ -6,6 +6,7 @@ import (
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
 	"simulate/M_Common"
+	"simulate/M_config"
 	"strconv"
 	"sync"
 )
@@ -18,7 +19,7 @@ func LoginRun() {
 	sw.Add(2)
 	go UserRegister()
 	go UserLogin()
-	go AlostOfPeopleLogin()
+	//go AlostOfPeopleLogin()
 	sw.Wait()
 }
 
@@ -28,32 +29,45 @@ func MessageRegister() {
 
 func UserRegister() {
 	Log.FmtPrintf("user register.")
-	req := &MSG_Login.CS_UserRegister_Req{}
-	req.Account = "test"
-	req.Passwd = "abc"
-	req.DeviceSerial = "123"
-	req.DeviceName = "androd"
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
-		uint16(MSG_MainModule.MAINMSG_LOGIN),
-		uint16(MSG_Login.SUBMSG_CS_UserRegister),
-		req)
-	loginM.Run()
+	for _, item := range *M_config.Gloginconfig {
+		if item.Register == M_config.CstRegister_No {
+			continue
+		}
+		req := &MSG_Login.CS_UserRegister_Req{}
+		req.Account = item.Username
+		req.Passwd = item.Passwd
+		req.DeviceSerial = "123"
+		req.DeviceName = "androd"
+		Log.FmtPrintln("UserRegister: ", item.Username, item.Passwd)
+		loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
+			uint16(MSG_MainModule.MAINMSG_LOGIN),
+			uint16(MSG_Login.SUBMSG_CS_UserRegister),
+			req)
+		go loginM.Run()
+	}
+
 }
 
 func UserLogin() {
 	Log.FmtPrintf("user login.")
-	req := &MSG_Login.CS_UserRegister_Req{}
-	req.Account = "test"
-	req.Passwd = "abc"
-	req.DeviceSerial = "456"
-	req.DeviceName = "iso"
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
-		uint16(MSG_MainModule.MAINMSG_LOGIN),
-		uint16(MSG_Login.SUBMSG_CS_Login),
-		req)
-	loginM.Run()
+	for _, item := range *M_config.Gloginconfig {
+		if item.Login == M_config.CstLogin_No {
+			continue
+		}
+		req := &MSG_Login.CS_UserRegister_Req{}
+		req.Account = "test1"
+		req.Passwd = "abc"
+		req.DeviceSerial = "456"
+		req.DeviceName = "iso"
+		Log.FmtPrintln("UserLogin: ", item.Username, item.Passwd)
+		loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
+			uint16(MSG_MainModule.MAINMSG_LOGIN),
+			uint16(MSG_Login.SUBMSG_CS_Login),
+			req)
+		go loginM.Run()
+	}
 }
 
 func AlostOfPeopleLogin() {

@@ -1,0 +1,10 @@
+[
+    {"username": "test1", "passwd": "123", "register": 1, "login": 1},
+    {"username": "test2", "passwd": "123", "register": 1, "login": 1},
+    {"username": "test3", "passwd": "123", "register": 1, "login": 1},
+    {"username": "test4", "passwd": "123", "register": 1, "login": 1},
+    {"username": "test5", "passwd": "123", "register": 1, "login": 1},
+    {"username": "test6", "passwd": "123", "register": 1, "login": 1},
+    {"username": "test7", "passwd": "123", "register": 1, "login": 1}
+
+]

@@ -58,7 +58,7 @@ const (
 )
 
 const (
-	EDB_DATA_SAVE_INTERVAL int32 = 5 * 60
+	EDB_DATA_SAVE_INTERVAL int32 = 10 //5 * 60
 )
 
 const (

@@ -57,7 +57,7 @@ func checkNewLog(logtype string) (logobj *TAokoLog) {
 			FileNo: 1,
 		}
 		initLogFile(logtype, aokoLog[logtype])
-		run(aokoLog[logtype])
+		go run(aokoLog[logtype])
 		logobj = aokoLog[logtype]
 	}
 	return
@@ -125,11 +125,12 @@ func run(aokoLog *TAokoLog) {
 	signal.Notify(exitchan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGSEGV)
 	aokoLog.ctx, aokoLog.cancle = context.WithCancel(context.Background())
 	aokoLog.wg.Add(1)
-	go aokoLog.loop(aokoLog)
+	go aokoLog.loop()
+	aokoLog.wg.Wait()
 }
 
 func Error(args ...interface{}) {
-	format := ""
+	format := time.Now().Local().Format(timeFmt)
 	WriteLog(EnLogType_Error, "[Error]\t\t\t", format, args)
 }
 
@@ -138,7 +139,7 @@ func Info(format string, args ...interface{}) {
 }
 
 func Fail(args ...interface{}) {
-	format := ""
+	format := time.Now().Local().Format(timeFmt)
 	WriteLog(EnLogType_Fail, "[Fail]\t\t\t", format, args)
 }
 
@@ -195,6 +196,11 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 	aokoLog.filesize += uint64(len(logStr))
 	aokoLog.logNum++
 	aokoLog.data <- logStr
+
+	if aokoLog.logNum%EnLogDataChanMax == 0 {
+		aokoLog.flush()
+		aokoLog.data = make(chan string, EnLogDataChanMax)
+	}
 }
 
 func (this *TAokoLog) endLog() {
@@ -204,22 +210,22 @@ func (this *TAokoLog) endLog() {
 	}
 }
 
-func (this *TAokoLog) exit(aokoLog *TAokoLog) {
-	fmt.Println("log exit: ", <-this.data, aokoLog.filesize, aokoLog.logNum)
-	this.flush(aokoLog)
+func (this *TAokoLog) exit() {
+	fmt.Println("log exit: ", <-this.data, this.filesize, this.logNum)
+	this.loopflush()
 	this.endLog()
 	close(this.data)
 	this.sw.Wait()
 }
 
-func (this *TAokoLog) loop(aokoLog *TAokoLog) {
+func (this *TAokoLog) loop() {
 	defer this.sw.Done()
 
 	tick := time.NewTicker(time.Duration(30 * time.Second))
 	for {
 		if s, ok := <-exitchan; ok {
 			tick.Stop()
-			this.exit(aokoLog)
+			this.exit()
 			time.Sleep(time.Duration(3) * time.Second)
 			fmt.Println("Got signal:", s)
 			return
@@ -230,19 +236,19 @@ func (this *TAokoLog) loop(aokoLog *TAokoLog) {
 			tick.Stop()
 			return
 		case <-tick.C:
-			go this.flush(aokoLog)
+			go this.loopflush()
 		default:
 
 		}
 	}
 }
 
-func (this *TAokoLog) flush(aokoLog *TAokoLog) {
+func (this *TAokoLog) loopflush() {
 	for {
 		select {
 		case val, ok := <-this.data:
 			if ok {
-				_, err := aokoLog.filehandle.WriteString(val)
+				_, err := this.filehandle.WriteString(val)
 				if err != nil {
 					return
 				}
@@ -250,4 +256,11 @@ func (this *TAokoLog) flush(aokoLog *TAokoLog) {
 		}
 	}
 
+}
+
+func (this *TAokoLog) flush() {
+	_, err := this.filehandle.WriteString(<-this.data)
+	if err != nil {
+		return
+	}
 }
