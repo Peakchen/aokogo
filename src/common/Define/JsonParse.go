@@ -1,4 +1,4 @@
-package M_config
+package Define
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	_JsonParseTool *TJsonParseTool
+	GJsonParseTool *TJsonParseTool
 )
 
 type TJsonParseTool struct {
@@ -27,5 +27,5 @@ func NewJsonParseTool() *TJsonParseTool {
 }
 
 func init() {
-	_JsonParseTool = NewJsonParseTool()
+	GJsonParseTool = NewJsonParseTool()
 }

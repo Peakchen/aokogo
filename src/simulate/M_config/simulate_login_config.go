@@ -1,6 +1,7 @@
 package M_config
 
 import (
+	"common/Define"
 	"common/Log"
 	"common/utls"
 )
@@ -9,10 +10,14 @@ import (
 	simulate test register and login.
 */
 type TSimulateLogin struct {
-	Username string `json:"username"`
-	Passwd   string `json:"passwd"`
-	Register int32  `json:"register"`
-	Login    int32  `json:"login"`
+	Username    string               `json:"username"`
+	Passwd      string               `json:"passwd"`
+	Register    int32                `json:"register"`
+	Login       int32                `json:"login"`
+	List        Define.Int32Array    `json:"list"`
+	List2D      Define.Int32Array2D  `json:"list2D"`
+	Property    Define.Property      `json:"property"`
+	PropertyArr Define.PropertyArray `json:"propertylist"`
 }
 
 const (
@@ -38,7 +43,7 @@ func getloginfile() (realfilename string) {
 }
 
 func init() {
-	err := _JsonParseTool.Parse(getloginfile(), Gloginconfig)
+	err := Define.GJsonParseTool.Parse(getloginfile(), Gloginconfig)
 	if err != nil {
 		Log.FmtPrintln("parse json fail, err: ", err)
 		return
