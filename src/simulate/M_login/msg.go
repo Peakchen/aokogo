@@ -30,7 +30,7 @@ func MessageRegister() {
 func UserRegister() {
 	Log.FmtPrintf("user register.")
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	for _, item := range *M_config.Gloginconfig {
+	for _, item := range M_config.GloginConfig.Get() {
 		if item.Register == M_config.CstRegister_No {
 			continue
 		}
@@ -52,7 +52,7 @@ func UserRegister() {
 func UserLogin() {
 	Log.FmtPrintf("user login.")
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	for _, item := range *M_config.Gloginconfig {
+	for _, item := range M_config.GloginConfig.Get() {
 		if item.Login == M_config.CstLogin_No {
 			continue
 		}
