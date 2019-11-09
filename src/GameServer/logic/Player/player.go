@@ -49,5 +49,22 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package Player
 
+import (
+	"common/ado"
+	"common/msgProto/MSG_Player"
+)
+
+/*
+	player struct.
+*/
 type TPlayer struct {
+	ado.IDBModule
+
+	BaseInfo  map[MSG_Player.EmBaseInfo]interface{}  //基础玩家信息
+	BaseMoney map[MSG_Player.EmBaseMoney]interface{} //基础金币类信息
+}
+
+func GetPlayer(identify string) (player *TPlayer) {
+
+	return
 }
