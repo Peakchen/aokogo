@@ -4,17 +4,21 @@
 ### 数据加载过程中，需要数据正确性保障，以及对于非正常数据的警告提示，正常加载数据到内存
 
 <!--
-    资源加载流程
 
-    load(...) 
+resource load interface:
 
-    check(...)
+type ICommonConfig interface {
+	ComfireAct(data interface{}) (errlist []string)
+	DataRWAct(data interface{}) (errlist []string)
+}
 
-    set(...)
+use for example with templateconfig.go
 
-    get()
-
-    ...
+you can use tool explore exls for config struct.
+tool link: 
+    xExcel2x: https://github.com/Peakchen/xExcel2x
+    xExport4Go: https://github.com/Peakchen/xExport4Go
+    
 -->
 
 <!-- 
