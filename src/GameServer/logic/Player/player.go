@@ -65,6 +65,6 @@ type TPlayer struct {
 }
 
 func GetPlayer(identify string) (player *TPlayer) {
-
+	
 	return
 }

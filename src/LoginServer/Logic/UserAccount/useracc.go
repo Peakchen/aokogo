@@ -36,7 +36,7 @@ func RegisterUseAcc(acc *TUserAcc) (err error, exist bool) {
 	err, exist = GetUserAcc(acc)
 	if !exist {
 		acc.StrIdentify = bson.NewObjectId().Hex()
-		err = dbo.A_DBInsert(acc)
+		err = dbo.A_DBInsert(acc.StrIdentify, acc)
 		if err != nil {
 			return
 		}
@@ -48,8 +48,7 @@ func RegisterUseAcc(acc *TUserAcc) (err error, exist bool) {
 	find user account by user name.
 */
 func GetUserAcc(acc *TUserAcc) (err error, exist bool) {
-	acc.StrIdentify = acc.UserName
-	err, exist = dbo.A_DBReadAcc(acc)
+	err, exist = dbo.A_DBReadAcc(acc.UserName, acc)
 	if err == nil {
 		exist = true
 	}
@@ -61,7 +60,6 @@ func GetUserAcc(acc *TUserAcc) (err error, exist bool) {
 */
 func LoadUserAcc(Identify string) (data *TUserAcc, err error, exist bool) {
 	data = &TUserAcc{}
-	data.StrIdentify = Identify
-	err, exist = dbo.A_DBRead(data)
+	err, exist = dbo.A_DBRead(Identify, data)
 	return
 }

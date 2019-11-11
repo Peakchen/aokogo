@@ -106,8 +106,8 @@ func (this *TRedisConn) NewDial() error {
 	SaveType: EDBOper_Insert
 	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (this *TRedisConn) Insert(Input public.IDBCache) error {
-	return this.Update(Input, ado.EDBOper_Insert)
+func (this *TRedisConn) Insert(Identify string, Input public.IDBCache) error {
+	return this.Update(Identify, Input, ado.EDBOper_Insert)
 }
 
 /*
@@ -115,8 +115,8 @@ func (this *TRedisConn) Insert(Input public.IDBCache) error {
 	SaveType: EDBOper_Update
 	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
-func (this *TRedisConn) Update(Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
-	RedisKey := MakeRedisModel(Input.Identify(), Input.MainModel(), Input.SubModel())
+func (this *TRedisConn) Update(Identify string, Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
+	RedisKey := MakeRedisModel(Identify, Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
 		err = fmt.Errorf("bson.Marshal err: %v.\n", err)
@@ -124,7 +124,7 @@ func (this *TRedisConn) Update(Input public.IDBCache, SaveType ado.EDBOperType) 
 		return
 	}
 
-	this.SaveEx(Input.Identify(), RedisKey, BMarlData, SaveType)
+	this.SaveEx(Identify, RedisKey, BMarlData, SaveType)
 	return
 }
 
@@ -132,25 +132,25 @@ func (this *TRedisConn) Update(Input public.IDBCache, SaveType ado.EDBOperType) 
 	Redis Oper func: Query
 	purpose: in order to Get data from Redis Cache.
 */
-func (this *TRedisConn) Query(Output public.IDBCache) (ret error) {
+func (this *TRedisConn) Query(Identify string, Output public.IDBCache) (ret error) {
 	ret = nil
-	RedisKey := MakeRedisModel(Output.Identify(), Output.MainModel(), Output.SubModel())
+	RedisKey := MakeRedisModel(Identify, Output.MainModel(), Output.SubModel())
 	data, err := this.RedPool.Get().Do("GET", RedisKey)
 	if err != nil {
-		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.Identify(), Output.MainModel(), Output.SubModel(), data)
+		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, Output.MainModel(), Output.SubModel(), data)
 		Log.Error("[Query] err: %v.\n", ret)
 		return
 	}
 
 	if data == nil {
-		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Output.Identify(), Output.MainModel(), Output.SubModel())
+		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, Nil data is invalid.\n", Identify, Output.MainModel(), Output.SubModel())
 		Log.Error("[Query] err: %v.\n", ret)
 		return
 	}
 
 	BUmalErr := bson.Unmarshal(data.([]byte), Output)
 	if BUmalErr != nil {
-		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Output.Identify(), Output.MainModel(), Output.SubModel(), data)
+		ret = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, data: %v.\n", Identify, Output.MainModel(), Output.SubModel(), data)
 		Log.Error("[Query] can not bson Unmarshal get data to Output, err: %v.\n", ret)
 		return
 	}

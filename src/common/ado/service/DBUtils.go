@@ -57,18 +57,18 @@ import (
 /*
 
  */
-func (this *TDBProvider) Update(data public.IDBCache, Oper ado.EDBOperType) (err error) {
-	err = this.rconn.Update(data, Oper)
+func (this *TDBProvider) Update(Identify string, data public.IDBCache, Oper ado.EDBOperType) (err error) {
+	err = this.rconn.Update(Identify, data, Oper)
 	if Oper == ado.EDBOper_DB {
-		err = this.mconn.SaveOne(data)
+		err = this.mconn.SaveOne(Identify, data)
 	}
 	return
 }
 
-func (this *TDBProvider) Insert(data public.IDBCache) (err error) {
-	err = this.rconn.Insert(data)
+func (this *TDBProvider) Insert(Identify string, data public.IDBCache) (err error) {
+	err = this.rconn.Insert(Identify, data)
 	if err == nil {
-		err = this.mconn.InsertOne(data)
+		err = this.mconn.InsertOne(Identify, data)
 	}
 	return
 }
@@ -76,20 +76,20 @@ func (this *TDBProvider) Insert(data public.IDBCache) (err error) {
 /*
 
  */
-func (this *TDBProvider) Get(Output public.IDBCache) (err error, exist bool) {
-	err = this.rconn.Query(Output)
+func (this *TDBProvider) Get(Identify string, Output public.IDBCache) (err error, exist bool) {
+	err = this.rconn.Query(Identify, Output)
 	if err != nil {
-		err, exist = this.mconn.QueryOne(Output)
+		err, exist = this.mconn.QueryOne(Identify, Output)
 		//redis not exist, then update
-		err = this.rconn.Update(Output, ado.EDBOper_Update)
+		err = this.rconn.Update(Identify, Output, ado.EDBOper_Update)
 	} else {
 		exist = true
 	}
 	return
 }
 
-func (this *TDBProvider) GetAcc(Output public.IDBCache) (err error, exist bool) {
-	err, exist = this.mconn.QueryAcc(Output)
+func (this *TDBProvider) GetAcc(usrName string, Output public.IDBCache) (err error, exist bool) {
+	err, exist = this.mconn.QueryAcc(usrName, Output)
 	return
 }
 
