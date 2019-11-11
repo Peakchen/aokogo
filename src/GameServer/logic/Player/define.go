@@ -10,3 +10,7 @@ type TPlayerAttr struct {
 	Coin  int64
 	// add ..
 }
+
+const (
+	cstPlayerSubModule = string("Player")
+)

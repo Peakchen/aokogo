@@ -1,6 +1,7 @@
 package Log
 
 import (
+	"common/public"
 	"common/utls"
 	"context"
 	"fmt"
@@ -132,6 +133,18 @@ func run(aokoLog *TAokoLog) {
 func Error(args ...interface{}) {
 	format := time.Now().Local().Format(timeFmt)
 	WriteLog(EnLogType_Error, "[Error]\t\t\t", format, args)
+}
+
+func ErrorIDCard(identify string, args ...interface{}) {
+	format := fmt.Sprintf("identify: %v, %v.", identify, args)
+	timeFormat := time.Now().Local().Format(timeFmt)
+	WriteLog(EnLogType_Error, "[Error]\t\t\t", timeFormat, format)
+}
+
+func ErrorModule(data public.IDBCache, args ...interface{}) {
+	format := fmt.Sprintf("main: %v, sub: %v, identify: %v, %v.", data.MainModel(), data.SubModel(), data.Identify(), args)
+	timeFormat := time.Now().Local().Format(timeFmt)
+	WriteLog(EnLogType_Error, "[Error]\t\t\t", timeFormat, format)
 }
 
 func Info(format string, args ...interface{}) {

@@ -33,7 +33,6 @@ func A_DBInsert(Identify string, In public.IDBCache) (err error) {
 	// check save data to redis cache or db persistence.
 	err = GDBProvider.Insert(Identify, In)
 	return
-
 }
 
 func StartDBSerice(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
