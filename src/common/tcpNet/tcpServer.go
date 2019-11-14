@@ -159,8 +159,7 @@ func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
 	if this.SessionMgr == nil {
 		return
 	}
-	this.SessionMgr.AddSessionByCmd(session, cmds)
-	this.SessionMgr.AddSessionByID(session, cmds)
+	//this.SessionMgr.AddSessionByCmd(session, cmds)
 	this.AddSession(this.session)
 }
 
@@ -200,6 +199,19 @@ func (this *TcpServer) GetSessionByType(svrType Define.ERouteId) (session *TcpSe
 		return
 	}
 	return this.SessionMgr.GetSessionByType(svrType)
+}
+
+func (this *TcpServer) RemoveSession(session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+
+	if session.RegPoint != Define.ERouteId_ER_Invalid {
+		this.SessionMgr.RemoveSessionByType(session.RegPoint)
+	} else {
+		this.SessionMgr.RemoveSessionByID(session)
+	}
+
 }
 
 func checkError(err error) {

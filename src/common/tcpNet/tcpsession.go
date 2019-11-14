@@ -159,6 +159,7 @@ func (this *TcpSession) exit(sw *sync.WaitGroup) {
 		return
 	}
 
+	Log.FmtPrintf("session exit, svr: %v, regpoint: %v.", this.SvrType, this.RegPoint)
 	this.isAlive = false
 	this.off <- this
 	//close(this.send)
@@ -280,13 +281,15 @@ func (this *TcpSession) readMessage() (succ bool) {
 
 		session := this.Engine.GetSessionByType(Define.ERouteId(msgroute))
 		if session != nil {
-			succ = session.readParse(packLenBuf)
+			succ = session.writeMessage(packLenBuf)
+			if !session.isAlive {
+				this.Engine.RemoveSession(session)
+			}
 		} else {
 			Log.Error("can not find session, route: %v.", msgroute)
 		}
-
 	} else {
-		succ, err = MessageCallBack(this)
+		succ, err = MessageCallBack(this) //路由消息注册
 		if err != nil {
 			Log.FmtPrintln("message pack call back: ", err)
 		}

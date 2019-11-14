@@ -116,7 +116,7 @@ type TConnSession struct {
 type IProcessConnSession interface {
 	AddSessionByID(session *TcpSession, cmd []uint32)
 	AddSessionByCmd(session *TcpSession, cmds []uint32)
-	RemoveByID(session *TcpSession)
+	RemoveSessionByID(session *TcpSession)
 	RemoveByCmd(cmd uint32)
 	RemoveSessionByType(svrType Define.ERouteId)
 	GetByCmd(cmd uint32) (session *TcpSession)
@@ -132,6 +132,7 @@ type ITcpEngine interface {
 	GetSessionByID(sessionID uint64) (session *TcpSession)
 	SessionType() (st ESessionType)
 	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
+	RemoveSession(session *TcpSession)
 }
 
 type ESessionType int8

@@ -24,7 +24,7 @@ func (this *TServer2ServerSession) AddSessionByCmd(session *tcpNet.TcpSession, c
 	}
 }
 
-func (this *TServer2ServerSession) RemoveByID(session *tcpNet.TcpSession) {
+func (this *TServer2ServerSession) RemoveSessionByID(session *tcpNet.TcpSession) {
 	this.s2sSession.Delete(session.SessionID)
 }
 
