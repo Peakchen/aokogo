@@ -7,7 +7,7 @@ type TServerBaseConfig struct {
 	RedisConfig      *TRedisConfig
 	MgoConfig        *TMgoConfig
 	ExternalGWConfig *TGatewayConfig
-	InnerGWConfig    *TGatewayConfig
+	InnerGWConfig    *TGWInnerConfig
 	LoginConfig      *TLoginConfig
 	GameConfig       *TGameConfig
 }

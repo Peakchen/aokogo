@@ -26,20 +26,16 @@ type TcpClient struct {
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
-	SrcRoute   Define.ERouteId
-	DstRoute   Define.ERouteId
 	Adacb      AfterDialAct
 	mpobj      IMessagePack
 	SessionMgr IProcessConnSession
 }
 
-func NewClient(host string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
+func NewClient(host string, SvrType Define.ERouteId, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
 	return &TcpClient{
 		host:       host,
 		cb:         cb,
 		SvrType:    SvrType,
-		SrcRoute:   SrcRoute,
-		DstRoute:   DstRoute,
 		Adacb:      Ada,
 		SessionMgr: sessionMgr,
 	}
@@ -76,9 +72,9 @@ func (this *TcpClient) connect(sw *sync.WaitGroup) error {
 	}
 
 	c.SetNoDelay(true)
-	this.dialsess = NewSession(this.host, c, this.ctx, this.SrcRoute, this.DstRoute, this.cb, this.off, this.mpobj, this)
+	this.dialsess = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.mpobj, this)
 	this.dialsess.HandleSession(sw)
-	this.AddSession(this.dialsess)
+	//this.AddSession(this.dialsess)
 	this.afterDial()
 	return nil
 }
@@ -137,6 +133,7 @@ func (this *TcpClient) PushCmdSession(session *TcpSession, cmds []uint32) {
 	}
 	this.SessionMgr.AddSessionByCmd(session, cmds)
 	this.SessionMgr.AddSessionByID(session, cmds)
+	this.AddSession(session)
 }
 
 func (this *TcpClient) GetSessionByCmd(cmd uint32) (session *TcpSession) {
@@ -169,7 +166,7 @@ func (this *TcpClient) sendRegisterMsg() {
 	req.ServerType = int32(this.SvrType)
 	req.Msgs = GetAllMessageIDs()
 	Log.FmtPrintln("register context: ", req.Msgs)
-	buff := this.mpobj.PackMsg(uint16(this.DstRoute),
+	buff := this.mpobj.PackMsg(uint16(this.SvrType),
 		uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_CS_ServerRegister),
 		req)
@@ -178,7 +175,18 @@ func (this *TcpClient) sendRegisterMsg() {
 
 func (this *TcpClient) afterDial() {
 	if this.Adacb != nil {
-		this.Adacb()
+		this.Adacb(this.dialsess)
 	}
 	this.sendRegisterMsg()
+}
+
+func (this *TcpClient) SessionType() (st ESessionType) {
+	return ESessionType_Client
+}
+
+func (this *TcpClient) GetSessionByType(svrType Define.ERouteId) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetSessionByType(svrType)
 }

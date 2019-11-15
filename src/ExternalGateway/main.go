@@ -69,8 +69,6 @@ func main() {
 
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
 		Define.ERouteId_ER_ESG,
-		Define.ERouteId_ER_ESG,
-		Define.ERouteId_ER_Client,
 		LogicMsg.ExternalGatewayMessageCallBack,
 		SessionMgr.GClient2ServerSession)
 

@@ -7,10 +7,12 @@ enum SUBMSG
 {
     Begin = 0; //起点消息
 
-    CS_PlayerInfo = 1; //请求获取玩家消息
-    SC_PlayerInfo = 2; //回复获取玩家消息
+    CS_EnterServer = 1; //进入服务器请求
+    SC_EnterServer = 2; //进入服务器回复
 
-    
+    CS_PlayerInfo = 3; //请求获取玩家消息
+    SC_PlayerInfo = 4; //回复获取玩家消息
+
 }
 
 enum ErrorCode
@@ -54,6 +56,19 @@ enum emBaseMoney
 message BaseMoney_Repeat
 {
     int64 Coin = 1; //金币
+}
+
+
+//CS_EnterServer
+message CS_EnterServer_Req
+{
+    
+}
+
+//SC_EnterServer
+message SC_EnterServer_Rsp
+{
+    ErrorCode Ret = 1; //返回码
 }
 
 //CS_PlayerInfo

@@ -15,8 +15,6 @@ func StartServer(servercfg *serverConfig.TServerBaseConfig) {
 
 	gameSvr := tcpNet.NewClient(servercfg.LoginConfig.ListenAddr,
 		Define.ERouteId_ER_Login,
-		Define.ERouteId_ER_Login,
-		Define.ERouteId_ER_ESG,
 		LogicMsg.LoginMessageCallBack,
 		nil,
 		SessionMgr.GClient2ServerSession)

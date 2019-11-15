@@ -49,25 +49,21 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"InnerGateway/LogicMsg"
-	"InnerGateway/SessionMgr"
-	"common/Define"
+	"InnerGateway/client"
+	"InnerGateway/server"
 	"common/Log"
-	"common/tcpNet"
-	"context"
 	"sync"
 )
 
+func startInnerGW() {
+	var sw sync.WaitGroup
+	sw.Add(2)
+	go server.StartServer()
+	go client.StartClient()
+	sw.Wait()
+}
+
 func main() {
 	Log.FmtPrintf("start InnerGateway.")
-	newInnerServer := tcpNet.NewTcpServer(Define.InnerServerHost,
-		Define.ERouteId_ER_ISG,
-		Define.ERouteId_ER_ISG,
-		Define.ERouteId_ER_ESG,
-		LogicMsg.InnerGatewayMessageCallBack,
-		SessionMgr.GServer2ServerSession)
-
-	sw := sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(context.Background())
-	newInnerServer.StartTcpServer(&sw, ctx, cancel)
+	startInnerGW()
 }

@@ -1,6 +1,7 @@
 package SessionMgr
 
 import (
+	"common/Define"
 	"common/tcpNet"
 	"sync"
 )
@@ -49,6 +50,19 @@ func (this *TServer2ServerSession) GetSessionByID(sessionID uint64) (session *tc
 
 func (this *TServer2ServerSession) AddSession(session *tcpNet.TcpSession) {
 	this.s2sSession.Store(session.SessionID, session)
+	this.s2sSession.Store(session.RegPoint, session)
+}
+
+func (this *TServer2ServerSession) GetSessionByType(RegPoint Define.ERouteId) (session *tcpNet.TcpSession) {
+	val, exist := this.s2sSession.Load(RegPoint)
+	if exist {
+		session = val.(*tcpNet.TcpSession)
+	}
+	return
+}
+
+func (this *TServer2ServerSession) RemoveSessionByType(RegPoint Define.ERouteId) {
+	this.s2sSession.Delete(RegPoint)
 }
 
 func init() {

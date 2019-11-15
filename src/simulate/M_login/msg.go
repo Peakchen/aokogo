@@ -5,6 +5,7 @@ import (
 	"common/Log"
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
+	"common/msgProto/MSG_Player"
 	"simulate/M_Common"
 	"simulate/M_config"
 	"strconv"
@@ -67,6 +68,7 @@ func UserLogin() {
 			uint16(MSG_Login.SUBMSG_CS_Login),
 			req)
 		go loginM.Run()
+		UserEnter(loginM)
 	}
 }
 
@@ -86,4 +88,13 @@ func AlostOfPeopleLogin() {
 			req)
 		loginM.RunEx()
 	}
+}
+
+func UserEnter(pack *M_Common.TModuleCommon) {
+	req := &MSG_Player.CS_EnterServer_Req{}
+	pack.PushMsg(uint16(Define.ERouteId_ER_Game),
+		uint16(MSG_MainModule.MAINMSG_PLAYER),
+		uint16(MSG_Player.SUBMSG_CS_EnterServer),
+		req)
+	go pack.Run()
 }

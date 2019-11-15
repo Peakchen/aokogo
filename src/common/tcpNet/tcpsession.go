@@ -91,9 +91,9 @@ type TcpSession struct {
 	// session id
 	SessionID uint64
 	//Dest point
-	DestPoint Define.ERouteId
+	SvrType Define.ERouteId
 	//src point
-	SrcPoint Define.ERouteId
+	RegPoint Define.ERouteId
 	//person StrIdentify
 	StrIdentify string
 }
@@ -135,24 +135,22 @@ func (this *TcpSession) Connect() {
 func NewSession(addr string,
 	conn *net.TCPConn,
 	ctx context.Context,
-	SvrRoute Define.ERouteId,
-	SrcPoint Define.ERouteId,
+	SvrType Define.ERouteId,
 	newcb MessageCb,
 	off chan *TcpSession,
 	pack IMessagePack,
 	Engine ITcpEngine) *TcpSession {
 	return &TcpSession{
-		host:      addr,
-		conn:      conn,
-		send:      make(chan []byte, maxMessageSize),
-		isAlive:   false,
-		ctx:       ctx,
-		recvCb:    newcb,
-		pack:      pack,
-		off:       make(chan *TcpSession, maxOfflineSize),
-		Engine:    Engine,
-		DestPoint: SvrRoute,
-		SrcPoint:  SrcPoint,
+		host:    addr,
+		conn:    conn,
+		send:    make(chan []byte, maxMessageSize),
+		isAlive: false,
+		ctx:     ctx,
+		recvCb:  newcb,
+		pack:    pack,
+		off:     make(chan *TcpSession, maxOfflineSize),
+		Engine:  Engine,
+		SvrType: SvrType,
 	}
 }
 
@@ -234,7 +232,11 @@ func (this *TcpSession) readMessage() (succ bool) {
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
-		Log.FmtPrintln("read data fail, err: ", err, readn)
+		if err.Error() == "EOF" {
+			succ = true
+		} else {
+			Log.FmtPrintln("read data fail, err: ", err, readn)
+		}
 		return
 	}
 
@@ -246,6 +248,39 @@ func (this *TcpSession) readMessage() (succ bool) {
 
 	data := make([]byte, EnMessage_NoDataLen+packlen)
 	readn, err = io.ReadFull(this.conn, data[EnMessage_NoDataLen:])
+	if err != nil || readn < int(packlen) {
+		Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
+		return
+	}
+
+	//todo: unpack message then read real date.
+	copy(data[:EnMessage_NoDataLen], packLenBuf[:])
+	_, err = this.pack.UnPackAction(data)
+	if err != nil {
+		Log.FmtPrintln("unpack action err: ", err)
+		return
+	}
+
+	mainID, _ := this.pack.GetMessageID()
+	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) { //除了注册消息外，其他的都转发给内网服
+		session := this.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
+		if session != session {
+			session.SetSendCache(packLenBuf)
+		}
+	}
+	succ = this.readParse(packLenBuf)
+	return
+}
+
+func (this *TcpSession) readParse(packLenBuf []byte) (succ bool) {
+	packlen := binary.LittleEndian.Uint32(packLenBuf[EnMessage_DataPackLen:EnMessage_NoDataLen])
+	if packlen > maxMessageSize {
+		Log.FmtPrintln("error receiving packLen:", packlen)
+		return
+	}
+
+	data := make([]byte, EnMessage_NoDataLen+packlen)
+	readn, err := io.ReadFull(this.conn, data[EnMessage_NoDataLen:])
 	if err != nil || readn < int(packlen) {
 		Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
 		return
@@ -271,12 +306,12 @@ func MessageCallBack(session *TcpSession) (succ bool, err error) {
 	route := session.pack.GetRouteID()
 	Log.FmtPrintf("pack route: %v, sessionid: %v.", route, session.SessionID)
 	mainID, subID := session.pack.GetMessageID()
-	Log.FmtPrintf("mainid: %v, subID: %v.", mainID, subID)
 	_cmd := EncodeCmd(mainID, subID)
+	Log.FmtPrintf("mainid: %v, subID: %v, cmd: %v.", mainID, subID, _cmd)
 	if session.Engine != nil {
 		s := session.Engine.GetSessionByCmd(_cmd)
 		if s != nil {
-			Log.FmtPrintf("route send SrcPoint: %v, mainid: %v, subID: %v, sessionid: %v.", s.SrcPoint, mainID, subID, s.SessionID)
+			Log.FmtPrintf("route send RegPoint: %v, mainid: %v, subID: %v, sessionid: %v.", s.RegPoint, mainID, subID, s.SessionID)
 			s.SetSendCache(session.pack.GetSrcMsg())
 			succ = true
 			err = nil
@@ -305,7 +340,7 @@ func MessageCallBack(session *TcpSession) (succ bool, err error) {
 
 	msg, cb, unpackerr, exist := session.pack.UnPackData()
 	if unpackerr != nil && !exist {
-		Log.FmtPrintf("direct send SrcPoint: %v, mainid: %v, subID: %v, sessionid: %v.", session.SrcPoint, mainID, subID, session.SessionID)
+		Log.FmtPrintf("direct send RegPoint: %v, mainid: %v, subID: %v, sessionid: %v.", session.RegPoint, mainID, subID, session.SessionID)
 		sendsess := session.Engine.GetSessionByID(session.SessionID)
 		if sendsess != nil {
 			sendsess.SetSendCache(session.pack.GetSrcMsg())
@@ -347,11 +382,11 @@ func (this *TcpSession) HandleSession(sw *sync.WaitGroup) {
 	go this.Sendloop(sw)
 }
 
-func (this *TcpSession) Push(SrcPoint Define.ERouteId, cmds []uint32) {
+func (this *TcpSession) Push(RegPoint Define.ERouteId, cmds []uint32) {
 	if this.Engine == nil {
 		return
 	}
-	this.SrcPoint = SrcPoint
+	this.RegPoint = RegPoint
 	this.Engine.PushCmdSession(this, cmds)
 }
 

@@ -72,22 +72,19 @@ type TcpServer struct {
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
-	SrcRoute   Define.ERouteId
-	DstRoute   Define.ERouteId
 	pack       IMessagePack
 	SessionMgr IProcessConnSession
 	// session id
 	SessionID uint64
 }
 
-func NewTcpServer(addr string, SvrType, SrcRoute, DstRoute Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
+func NewTcpServer(addr string, SvrType Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
 	return &TcpServer{
 		host:       addr,
 		cb:         cb,
 		SvrType:    SvrType,
-		SrcRoute:   SrcRoute,
-		DstRoute:   DstRoute,
 		SessionMgr: sessionMgr,
+		SessionID:  ESessionBeginNum,
 	}
 }
 
@@ -122,9 +119,9 @@ func (this *TcpServer) loop(sw *sync.WaitGroup) {
 			c.SetKeepAlive(true)
 			atomic.AddUint64(&this.SessionID, 1)
 			Log.FmtPrintf("connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
-			this.session = NewSession(this.host, c, this.ctx, this.SrcRoute, this.DstRoute, this.cb, this.off, this.pack, this)
+			this.session = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.pack, this)
 			this.session.HandleSession(sw)
-			this.AddSession(this.session)
+			//this.AddSession(this.session)
 			this.online()
 		}
 	}
@@ -164,6 +161,7 @@ func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
 	}
 	this.SessionMgr.AddSessionByCmd(session, cmds)
 	this.SessionMgr.AddSessionByID(session, cmds)
+	this.AddSession(this.session)
 }
 
 func (this *TcpServer) GetSessionByCmd(cmd uint32) (session *TcpSession) {
@@ -191,6 +189,17 @@ func (this *TcpServer) Exit(sw *sync.WaitGroup) {
 	this.listener.Close()
 	this.cancel()
 	sw.Wait()
+}
+
+func (this *TcpServer) SessionType() (st ESessionType) {
+	return ESessionType_Server
+}
+
+func (this *TcpServer) GetSessionByType(svrType Define.ERouteId) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetSessionByType(svrType)
 }
 
 func checkError(err error) {

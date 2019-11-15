@@ -1,6 +1,7 @@
 package tcpNet
 
 import (
+	"common/Define"
 	"net"
 	"reflect"
 
@@ -105,7 +106,7 @@ const (
 type MessageCb func(c net.Conn, mainID uint16, subID uint16, msg proto.Message)
 
 // after dial connect todo action.
-type AfterDialAct func()
+type AfterDialAct func(s *TcpSession)
 
 type TConnSession struct {
 	Connsess *TcpSession
@@ -117,9 +118,11 @@ type IProcessConnSession interface {
 	AddSessionByCmd(session *TcpSession, cmds []uint32)
 	RemoveByID(session *TcpSession)
 	RemoveByCmd(cmd uint32)
+	RemoveSessionByType(svrType Define.ERouteId)
 	GetByCmd(cmd uint32) (session *TcpSession)
 	GetSessionByID(sessionID uint64) (session *TcpSession)
 	AddSession(session *TcpSession)
+	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
 }
 
 type ITcpEngine interface {
@@ -127,4 +130,17 @@ type ITcpEngine interface {
 	GetSessionByCmd(cmd uint32) (session *TcpSession)
 	AddSession(session *TcpSession)
 	GetSessionByID(sessionID uint64) (session *TcpSession)
+	SessionType() (st ESessionType)
+	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
 }
+
+type ESessionType int8
+
+const (
+	ESessionType_Server ESessionType = 1
+	ESessionType_Client ESessionType = 2
+)
+
+const (
+	ESessionBeginNum = uint64(10000)
+)

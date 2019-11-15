@@ -8,7 +8,7 @@ type TLoginConfig struct {
 
 var (
 	GLoginConfig = &TLoginConfig{
-		ListenAddr: "0.0.0.0:51001",
+		ListenAddr: "0.0.0.0:19000",
 		No:         "1",
 		Zone:       "Server",
 	}

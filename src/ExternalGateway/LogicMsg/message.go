@@ -16,11 +16,6 @@ func ExternalGatewayMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg
 	Log.FmtPrintf("exec external gateway server message call back: %v, %v.", c.RemoteAddr(), c.LocalAddr())
 }
 
-func onServer(session *tcpNet.TcpSession, req *MSG_Server.CS_EnterServer_Req) (succ bool, err error) {
-	Log.FmtPrintf("onServer recv: %v.", req.Enter)
-	return
-}
-
 func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister_Req) (succ bool, err error) {
 	Log.FmtPrintf("onSvrRegister recv: %v.", req.ServerType)
 	var (
@@ -45,6 +40,5 @@ func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister
 }
 
 func init() {
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_CS_EnterServer), onServer)
 	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_CS_ServerRegister), onSvrRegister)
 }

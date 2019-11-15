@@ -32,7 +32,7 @@ func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_R
 		session.SetIdentify(acc.Identify())
 	}
 
-	return session.SendMsg(uint16(session.SrcPoint),
+	return session.SendMsg(uint16(session.SvrType),
 		uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_UserRegister),
 		rsp)
@@ -55,7 +55,7 @@ func onUserLogin(session *tcpNet.TcpSession, req *MSG_Login.CS_Login_Req) (succ 
 		rsp.Ret = MSG_Login.ErrorCode_UserNotExistOrPasswdErr
 	}
 
-	return session.SendMsg(uint16(session.SrcPoint),
+	return session.SendMsg(uint16(session.SvrType),
 		uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_Login),
 		rsp)

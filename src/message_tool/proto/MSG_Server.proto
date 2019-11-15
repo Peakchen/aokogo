@@ -6,9 +6,6 @@ package MSG_Server;
 enum SUBMSG
 {
     Begin = 0; //起点消息
-    
-    CS_EnterServer = 1; //进入服务器请求
-    SC_EnterServer = 2; //进入服务器回复
 
     CS_ServerRegister = 3; //服务器注册请求
     SC_ServerRegister = 4; //服务器注册回复
@@ -21,17 +18,6 @@ enum ErrorCode
     Fail = 2; //失败
 }
 
-//CS_EnterServer
-message CS_EnterServer_Req
-{
-    int32 Enter = 1; //
-}
-
-//SC_EnterServer
-message SC_EnterServer_Rsp
-{
-    ErrorCode Ret = 1; //返回码
-}
 
 //CS_ServerRegister
 message CS_ServerRegister_Req
