@@ -1,5 +1,7 @@
 @echo off
 
+echo "welcome use aoko!"
+
 call make_Externalgws.bat
 
 call make_GameServer.bat

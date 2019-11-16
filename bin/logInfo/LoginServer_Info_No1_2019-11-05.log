@@ -1,8 +1,0 @@
-[Info]2019-11-05 21:01:08.754000 +0800 start login server.
-[Info]2019-11-05 22:02:11.772000 +0800 client to server, key: 1.
-[Info]2019-11-05 23:39:50.772000 +0800 server message.
-[Info]2019-11-06 01:18:29.772000 +0800 read data fail, err: read tcp 127.0.0.1:54150->127.0.0.1:51001: i/o timeout0
-[Info]2019-11-06 02:56:11.770000 +0800 handle new session: 1
-[Info]2019-11-06 04:33:50.770000 +0800 after dial, send point: 5 register message to server.
-[Info]2019-11-06 06:11:29.771000 +0800 register context: [131073 131075 131077]
-[Info]2019-11-06 07:49:08.770000 +0800 SetCmd data len: 14

@@ -57,7 +57,7 @@ func (this *TClient2ServerSession) GetSessionByID(sessionID uint64) (session *tc
 
 func (this *TClient2ServerSession) AddSession(session *tcpNet.TcpSession) {
 	this.c2sSession.Store(session.SessionID, session)
-	this.c2sSession.Store(session.SvrType, session)
+	this.c2sSession.Store(session.RegPoint, session)
 }
 
 func (this *TClient2ServerSession) GetSessionByType(RegPoint Define.ERouteId) (session *tcpNet.TcpSession) {

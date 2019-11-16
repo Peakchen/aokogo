@@ -261,34 +261,42 @@ func (this *TcpSession) readMessage() (succ bool) {
 		return
 	}
 
-	mainID, _ := this.pack.GetMessageID()
-	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) { //除了注册消息外，其他的都转发给内网服
-		session := this.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
-		if session != session {
-			session.SetSendCache(packLenBuf)
+	route := this.pack.GetRouteID()
+	mainID, subID := this.pack.GetMessageID()
+	_cmd := EncodeCmd(mainID, subID)
+	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) && Define.ERouteId(route) == Define.ERouteId_ER_ISG {
+		this.Push(Define.ERouteId(route), []uint32{_cmd}) //外网关加入内网关session
+		succ = true
+		return
+	}
+
+	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) {
+		msgroute := Define.ERouteId(route)
+		if this.SvrType == Define.ERouteId_ER_ESG { //外网关转发路由
+			msgroute = Define.ERouteId_ER_ISG
+		} else if this.SvrType == Define.ERouteId_ER_ISG { //内网转发路由
+			msgroute = Define.ERouteId(route)
+		}
+
+		session := this.Engine.GetSessionByType(Define.ERouteId(msgroute))
+		if session != nil {
+			succ = session.readParse(packLenBuf)
+		} else {
+			Log.Error("can not find session, route: %v.", msgroute)
+		}
+
+	} else {
+		succ, err = MessageCallBack(this)
+		if err != nil {
+			Log.FmtPrintln("message pack call back: ", err)
 		}
 	}
-	succ = this.readParse(packLenBuf)
 	return
 }
 
-func (this *TcpSession) readParse(packLenBuf []byte) (succ bool) {
-	packlen := binary.LittleEndian.Uint32(packLenBuf[EnMessage_DataPackLen:EnMessage_NoDataLen])
-	if packlen > maxMessageSize {
-		Log.FmtPrintln("error receiving packLen:", packlen)
-		return
-	}
-
-	data := make([]byte, EnMessage_NoDataLen+packlen)
-	readn, err := io.ReadFull(this.conn, data[EnMessage_NoDataLen:])
-	if err != nil || readn < int(packlen) {
-		Log.FmtPrintln("error receiving msg, readn:", readn, "packLen:", packlen, "reason:", err)
-		return
-	}
-
-	//todo: unpack message then read real date.
-	copy(data[:EnMessage_NoDataLen], packLenBuf[:])
-	_, err = this.pack.UnPackAction(data)
+func (this *TcpSession) readParse(data []byte) (succ bool) {
+	Log.FmtPrintf("read parse, RegPoint: %v, SvrType: %v.", this.RegPoint, this.SvrType)
+	_, err := this.pack.UnPackAction(data)
 	if err != nil {
 		Log.FmtPrintln("unpack action err: ", err)
 		return
@@ -386,6 +394,7 @@ func (this *TcpSession) Push(RegPoint Define.ERouteId, cmds []uint32) {
 	if this.Engine == nil {
 		return
 	}
+	Log.FmtPrintf("push new sesson, reg point: %v, cmds: %v.", RegPoint, cmds)
 	this.RegPoint = RegPoint
 	this.Engine.PushCmdSession(this, cmds)
 }
