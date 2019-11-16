@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,102 +49,169 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package tcpNet
 
-import(
+import (
+	"common/Define"
+	"common/Log"
+	"context"
+	"fmt"
 	"net"
 	"os"
-	"fmt"
 	"sync"
-	"context"
+	"sync/atomic"
 )
 
-type TcpServer struct{
-	sw  	sync.WaitGroup
-	host   	string
+type TcpServer struct {
+	sw       *sync.WaitGroup
+	host     string
 	listener *net.TCPListener
-	ctx 	context.Context
-	cancel	context.CancelFunc
-	srcSvr  int32
-	dstSvr  int32
-	cb 		MessageCb
-	off     chan *TcpSession
-	on		*TcpSession
-	// person online 
-	person		int32
+	ctx      context.Context
+	cancel   context.CancelFunc
+	cb       MessageCb
+	off      chan *TcpSession
+	session  *TcpSession
+	// person online
+	person     int32
+	SvrType    Define.ERouteId
+	pack       IMessagePack
+	SessionMgr IProcessConnSession
+	// session id
+	SessionID uint64
 }
 
-func NewTcpServer(addr string, srcSvr, dstSvr int32, cb MessageCb)*TcpServer{
+func NewTcpServer(addr string, SvrType Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
 	return &TcpServer{
-		host: 	addr,
-		srcSvr: srcSvr,
-		dstSvr: dstSvr,
-		cb:		cb,
+		host:       addr,
+		cb:         cb,
+		SvrType:    SvrType,
+		SessionMgr: sessionMgr,
+		SessionID:  ESessionBeginNum,
 	}
 }
 
-func (self *TcpServer) StartTcpServer(){
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", self.host)
+func (this *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
-	self.listener = listener
-	self.ctx, self.cancel = context.WithCancel(context.Background())
-
-	self.sw.Add(1)
-	go self.loop()
-	self.sw.Add(1)
-	go self.loopoff()
-	//self.sw.Wait()
+	this.listener = listener
+	this.ctx, this.cancel = ctx, cancle
+	this.pack = &ServerProtocol{}
+	sw.Add(2)
+	go this.loop(sw)
+	go this.loopoff(sw)
+	sw.Wait()
 }
 
-func (self *TcpServer) loop(){
-	defer self.sw.Done()
-	for{
+func (this *TcpServer) loop(sw *sync.WaitGroup) {
+	defer this.Exit(sw)
+	for {
 		select {
-		case <-self.ctx.Done():
-			self.Exit()
+		case <-this.ctx.Done():
 			return
 		default:
-			c, err := self.listener.AcceptTCP()
-			if err != nil {
-				fmt.Println("[TcpServer][acceptLoop] can not accept tcp .")
+			c, err := this.listener.AcceptTCP()
+			if err != nil || c == nil {
+				Log.FmtPrintf("can not accept tcp.")
+				continue
 			}
-	
-			self.on = NewSession(self.host, c, self.ctx, self.srcSvr, self.dstSvr, self.cb, self.off)
-			self.on.HandleSession()
-			self.online()
+
+			c.SetNoDelay(true)
+			c.SetKeepAlive(true)
+			atomic.AddUint64(&this.SessionID, 1)
+			Log.FmtPrintf("connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
+			this.session = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.pack, this)
+			this.session.HandleSession(sw)
+			//this.AddSession(this.session)
+			this.online()
 		}
 	}
 }
 
-func (self *TcpServer) loopoff(){
-	defer self.sw.Done()
+func (this *TcpServer) loopoff(sw *sync.WaitGroup) {
+	defer this.Exit(sw)
 	for {
 		select {
-		case os, ok := <-self.off:
+		case os, ok := <-this.off:
 			if !ok {
 				return
 			}
-			self.offline(os)
-		case <-self.ctx.Done():
-			self.Exit()
+			this.offline(os)
+		case <-this.ctx.Done():
 			return
 		}
 	}
 }
 
-func (self *TcpServer) online(){
-	self.person++
+func (this *TcpServer) online() {
+	this.person++
 }
 
-func (self *TcpServer) offline(os *TcpSession){
-	// process 
-	self.person--
+func (this *TcpServer) offline(os *TcpSession) {
+	// process
+	this.person--
 }
 
-func (self *TcpServer) Exit(){
-	self.listener.Close()
-	self.cancel()
-	self.sw.Wait()
+func (this *TcpServer) SendMessage() {
+
+}
+
+func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
+	if this.SessionMgr == nil {
+		return
+	}
+	//this.SessionMgr.AddSessionByCmd(session, cmds)
+	this.AddSession(this.session)
+}
+
+func (this *TcpServer) GetSessionByCmd(cmd uint32) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetByCmd(cmd)
+}
+
+func (this *TcpServer) AddSession(session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	this.SessionMgr.AddSession(session)
+}
+
+func (this *TcpServer) GetSessionByID(sessionID uint64) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetSessionByID(sessionID)
+}
+
+func (this *TcpServer) Exit(sw *sync.WaitGroup) {
+	this.listener.Close()
+	this.cancel()
+	sw.Wait()
+}
+
+func (this *TcpServer) SessionType() (st ESessionType) {
+	return ESessionType_Server
+}
+
+func (this *TcpServer) GetSessionByType(svrType Define.ERouteId) (session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+	return this.SessionMgr.GetSessionByType(svrType)
+}
+
+func (this *TcpServer) RemoveSession(session *TcpSession) {
+	if this.SessionMgr == nil {
+		return
+	}
+
+	if session.RegPoint != Define.ERouteId_ER_Invalid {
+		this.SessionMgr.RemoveSessionByType(session.RegPoint)
+	} else {
+		this.SessionMgr.RemoveSessionByID(session)
+	}
+
 }
 
 func checkError(err error) {

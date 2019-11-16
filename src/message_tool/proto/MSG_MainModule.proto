@@ -1,0 +1,13 @@
+syntax = "proto3";
+package MSG_MainModule;
+
+// add by stefanchen 
+// 主模块消息结构
+enum MAINMSG
+{
+    Begin = 0; //起点消息
+    SERVER = 1; //服务器间消息
+    LOGIN = 2;  //登陆模块消息
+    PLAYER = 3; //玩家消息
+}
+

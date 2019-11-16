@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -49,22 +49,30 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 
 package main
 
-import(
-	"runtime"
-	"fmt"
+import (
+	"ExternalGateway/LogicMsg"
+	"ExternalGateway/SessionMgr"
+	"common/Define"
+	"common/Log"
 	"common/tcpNet"
-	"common/define"
+	"context"
+	"runtime"
+	"sync"
 )
 
-func init(){
+func init() {
 	runtime.GOMAXPROCS(1)
 }
 
-func main(){
-	if true {
-		fmt.Println("[ExternalGateWay][main] start.")
-	}
+func main() {
+	Log.FmtPrintf("start ExternalGateWay.")
 
-	newExternalServer := tcpNet.NewTcpServer(define.ExternalServerHost)
-	newExternalServer.StartTcpServer()
+	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
+		Define.ERouteId_ER_ESG,
+		LogicMsg.ExternalGatewayMessageCallBack,
+		SessionMgr.GClient2ServerSession)
+
+	sw := sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.Background())
+	newExternalServer.StartTcpServer(&sw, ctx, cancel)
 }

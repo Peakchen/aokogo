@@ -14,12 +14,12 @@ const (
 	EModuleName string = "ModuleTest"
 )
 
-func (self *TModuleTest) AfterCall()(error){
+func (this *TModuleTest) AfterCall()(error){
 	fmt.Println("module test rpc, after call.")
 	return nil
 }
 
-func (self *TModuleTest) Action(a int32, b bool, c []int32)(error, bool){
+func (this *TModuleTest) Action(a int32, b bool, c []int32)(error, bool){
 	return nil, false
 }
 

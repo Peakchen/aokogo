@@ -3,6 +3,7 @@ package utls
 import (
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -137,4 +138,30 @@ func bufApp(buf *[]byte, s string, w int, c byte) {
 		copy(*buf, s[:w])
 	}
 	(*buf)[w] = c
+}
+
+func GetExeFileName() (filename string) {
+	execpath, err := os.Executable()
+	if err != nil {
+		return
+	}
+	execpath = strings.Replace(execpath, "\\", "/", -1)
+	_, sfile := path.Split(execpath)
+	arrfile := strings.Split(sfile, ".")
+	if len(arrfile) <= 0 {
+		return
+	}
+	filename = arrfile[0]
+	return
+}
+
+func GetExeFilePath() (execpath string) {
+	execpath, err := os.Executable()
+	if err != nil {
+		return
+	}
+	execpath = strings.Replace(execpath, "\\", "/", -1)
+	idx := strings.LastIndex(execpath, "/")
+	execpath = execpath[:idx]
+	return
 }

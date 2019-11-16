@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -50,21 +50,19 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 package main
 
 import (
-	"fmt"
-	"flag"
+	"GameServer/server"
+	"common/Config/serverConfig"
+	"common/Log"
 	//"log"
 )
 
-
-func init(){
+func init() {
 
 }
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+func main() {
+	Log.FmtPrintf("start gameServer.")
 
-func main()  {
-	fmt.Println("start game.")
-	flag.Parse()
-	
-	//
+	server.StartServer(serverConfig.GServerBaseConfig)
+	return
 }

@@ -2,7 +2,7 @@ package timer
 
 import (
 	"common/Log"
-	. "common/RedisService"
+	. "common/RedisConn"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -37,11 +37,11 @@ func NewTimer(ctx context.Context, wg *sync.WaitGroup, c *TRedisConn) {
 	GAokoTimer.conn = c.Conn
 	GAokoTimer.tmo = []string{}
 	wg.Add(1)
-	go self.loop(ctx, wg)
+	go this.loop(ctx, wg)
 
 }
 
-func (self *TAokoTimer) Register(key, name string, model interface{}) {
+func (this *TAokoTimer) Register(key, name string, model interface{}) {
 	cbdata := &TAokoCallBackParam{
 		cb: model,
 	}
@@ -50,7 +50,7 @@ func (self *TAokoTimer) Register(key, name string, model interface{}) {
 		fmt.Println("register marshal fail: ", err)
 		return
 	}
-	self.tmo = append(self.tmo, name)
+	this.tmo = append(this.tmo, name)
 	pack = &TDataPack{
 		Key:  key,
 		Data: string(bydata),
@@ -61,18 +61,18 @@ func (self *TAokoTimer) Register(key, name string, model interface{}) {
 		return
 	}
 	// key + value
-	_, err := self.conn.Do("RPUSH", name, bypack...)
+	_, err := this.conn.Do("RPUSH", name, bypack...)
 	if err != nil {
 		Log.Error("RPUSH data: %v, err: %v.\n", Ret, err)
 		return
 	}
 }
 
-func (self *TAokoTimer) loop(ctx context.Context, wg *sync.WaitGroup) {
+func (this *TAokoTimer) loop(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for {
-		for _, name := range self.tmo {
-			data, err := self.conn.Do("LPOP", name)
+		for _, name := range this.tmo {
+			data, err := this.conn.Do("LPOP", name)
 			if err != nil {
 				Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
 				return
@@ -90,10 +90,10 @@ func (self *TAokoTimer) loop(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (self *TAokoTimer) handler() {
+func (this *TAokoTimer) handler() {
 
 }
 
-func (self *TAokoTimer) exit(wg *sync.WaitGroup) {
+func (this *TAokoTimer) exit(wg *sync.WaitGroup) {
 	wg.Wait()
 }

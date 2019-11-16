@@ -1,0 +1,18 @@
+{
+   "go.inferGopath":true,
+  // Specify GOPATH here to override the one that is set as environment variable. The inferred GOPATH from workspace root overrides this, if go.inferGopath is set to true.
+  "go.gopath": "D:\\aoko",
+  "files.autoSave": "onFocusChange",
+  "go.buildOnSave": true,
+  "go.lintOnSave": true,
+  "go.vetOnSave": true,
+  "go.buildTags": "",
+  "go.buildFlags": [],
+  "go.lintFlags": [],
+  "go.vetFlags": [],
+  "go.coverOnSave": false,
+  "go.useCodeSnippetsOnFunctionSuggest": false,
+  "go.formatOnSave": true,
+  "go.formatTool": "goreturns",
+  "go.gocodeAutoBuild": true
+}

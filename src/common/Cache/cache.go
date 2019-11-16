@@ -22,63 +22,63 @@ type TCache struct {
 	ctx 	context.Context
 }
 
-func (self *TCache) Set(key string, data interface{}) {
+func (this *TCache) Set(key string, data interface{}) {
 	d := &TData{
 		key: 		key,
-		deadtime: 	time.Now().Unix()+self.td,
+		deadtime: 	time.Now().Unix()+this.td,
 	}
-	self.cl.PushBack(d)
-	self.c.Store(key, data)
+	this.cl.PushBack(d)
+	this.c.Store(key, data)
 }
 
-func (self *TCache) Get(key string) interface{}{
-	val, ok := self.c.Load(key)
+func (this *TCache) Get(key string) interface{}{
+	val, ok := this.c.Load(key)
 	if !ok {
 		return nil
 	} 
 	return val
 }
 
-func (self *TCache) Remove(key string) {
-	self.c.Delete(key)
+func (this *TCache) Remove(key string) {
+	this.c.Delete(key)
 }
 
-func (self *TCache) Init(td int64, ctx context.Context) {
-	self.td = td
-	self.ctx = ctx
-	if self.cl == nil {
-		self.cl = list.New()
+func (this *TCache) Init(td int64, ctx context.Context) {
+	this.td = td
+	this.ctx = ctx
+	if this.cl == nil {
+		this.cl = list.New()
 	}
 }
 
-func (self *TCache) Run(){
-	self.wg.Add(1)
-	go self.loopcheck()
+func (this *TCache) Run(){
+	this.wg.Add(1)
+	go this.loopcheck()
 }
 
-func (self *TCache) exit(){
-	self.wg.Wait()
+func (this *TCache) exit(){
+	this.wg.Wait()
 }
 
-func (self *TCache) loopcheck() {
-	defer self.wg.Done()
-	t := time.NewTicker(time.Duration(self.td))
+func (this *TCache) loopcheck() {
+	defer this.wg.Done()
+	t := time.NewTicker(time.Duration(this.td))
 	for{
 		select{
-		case <-self.ctx.Done():
-			self.exit()
+		case <-this.ctx.Done():
+			this.exit()
 			return
 		case <-t.C:
-			if self.cl.Len() == 0 {
+			if this.cl.Len() == 0 {
 				break
 			}
-			e := self.cl.Front()
+			e := this.cl.Front()
 			data := e.Value.(*TData)
 			if data.deadtime > time.Now().Unix() {
 				break
 			}
-			self.cl.Remove(e)
-			self.c.Delete(data.key)
+			this.cl.Remove(e)
+			this.c.Delete(data.key)
 		}
 	}
 }

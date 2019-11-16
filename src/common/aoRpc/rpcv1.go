@@ -29,23 +29,23 @@ func init(){
 	Aorpc.Init()
 }
 
-func (self *TAorpcV1) Init(){
-	self.models = map[string]interface{}{}
-	self.acts = list.New()
+func (this *TAorpcV1) Init(){
+	this.models = map[string]interface{}{}
+	this.acts = list.New()
 }
 
-func (self *TAorpcV1) Run(){
-	self.ctx, self.cancel = context.WithCancel(context.Background())
-	self.wg.Add(2)
-	go self.loop()
-	go self.loopAct()
+func (this *TAorpcV1) Run(){
+	this.ctx, this.cancel = context.WithCancel(context.Background())
+	this.wg.Add(2)
+	go this.loop()
+	go this.loopAct()
 }
 
 /*
 	take model and func witch func in params,   
 */
-func (self *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, outs []interface{})(error){
-	m, ok := self.models[modelname]
+func (this *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, outs []interface{})(error){
+	m, ok := this.models[modelname]
 	if !ok {
 		return fmt.Errorf("can not find model, input model name: %v.", modelname)
 	}
@@ -58,7 +58,7 @@ func (self *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, o
 	}
 	//f.Call(rv)
 	actkey := key+":"+modelname+":"+funcName
-	self.actchan <- &TModelActV1{
+	this.actchan <- &TModelActV1{
 		actid:	actkey,
 		modf: 	f,
 		params: rv,
@@ -67,16 +67,16 @@ func (self *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, o
 	}
 	var twg sync.WaitGroup
 	twg.Add(1)
-	go self.loopRet(actkey, outs, &twg)
+	go this.loopRet(actkey, outs, &twg)
 	twg.Wait()
 	return nil
 }
 
-func (self *TAorpcV1) loopRet(actkey string, outs []interface{}, twg *sync.WaitGroup){
+func (this *TAorpcV1) loopRet(actkey string, outs []interface{}, twg *sync.WaitGroup){
 	t := time.NewTicker(time.Duration(rpcdealline))
 	for {
 		select {
-		case ar := <-self.retchan:
+		case ar := <-this.retchan:
 			if ar.actid == actkey {
 				for i, ret := range ar.rets {
 					reflect.ValueOf(outs[i]).Set(ret)
@@ -91,55 +91,55 @@ func (self *TAorpcV1) loopRet(actkey string, outs []interface{}, twg *sync.WaitG
 	}
 }
 
-func (self *TAorpcV1) loop(){
-	defer self.wg.Done()
+func (this *TAorpcV1) loop(){
+	defer this.wg.Done()
 	//t := time.NewTicker(time.Duration(rpcdealline))
 	for {
 		select {
-		case <-self.ctx.Done():
-			self.Exit()
+		case <-this.ctx.Done():
+			this.Exit()
 			return
 		//case <-t.C:
 		
-		case act := <-self.actchan:
+		case act := <-this.actchan:
 			if act == nil {
 				return
 			}
-			if self.acts.Len() >= ActChanMaxSize {
+			if this.acts.Len() >= ActChanMaxSize {
 				fmt.Println("has enough acts in chan.")
 				return
 			} 
-			self.acts.PushBack(act)
+			this.acts.PushBack(act)
 		}
 	}
 }
 
-func (self *TAorpcV1) loopAct(){
-	defer self.wg.Done()
+func (this *TAorpcV1) loopAct(){
+	defer this.wg.Done()
 	for {
-		if self.acts.Len() == 0 {
+		if this.acts.Len() == 0 {
 			continue
 		}
-		self.mutex.Lock()
-		e := self.acts.Front()
+		this.mutex.Lock()
+		e := this.acts.Front()
 		act := e.Value.(*TModelActV1)
 		if act == nil {
 			fmt.Println("act value invalid: ", e.Value)
 			continue
 		}
 		mrts := act.modf.Call(act.params)
-		self.retchan <- &TActRet{
+		this.retchan <- &TActRet{
 			actid:	act.actid,
 			rets:	mrts,
 		}
-		self.acts.Remove(e)
-		self.mutex.Unlock()
+		this.acts.Remove(e)
+		this.mutex.Unlock()
 	}
 }
 
-func (self *TAorpcV1) Exit(){
-	self.cancel()
-	self.wg.Wait()
+func (this *TAorpcV1) Exit(){
+	this.cancel()
+	this.wg.Wait()
 }
 
 func Register(name string, model interface{}) {

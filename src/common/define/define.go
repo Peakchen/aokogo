@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -48,24 +48,41 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 package Define
 
-import(
+import (
 	"net/http"
 )
 
-const(
-	LoginServerHost  string = "172.0.0.1:17000" 
-	ExternalServerHost  string = "0.0.0.0:51001"
-	InnerServerHost  string = "172.0.0.1:19000"
+const (
+	LoginServerHost    string = "0.0.0.0:51001"
+	ExternalServerHost string = "0.0.0.0:51001"
+	InnerServerHost    string = "0.0.0.0:19000"
+	GameServerHost     string = "127.0.0.1:19000"
+)
+
+type ERouteId int32
+
+const (
+	ERouteId_ER_Invalid    ERouteId = 0
+	ERouteId_ER_ESG        ERouteId = 1
+	ERouteId_ER_ISG        ERouteId = 2
+	ERouteId_ER_DB         ERouteId = 3
+	ERouteId_ER_BigWorld   ERouteId = 4
+	ERouteId_ER_Login      ERouteId = 5
+	ERouteId_ER_SmallWorld ERouteId = 6
+	ERouteId_ER_DBProxy    ERouteId = 7
+	ERouteId_ER_Game       ERouteId = 8
+	ERouteId_ER_Client     ERouteId = 9
+	ERouteId_ER_Max        ERouteId = 10
 )
 
 type HandlerFunc func(http.ResponseWriter, *http.Request)
 
-func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request){
-	f(w,r)
+func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(w, r)
 }
 
-type HandlerServMux struct{
-	muxhandler* http.ServeMux
+type HandlerServMux struct {
+	muxhandler *http.ServeMux
 }
 
 //message format
@@ -75,4 +92,3 @@ type HandlerServMux struct{
 	SubID	int32
 	message proto.Message
 */
-

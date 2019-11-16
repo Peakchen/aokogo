@@ -1,0 +1,31 @@
+[submodule "src/stathat.com/c/consistent"]
+	path = src/stathat.com/c/consistent
+	url = https://github.com/stathat/consistent
+[submodule "src/github.com/alecthomas/repr"]
+	path = src/github.com/alecthomas/repr
+	url = https://github.com/alecthomas/repr
+[submodule "src/github.com/golang/protobuf"]
+	path = src/github.com/golang/protobuf
+	url = https://github.com/golang/protobuf
+[submodule "src/github.com/gomodule/redigo"]
+	path = src/github.com/gomodule/redigo
+	url = https://github.com/gomodule/redigo
+[submodule "src/github.com/yuin/gopher-lua"]
+	path = src/github.com/yuin/gopher-lua
+	url = https://github.com/yuin/gopher-lua
+[submodule "src/gopkg.in/redsync.v1"]
+	path = src/gopkg.in/redsync.v1
+	url = https://gopkg.in/redsync.v1
+[submodule "src/github.com/uber-go/zap"]
+	path = src/github.com/uber-go/zap
+	url = https://github.com/uber-go/zap
+[submodule "src/github.com/antlinker/go-dirtyfilter"]
+	path = src/github.com/antlinker/go-dirtyfilter
+	url = git@github.com:antlinker/go-dirtyfilter.git
+[submodule "src/github.com/antlinker/go-cmap"]
+	path = src/github.com/antlinker/go-cmap
+	url = git@github.com:antlinker/go-cmap.git
+[submodule "src/github.com/globalsign/mgo"]
+	path = src/github.com/globalsign/mgo
+	url = git@github.com:globalsign/mgo.git
+    ignore = dirty

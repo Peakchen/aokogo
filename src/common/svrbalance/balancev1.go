@@ -25,23 +25,23 @@ type TSvrBalanceV1 struct {
 	sb  map[string]*TExternal
 }
 
-func (self *TSvrBalanceV1) NewBalance(){
+func (this *TSvrBalanceV1) NewBalance(){
 
 }
 
-func (self *TSvrBalanceV1) AddSvr(svr string){
-	_, ok := self.sb[svr]
+func (this *TSvrBalanceV1) AddSvr(svr string){
+	_, ok := this.sb[svr]
 	if ok {
 		return
 	}
 
-	self.sb[svr] = &TExternal{
+	this.sb[svr] = &TExternal{
 		Persons: 0,
 	}
 }
 // some one connect gateway to balance route push one server.
-func (self *TSvrBalanceV1) Push(svr string) {
-	ex, ok := self.sb[svr]
+func (this *TSvrBalanceV1) Push(svr string) {
+	ex, ok := this.sb[svr]
 	if ok {
 		return
 	}
@@ -50,14 +50,14 @@ func (self *TSvrBalanceV1) Push(svr string) {
 }
 
 // get second max server persons
-func (self *TSvrBalanceV1) GetSvr() (s string) {
+func (this *TSvrBalanceV1) GetSvr() (s string) {
 	var (
 		secmin int32 = 0
 		max int32 = 0
 		loop int = 0
-		sblen int = len(self.sb)
+		sblen int = len(this.sb)
 	)
-	for svr, ex := range self.sb {
+	for svr, ex := range this.sb {
 		loop++
 		if ex.Persons > max {
 			max = ex.Persons

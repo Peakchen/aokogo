@@ -1,0 +1,1 @@
+# game server be used to tcp client connect Inner gateway server.
