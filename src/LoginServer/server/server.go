@@ -1,7 +1,6 @@
 package server
 
 import (
-	"ExternalGateway/SessionMgr"
 	"LoginServer/LogicMsg"
 	"LoginServer/dbo"
 	"common/Config/serverConfig"
@@ -17,7 +16,7 @@ func StartServer(servercfg *serverConfig.TServerBaseConfig) {
 		Define.ERouteId_ER_Login,
 		LogicMsg.LoginMessageCallBack,
 		nil,
-		SessionMgr.GClient2ServerSession)
+		tcpNet.GClient2ServerSession)
 
 	gameSvr.Run()
 }

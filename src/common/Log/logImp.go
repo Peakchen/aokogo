@@ -204,6 +204,7 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 		FmtPrintf("log file: %v over max limix.", aokoLog.filename)
 		aokoLog.FileNo++
 		initLogFile(logtype, aokoLog)
+		aokoLog.filesize = 0
 	}
 
 	aokoLog.filesize += uint64(len(logStr))

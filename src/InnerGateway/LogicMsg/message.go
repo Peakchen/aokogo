@@ -80,7 +80,7 @@ func onSvrRegister(session *tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister
 	msgfmt += "\n"
 	Log.FmtPrintln("message context: ", msgfmt)
 
-	return
+	return tcpNet.RegisterMessageRet(session, uint16(req.ServerType))
 }
 
 func init() {

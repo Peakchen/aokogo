@@ -17,9 +17,9 @@ func LoginRun() {
 	MessageRegister()
 	var sw sync.WaitGroup
 
-	sw.Add(2)
-	go UserRegister()
-	go UserLogin()
+	sw.Add(1)
+	//go UserRegister()
+	UserLogin()
 	//go AlostOfPeopleLogin()
 	sw.Wait()
 }
@@ -68,7 +68,7 @@ func UserLogin() {
 			uint16(MSG_Login.SUBMSG_CS_Login),
 			req)
 		go loginM.Run()
-		UserEnter(loginM)
+		//UserEnter(loginM)
 	}
 }
 

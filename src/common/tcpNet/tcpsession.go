@@ -159,9 +159,10 @@ func (this *TcpSession) exit(sw *sync.WaitGroup) {
 		return
 	}
 
-	Log.FmtPrintf("session exit, svr: %v, regpoint: %v.", this.SvrType, this.RegPoint)
+	Log.FmtPrintf("session exit, svr: %v, regpoint: %v, cache size: %v.", this.SvrType, this.RegPoint, len(this.send))
 	this.isAlive = false
 	this.off <- this
+	this.send <- []byte{}
 	//close(this.send)
 	this.conn.CloseRead()
 	this.conn.CloseWrite()
@@ -229,7 +230,7 @@ func (this *TcpSession) writeMessage(data []byte) (succ bool) {
 }
 
 func (this *TcpSession) readMessage() (succ bool) {
-	this.conn.SetReadDeadline(time.Now().Add(pongWait))
+	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)
 	if err != nil || readn < EnMessage_NoDataLen {
@@ -265,31 +266,60 @@ func (this *TcpSession) readMessage() (succ bool) {
 	route := this.pack.GetRouteID()
 	mainID, subID := this.pack.GetMessageID()
 	_cmd := EncodeCmd(mainID, subID)
-	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) && Define.ERouteId(route) == Define.ERouteId_ER_ISG {
+	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) &&
+		Define.ERouteId(route) == Define.ERouteId_ER_ISG &&
+		this.SvrType == Define.ERouteId_ER_ESG {
 		this.Push(Define.ERouteId(route), []uint32{_cmd}) //外网关加入内网关session
+		RegisterMessageRet(this, uint16(Define.ERouteId_ER_ESG))
 		succ = true
 		return
 	}
 
-	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) {
-		msgroute := Define.ERouteId(route)
+	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) &&
+		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
+		Log.FmtPrintf("route (%v) forward.", route)
 		if this.SvrType == Define.ERouteId_ER_ESG { //外网关转发路由
-			msgroute = Define.ERouteId_ER_ISG
-		} else if this.SvrType == Define.ERouteId_ER_ISG { //内网转发路由
-			msgroute = Define.ERouteId(route)
-		}
-
-		session := this.Engine.GetSessionByType(Define.ERouteId(msgroute))
-		if session != nil {
-			succ = session.writeMessage(packLenBuf)
-			if !session.isAlive {
-				this.Engine.RemoveSession(session)
+			session := this.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
+			if session != nil {
+				if !session.isAlive {
+					this.Engine.RemoveSession(session)
+				} else {
+					Log.FmtPrintf("route svr: %v, reg point: %v.", session.SvrType, session.RegPoint)
+					succ = session.writeMessage(this.pack.GetSrcMsg())
+				}
+			} else {
+				Log.FmtPrintf("can not find session route from external gateway.")
 			}
-		} else {
-			Log.Error("can not find session, route: %v.", msgroute)
+		} else if this.SvrType == Define.ERouteId_ER_ISG {
+			if Define.ERouteId(route) != Define.ERouteId_ER_ESG &&
+				Define.ERouteId(route) != Define.ERouteId_ER_ISG { //内网转发路由
+				session := GClient2ServerSession.GetSessionByType(Define.ERouteId(route))
+				if session != nil {
+					if !session.isAlive {
+						this.Engine.RemoveSession(session)
+					} else {
+						Log.FmtPrintf("route svr: %v, reg point: %v.", session.SvrType, session.RegPoint)
+						succ = session.writeMessage(this.pack.GetSrcMsg())
+					}
+				} else {
+					Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
+				}
+			} else {
+				session := GServer2ServerSession.GetSessionByType(Define.ERouteId_ER_ESG)
+				if session != nil {
+					if !session.isAlive {
+						this.Engine.RemoveSession(session)
+					} else {
+						Log.FmtPrintf("route svr: %v, reg point: %v.", session.SvrType, session.RegPoint)
+						succ = session.writeMessage(this.pack.GetSrcMsg())
+					}
+				} else {
+					Log.FmtPrintf("can not find session route from external gateway.")
+				}
+			}
 		}
 	} else {
-		succ, err = MessageCallBack(this) //路由消息注册
+		succ, err = this.msgCallBack() //路由消息注册
 		if err != nil {
 			Log.FmtPrintln("message pack call back: ", err)
 		}
@@ -297,90 +327,40 @@ func (this *TcpSession) readMessage() (succ bool) {
 	return
 }
 
-func (this *TcpSession) readParse(data []byte) (succ bool) {
-	Log.FmtPrintf("read parse, RegPoint: %v, SvrType: %v.", this.RegPoint, this.SvrType)
-	_, err := this.pack.UnPackAction(data)
-	if err != nil {
-		Log.FmtPrintln("unpack action err: ", err)
-		return
-	}
-
-	succ, err = MessageCallBack(this)
-	if err != nil {
-		Log.FmtPrintln("message pack call back: ", err)
-	}
-
-	return
-}
-
-func MessageCallBack(session *TcpSession) (succ bool, err error) {
-	route := session.pack.GetRouteID()
-	Log.FmtPrintf("pack route: %v, sessionid: %v.", route, session.SessionID)
-	mainID, subID := session.pack.GetMessageID()
-	_cmd := EncodeCmd(mainID, subID)
-	Log.FmtPrintf("mainid: %v, subID: %v, cmd: %v.", mainID, subID, _cmd)
-	if session.Engine != nil {
-		s := session.Engine.GetSessionByCmd(_cmd)
-		if s != nil {
-			Log.FmtPrintf("route send RegPoint: %v, mainid: %v, subID: %v, sessionid: %v.", s.RegPoint, mainID, subID, s.SessionID)
-			s.SetSendCache(session.pack.GetSrcMsg())
-			succ = true
-			err = nil
-			return
-		}
-	}
-
+func (this *TcpSession) msgCallBack() (succ bool, err error) {
+	route := this.pack.GetRouteID()
+	Log.FmtPrintf("pack route: %v, sessionid: %v.", route, this.SessionID)
+	mainID, subID := this.pack.GetMessageID()
 	switch mainID {
 	case uint16(MSG_MainModule.MAINMSG_SERVER):
-		Log.FmtPrintln("server message.")
 		if uint16(MSG_Server.SUBMSG_SC_ServerRegister) == subID {
+			_cmd := EncodeCmd(mainID, subID)
+			this.Push(Define.ERouteId_ER_ESG, []uint32{_cmd})
 			succ = true
 			err = nil
 			return
 		}
-	case uint16(MSG_MainModule.MAINMSG_LOGIN):
-		Log.FmtPrintln("Login message.")
-	default:
-
 	}
 
-	if session.pack == nil {
-		Log.FmtPrintln("pack is nil.")
-		return
-	}
-
-	msg, cb, unpackerr, exist := session.pack.UnPackData()
-	if unpackerr != nil && !exist {
-		Log.FmtPrintf("direct send RegPoint: %v, mainid: %v, subID: %v, sessionid: %v.", session.RegPoint, mainID, subID, session.SessionID)
-		sendsess := session.Engine.GetSessionByID(session.SessionID)
-		if sendsess != nil {
-			sendsess.SetSendCache(session.pack.GetSrcMsg())
-			succ = true
-			err = nil
-		}
-
-		return
-	}
-
-	if unpackerr != nil {
-		err = unpackerr
+	msg, cb, unpackerr, exist := this.pack.UnPackData()
+	if unpackerr != nil || !exist {
 		Log.FmtPrintln("unpack data err: ", unpackerr)
+		err = unpackerr
 		return
 	}
 
 	params := []reflect.Value{
 		//reflect.ValueOf("1"),
-		reflect.ValueOf(session),
+		reflect.ValueOf(this),
 		reflect.ValueOf(msg),
 	}
 
 	ret := cb.Call(params)
 	succ = ret[0].Interface().(bool)
 	reterr := ret[1].Interface()
-	if reterr != nil {
+	if reterr != nil || !succ {
 		Log.FmtPrintln("message return err: ", reterr.(error).Error())
 	}
-
 	return
 }
 
@@ -412,10 +392,27 @@ func (this *TcpSession) Offline() {
 
 func (this *TcpSession) SendMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
-		return false, fmt.Errorf("session disconnection, route: %v, mainid: %v, subid: %v.", route, mainid, subid)
+		err = fmt.Errorf("session disconnection, route: %v, mainid: %v, subid: %v.", route, mainid, subid)
+		Log.FmtPrintln("send msg err: ", err)
+		return false, err
 	}
 
 	data := this.pack.PackMsg(route,
+		mainid,
+		subid,
+		msg)
+	this.SetSendCache(data)
+	return true, nil
+}
+
+func (this *TcpSession) SendInnerMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+	if !this.isAlive {
+		err = fmt.Errorf("session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		Log.FmtPrintln("send msg err: ", err)
+		return false, err
+	}
+
+	data := this.pack.PackMsg(uint16(Define.ERouteId_ER_ISG),
 		mainid,
 		subid,
 		msg)

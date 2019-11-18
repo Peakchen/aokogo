@@ -71,6 +71,7 @@ func (this *TcpClient) connect(sw *sync.WaitGroup) error {
 		return err
 	}
 
+	Log.FmtPrintf("[----------client-----------], svrtype: %v.", this.SvrType)
 	c.SetNoDelay(true)
 	this.dialsess = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.mpobj, this)
 	this.dialsess.HandleSession(sw)
@@ -131,7 +132,11 @@ func (this *TcpClient) PushCmdSession(session *TcpSession, cmds []uint32) {
 	if this.SessionMgr == nil {
 		return
 	}
+	Log.FmtPrintf("[client] push session, SvrType: %v, RegPoint: %v.", session.SvrType, session.RegPoint)
 	//this.SessionMgr.AddSessionByCmd(session, cmds)
+	if session.RegPoint == Define.ERouteId_ER_ESG {
+		GServer2ServerSession.AddSession(session)
+	}
 	this.AddSession(session)
 }
 

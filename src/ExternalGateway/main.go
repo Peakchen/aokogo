@@ -51,7 +51,6 @@ package main
 
 import (
 	"ExternalGateway/LogicMsg"
-	"ExternalGateway/SessionMgr"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -70,7 +69,7 @@ func main() {
 	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
 		Define.ERouteId_ER_ESG,
 		LogicMsg.ExternalGatewayMessageCallBack,
-		SessionMgr.GClient2ServerSession)
+		tcpNet.GClient2ServerSession)
 
 	sw := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())

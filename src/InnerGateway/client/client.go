@@ -1,7 +1,6 @@
 package client
 
 import (
-	"ExternalGateway/SessionMgr"
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/Log"
@@ -14,7 +13,7 @@ func StartClient() {
 		Define.ERouteId_ER_ISG,
 		nil,
 		nil,
-		SessionMgr.GClient2ServerSession)
+		tcpNet.GClient2ServerSession)
 
 	gameSvr.Run()
 }

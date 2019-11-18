@@ -118,7 +118,7 @@ func (this *TcpServer) loop(sw *sync.WaitGroup) {
 			c.SetNoDelay(true)
 			c.SetKeepAlive(true)
 			atomic.AddUint64(&this.SessionID, 1)
-			Log.FmtPrintf("connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
+			Log.FmtPrintf("[server] accept connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
 			this.session = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.pack, this)
 			this.session.HandleSession(sw)
 			//this.AddSession(this.session)
@@ -159,8 +159,13 @@ func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
 	if this.SessionMgr == nil {
 		return
 	}
+	Log.FmtPrintf("[server] push session, SvrType: %v, RegPoint: %v.", session.SvrType, session.RegPoint)
 	//this.SessionMgr.AddSessionByCmd(session, cmds)
-	this.AddSession(this.session)
+	if session.SvrType == Define.ERouteId_ER_ISG {
+		GClient2ServerSession.AddSession(session)
+	}
+
+	this.AddSession(session)
 }
 
 func (this *TcpServer) GetSessionByCmd(cmd uint32) (session *TcpSession) {

@@ -2,6 +2,8 @@ package tcpNet
 
 import (
 	"common/Log"
+	"common/msgProto/MSG_MainModule"
+	"common/msgProto/MSG_Server"
 	"errors"
 	"fmt"
 	"reflect"
@@ -79,4 +81,13 @@ func GetAllMessageIDs() (msgs []uint32) {
 		msgs = append(msgs, uint32(msgid))
 	}
 	return
+}
+
+func RegisterMessageRet(session *TcpSession, ServerType uint16) (succ bool, err error) {
+	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
+	rsp.Ret = MSG_Server.ErrorCode_Success
+	return session.SendMsg(ServerType,
+		uint16(MSG_MainModule.MAINMSG_SERVER),
+		uint16(MSG_Server.SUBMSG_SC_ServerRegister),
+		rsp)
 }

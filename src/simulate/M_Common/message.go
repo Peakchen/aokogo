@@ -62,7 +62,7 @@ func (this *TModuleCommon) sender(conn net.Conn) (succ bool) {
 	}
 	n, err := conn.Write(this.data)
 	if n == 0 || err != nil {
-		Log.Error("Write fail, data: ", n, err)
+		//Log.Error("Write fail, data: ", n, err)
 		return false
 	}
 	Log.FmtPrintln("send over")
@@ -81,7 +81,7 @@ func (this *TModuleCommon) readloop(conn net.Conn) {
 			buffer := make([]byte, 1024)
 			n, err := conn.Read(buffer)
 			if err != nil || n == 0 {
-				Log.Error("waiting server back msg error: ", conn.RemoteAddr().String(), err)
+				//Log.Error("waiting server back msg error: ", conn.RemoteAddr().String(), err)
 				continue
 			}
 
@@ -118,7 +118,7 @@ func (this *TModuleCommon) sendloop(conn net.Conn) {
 					conn, err = net.DialTCP("tcp", nil, tcpAddr)
 					if err != nil {
 						Log.FmtPrintf("dial to server, host: %v.", this.host)
-						Log.Error("err: ", err.Error())
+						//Log.Error("err: ", err.Error())
 						continue
 					}
 					break
@@ -135,13 +135,13 @@ func (this *TModuleCommon) sendloop(conn net.Conn) {
 func (this *TModuleCommon) dialSend() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
-		Log.Error("resolve error: %s", err.Error())
+		//Log.Error("resolve error: %s", err.Error())
 		return
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		Log.Error("dial error: %s", err.Error())
+		//Log.Error("dial error: %s", err.Error())
 		return
 	}
 
@@ -159,13 +159,13 @@ func (this *TModuleCommon) dialSend() {
 func (this *TModuleCommon) sendDirectNoRecv() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
-		Log.Error("resolve error: %s", err.Error())
+		//Log.Error("resolve error: %s", err.Error())
 		return
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		Log.Error("dial error: %s", err.Error())
+		//Log.Error("dial error: %s", err.Error())
 		return
 	}
 
