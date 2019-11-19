@@ -1,35 +1,60 @@
 package pprof
+
 // add by stefan 20190606 16:12
 import (
-	"runtime/pprof"
+	"common/Log"
+	"fmt"
 	"os"
 	"path"
-	"time"
+	"reflect"
+	"runtime/pprof"
 	"strings"
-	"fmt"
+	"syscall"
+	"time"
+
 	//"log"
 	"context"
 	"sync"
 )
 
 const (
-	const_PProfWriteInterval = int32(60*5)
+	const_PProfWriteInterval = int32(60 * 5)
 )
 
 type TPProfMgr struct {
-	ctx 	context.Context
-	wg  	sync.WaitGroup
+	ctx context.Context
+	wg  sync.WaitGroup
 }
 
-func (this *TPProfMgr) StartPProf(ctx context.Context){
+var (
+	_pprofobj *TPProfMgr
+)
+
+func init() {
+	_pprofobj = &TPProfMgr{}
+}
+
+func Run(ctx context.Context) {
+	_pprofobj.StartPProf(ctx)
+}
+
+func (this *TPProfMgr) StartPProf(ctx context.Context) {
 	this.ctx = ctx
 	this.wg.Add(1)
+	checkcreateTempDir()
 	cpu := createCpu()
 	mem := createMem()
 	go this.loop(cpu, mem)
 }
 
-func (this *TPProfMgr) exitPProf(cpu, mem *os.File){
+func (this *TPProfMgr) exitPProf(cpu, mem *os.File) {
+	Log.FmtPrintln("pprof exist.")
+	this.flush(cpu, mem)
+	this.wg.Wait()
+}
+
+func (this *TPProfMgr) flush(cpu, mem *os.File) {
+	Log.FmtPrintln("pprof flush.")
 	if cpu != nil {
 		pprof.StopCPUProfile()
 		cpu.Close()
@@ -38,25 +63,25 @@ func (this *TPProfMgr) exitPProf(cpu, mem *os.File){
 		pprof.WriteHeapProfile(mem)
 		mem.Close()
 	}
-	this.wg.Wait()
 }
 
-func (this *TPProfMgr) loop(cpu, mem *os.File){
+func (this *TPProfMgr) loop(cpu, mem *os.File) {
 	defer this.wg.Done()
-	t := time.NewTicker(time.Duration(const_PProfWriteInterval))
+	t := time.NewTicker(time.Duration(const_PProfWriteInterval) * time.Second)
 	for {
 		select {
 		case <-this.ctx.Done():
 			this.exitPProf(cpu, mem)
 		case <-t.C:
 			// do nothing...
+			this.flush(cpu, mem)
 		}
 	}
 }
 
-func Newpprof(file string) (retfile string){
-	timeformat := time.Now().Format("20120101_120100")
-	retfile = timeformat+"_"+file
+func Newpprof(file string) (retfile string) {
+	timeformat := time.Now().Format("2006-01-02_15-04-05")
+	retfile = timeformat + "_" + file
 	execpath, err := os.Executable()
 	if err != nil {
 		return
@@ -64,26 +89,41 @@ func Newpprof(file string) (retfile string){
 	execpath = strings.Replace(execpath, "\\", "/", -1)
 	_, sfile := path.Split(execpath)
 	arrfile := strings.Split(sfile, ".")
-	retfile = fmt.Sprintf("./tmp/%s_%v.prof", arrfile[0], retfile)
+	retfile = fmt.Sprintf("./pprof/%s_%v.prof", arrfile[0], retfile)
 	return
 }
 
-func createCpu() (file *os.File){
+func checkcreateTempDir() {
+	err := os.Mkdir("pprof", os.ModePerm)
+	if err != nil {
+		if reflect.TypeOf(err) != reflect.TypeOf(&os.PathError{}) {
+			Log.FmtPrintln("err dir type: ", reflect.TypeOf(err))
+			return
+		}
+		perror := err.(*os.PathError)
+		if perror.Err != syscall.ERROR_ALREADY_EXISTS {
+			Log.FmtPrintf("pprof mkdir fail, dir: %v, errcode: %v, err: %v.\n", perror.Err, err.Error())
+			return
+		}
+	}
+}
+
+func createCpu() (file *os.File) {
 	cpuf := Newpprof("cpu")
 	f, err := os.OpenFile(cpuf, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		fmt.Println("cpu pprof open fail, err: ", err)
+		Log.FmtPrintln("cpu pprof open fail, err: ", err)
 		return
 	}
 	pprof.StartCPUProfile(f)
 	return f
 }
 
-func createMem()(file *os.File){
+func createMem() (file *os.File) {
 	cpuf := Newpprof("mem")
 	f, err := os.OpenFile(cpuf, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		fmt.Println("mem pprof open fail, err: ", err)
+		Log.FmtPrintln("mem pprof open fail, err: ", err)
 		return
 	}
 	return f

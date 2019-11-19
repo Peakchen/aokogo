@@ -6,7 +6,10 @@ import (
 	"common/Log"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
+	"common/pprof"
 	"net"
+	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -42,13 +45,17 @@ func NewClient(host string, SvrType Define.ERouteId, cb MessageCb, Ada AfterDial
 }
 
 func (this *TcpClient) Run() {
+	os.Setenv("GOTRACEBACK", "crash")
 	this.ctx, this.cancel = context.WithCancel(context.Background())
 	this.mpobj = &ClientProtocol{}
 	this.connect(&this.wg)
-
-	this.wg.Add(2)
+	pprof.Run(this.ctx)
+	this.wg.Add(3)
 	go this.loopconn(&this.wg)
 	go this.loopoff(&this.wg)
+	go func() {
+		http.ListenAndServe(this.host, nil)
+	}()
 	this.wg.Wait()
 }
 

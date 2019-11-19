@@ -71,6 +71,8 @@ import (
 )
 
 type TcpSession struct {
+	sync.Mutex
+
 	host    string
 	isAlive bool
 	// The net connection.
@@ -297,7 +299,11 @@ func (this *TcpSession) readMessage() (succ bool) {
 */
 func externalRouteAct(route, mainID uint16, obj *TcpSession, data []byte) (succ bool) {
 	//客户端请求消息
+
 	if Define.ERouteId(route) != Define.ERouteId_ER_ISG {
+		obj.Lock()
+		defer obj.Unlock()
+
 		GServer2ServerSession.AddSessionByModuleID(mainID, obj)
 		session := obj.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
 		if session != nil {
@@ -307,7 +313,7 @@ func externalRouteAct(route, mainID uint16, obj *TcpSession, data []byte) (succ 
 				succ = session.writeMessage(data)
 			}
 		} else {
-			Log.FmtPrintf("[request] can not find session route from external gateway, mainID: ", mainID)
+			Log.FmtPrintf("[request] can not find session route from external gateway, mainID: %v.", mainID)
 		}
 	} else { //外网回复客户端消息
 		Log.FmtPrintln("external respnse.")
@@ -319,7 +325,7 @@ func externalRouteAct(route, mainID uint16, obj *TcpSession, data []byte) (succ 
 				succ = session.writeMessage(data)
 			}
 		} else {
-			Log.FmtPrintf("[response] can not find session route from external gateway, mainID: ", mainID)
+			Log.FmtPrintf("[response] can not find session route from external gateway, mainID: %v.", mainID)
 		}
 	}
 	return

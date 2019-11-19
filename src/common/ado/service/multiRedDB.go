@@ -7,6 +7,7 @@ import (
 	"common/RedisConn"
 	"common/ado"
 	"context"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -35,6 +36,9 @@ func (this *TClusterDBProvider) init(Server string, RedisCfg *serverConfig.TRedi
 }
 
 func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+	defer func() {
+		http.ListenAndServe(RedisCfg.ConnAddr, nil)
+	}()
 	this.init(Server, RedisCfg, MgoCfg)
 	this.runDBloop(RedisCfg)
 }

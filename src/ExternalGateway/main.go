@@ -51,6 +51,7 @@ package main
 
 import (
 	"ExternalGateway/LogicMsg"
+	"common/Config/serverConfig"
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
@@ -65,8 +66,7 @@ func init() {
 
 func main() {
 	Log.FmtPrintf("start ExternalGateWay.")
-
-	newExternalServer := tcpNet.NewTcpServer(Define.ExternalServerHost,
+	newExternalServer := tcpNet.NewTcpServer(serverConfig.GExternalGWConfig.ListenAddr,
 		Define.ERouteId_ER_ESG,
 		LogicMsg.ExternalGatewayMessageCallBack,
 		tcpNet.GClient2ServerSession)

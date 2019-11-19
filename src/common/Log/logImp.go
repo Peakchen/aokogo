@@ -194,6 +194,7 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 		logStr = fmt.Sprintf(title + format)
 	} else if len(format) > 0 && len(args) > 0 {
 		logStr = fmt.Sprintf(title+format, args...)
+		logStr += "\n"
 	}
 
 	if len(logStr) == 0 {

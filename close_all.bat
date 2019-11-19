@@ -1,15 +1,15 @@
 @echo off
 
-taskkill /im DBServer.exe
+taskkill /f /im DBServer.exe
 
-taskkill /im ExternalGateway.exe
+taskkill /f /im ExternalGateway.exe
 
-taskkill /im GameServer.exe
+taskkill /f /im GameServer.exe
 
-taskkill /im InnerGateway.exe
+taskkill /f /im InnerGateway.exe
 
-taskkill /im LoginServer.exe
+taskkill /f /im LoginServer.exe
 
-taskkill /im simulate.exe
+taskkill /f /im simulate.exe
 
 stop

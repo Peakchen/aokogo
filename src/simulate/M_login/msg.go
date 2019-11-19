@@ -10,6 +10,7 @@ import (
 	"simulate/M_config"
 	"strconv"
 	"sync"
+	"time"
 )
 
 func LoginRun() {
@@ -17,9 +18,9 @@ func LoginRun() {
 	MessageRegister()
 	var sw sync.WaitGroup
 
-	sw.Add(1)
-	//go UserRegister()
-	UserLogin()
+	sw.Add(2)
+	go UserRegister()
+	go UserLogin()
 	//go AlostOfPeopleLogin()
 	sw.Wait()
 }
@@ -46,6 +47,7 @@ func UserRegister() {
 			uint16(MSG_Login.SUBMSG_CS_UserRegister),
 			req)
 		go loginM.Run()
+		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 
 }
@@ -58,8 +60,8 @@ func UserLogin() {
 			continue
 		}
 		req := &MSG_Login.CS_UserRegister_Req{}
-		req.Account = "test1"
-		req.Passwd = "abc"
+		req.Account = item.Username
+		req.Passwd = item.Passwd
 		req.DeviceSerial = "456"
 		req.DeviceName = "iso"
 		Log.FmtPrintln("UserLogin: ", item.Username, item.Passwd)
@@ -68,7 +70,8 @@ func UserLogin() {
 			uint16(MSG_Login.SUBMSG_CS_Login),
 			req)
 		go loginM.Run()
-		UserEnter(loginM)
+		time.Sleep(time.Duration(100) * time.Millisecond)
+		//UserEnter(loginM)
 	}
 }
 

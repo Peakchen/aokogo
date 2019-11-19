@@ -52,9 +52,11 @@ package tcpNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/pprof"
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -89,16 +91,22 @@ func NewTcpServer(addr string, SvrType Define.ERouteId, cb MessageCb, sessionMgr
 }
 
 func (this *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc) {
+	os.Setenv("GOTRACEBACK", "crash")
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 	this.listener = listener
 	this.ctx, this.cancel = ctx, cancle
+	pprof.Run(this.ctx)
+
 	this.pack = &ServerProtocol{}
-	sw.Add(2)
+	sw.Add(3)
 	go this.loop(sw)
 	go this.loopoff(sw)
+	go func() {
+		http.ListenAndServe(this.host, nil)
+	}()
 	sw.Wait()
 }
 
