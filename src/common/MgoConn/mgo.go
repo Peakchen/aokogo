@@ -103,24 +103,6 @@ func (this *AokoMgo) GetDB() *mgo.Session {
 	return this.session.Clone()
 }
 
-func (this *AokoMgo) OnTimer2FlushDB() {
-	reach := time.NewTicker(100 * time.Millisecond)
-	for {
-		select {
-		case <-reach.C:
-			// todo:
-			this.FlushDB()
-		default:
-			// nothing...
-
-		}
-	}
-}
-
-func (this *AokoMgo) FlushDB() {
-
-}
-
 func (this *AokoMgo) GetSession() (sess *mgo.Session, err error) {
 	select {
 	case s, _ := <-this.chSessions:
@@ -186,7 +168,7 @@ func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err 
 	return
 }
 
-func (this *AokoMgo) QuerySome(Identify string,OutParam IDBCache) (err error) {
+func (this *AokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
 	session, err := this.GetSession()
 	if err != nil {
 		return err
@@ -203,7 +185,7 @@ func (this *AokoMgo) QuerySome(Identify string,OutParam IDBCache) (err error) {
 	return
 }
 
-func (this *AokoMgo) InsertOne(Identify string,InParam IDBCache) (err error) {
+func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 	session, err := this.GetSession()
 	if err != nil {
 		return err
