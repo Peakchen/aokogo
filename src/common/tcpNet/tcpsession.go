@@ -310,6 +310,7 @@ func externalRouteAct(route, mainID uint16, obj *TcpSession, data []byte) (succ 
 			Log.FmtPrintf("[request] can not find session route from external gateway, mainID: ", mainID)
 		}
 	} else { //外网回复客户端消息
+		Log.FmtPrintln("external respnse.")
 		session := GServer2ServerSession.GetSessionByModuleID(mainID)
 		if session != nil {
 			if !session.isAlive {
@@ -342,6 +343,7 @@ func innerMsgRouteAct(route uint16, data []byte) (succ bool) {
 			Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
 		}
 	} else { // 内网转发回复
+		Log.FmtPrintln("inner respnse.")
 		session := GServer2ServerSession.GetSessionByType(Define.ERouteId_ER_ESG)
 		if session != nil {
 			if !session.isAlive {

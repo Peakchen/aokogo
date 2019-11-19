@@ -32,8 +32,7 @@ func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_R
 		session.SetIdentify(acc.Identify())
 	}
 
-	return session.SendMsg(uint16(session.SvrType),
-		uint16(MSG_MainModule.MAINMSG_LOGIN),
+	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_UserRegister),
 		rsp)
 }
