@@ -279,38 +279,49 @@ func (this *TcpSession) readMessage() (succ bool) {
 		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
 		Log.FmtPrintf("route (%v) forward.", route)
 		if this.SvrType == Define.ERouteId_ER_ESG { //外网关转发路由
-			session := this.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
-			if session != nil {
-				if !session.isAlive {
-					this.Engine.RemoveSession(session)
+			if Define.ERouteId(route) != Define.ERouteId_ER_ISG { //请求消息
+				GServer2ServerSession.AddSessionByModuleID(mainID, this)
+				session := this.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
+				if session != nil {
+					if !session.isAlive {
+						this.Engine.RemoveSession(session)
+					} else {
+						succ = session.writeMessage(this.pack.GetSrcMsg())
+					}
 				} else {
-					Log.FmtPrintf("route svr: %v, reg point: %v.", session.SvrType, session.RegPoint)
-					succ = session.writeMessage(this.pack.GetSrcMsg())
+					Log.FmtPrintf("[request] can not find session route from external gateway, mainID: ", mainID)
 				}
-			} else {
-				Log.FmtPrintf("can not find session route from external gateway.")
+			} else { //外网回复客户端消息
+				session := GServer2ServerSession.GetSessionByModuleID(mainID)
+				if session != nil {
+					if !session.isAlive {
+						this.Engine.RemoveSession(session)
+					} else {
+						succ = session.writeMessage(this.pack.GetSrcMsg())
+					}
+				} else {
+					Log.FmtPrintf("[response] can not find session route from external gateway, mainID: ", mainID)
+				}
 			}
 		} else if this.SvrType == Define.ERouteId_ER_ISG {
 			if Define.ERouteId(route) != Define.ERouteId_ER_ESG &&
-				Define.ERouteId(route) != Define.ERouteId_ER_ISG { //内网转发路由
+				Define.ERouteId(route) != Define.ERouteId_ER_ISG { //内网转发路由请求
 				session := GClient2ServerSession.GetSessionByType(Define.ERouteId(route))
 				if session != nil {
 					if !session.isAlive {
 						this.Engine.RemoveSession(session)
 					} else {
-						Log.FmtPrintf("route svr: %v, reg point: %v.", session.SvrType, session.RegPoint)
 						succ = session.writeMessage(this.pack.GetSrcMsg())
 					}
 				} else {
 					Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
 				}
 			} else {
-				session := GServer2ServerSession.GetSessionByType(Define.ERouteId_ER_ESG)
+				session := GServer2ServerSession.GetSessionByType(Define.ERouteId_ER_ESG) // 内网转发回复
 				if session != nil {
 					if !session.isAlive {
 						this.Engine.RemoveSession(session)
 					} else {
-						Log.FmtPrintf("route svr: %v, reg point: %v.", session.SvrType, session.RegPoint)
 						succ = session.writeMessage(this.pack.GetSrcMsg())
 					}
 				} else {
@@ -319,7 +330,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 			}
 		}
 	} else {
-		succ, err = this.msgCallBack() //路由消息注册
+		succ, err = this.msgCallBack() //路由消息回调处理
 		if err != nil {
 			Log.FmtPrintln("message pack call back: ", err)
 		}
@@ -331,15 +342,16 @@ func (this *TcpSession) msgCallBack() (succ bool, err error) {
 	route := this.pack.GetRouteID()
 	Log.FmtPrintf("pack route: %v, sessionid: %v.", route, this.SessionID)
 	mainID, subID := this.pack.GetMessageID()
-	switch mainID {
-	case uint16(MSG_MainModule.MAINMSG_SERVER):
-		if uint16(MSG_Server.SUBMSG_SC_ServerRegister) == subID {
+	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) &&
+		uint16(MSG_Server.SUBMSG_SC_ServerRegister) == subID {
+		if this.SvrType == Define.ERouteId_ER_ISG {
 			_cmd := EncodeCmd(mainID, subID)
 			this.Push(Define.ERouteId_ER_ESG, []uint32{_cmd})
-			succ = true
-			err = nil
-			return
 		}
+
+		succ = true
+		err = nil
+		return
 	}
 
 	msg, cb, unpackerr, exist := this.pack.UnPackData()
@@ -350,7 +362,6 @@ func (this *TcpSession) msgCallBack() (succ bool, err error) {
 	}
 
 	params := []reflect.Value{
-		//reflect.ValueOf("1"),
 		reflect.ValueOf(this),
 		reflect.ValueOf(msg),
 	}

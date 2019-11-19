@@ -24,8 +24,7 @@ func onServer(session *tcpNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (s
 	logic.EnterGameReady(session.StrIdentify)
 	rsp := &MSG_Player.SC_EnterServer_Rsp{}
 	rsp.Ret = MSG_Player.ErrorCode_Success
-	return session.SendMsg(uint16(session.SvrType),
-		uint16(MSG_MainModule.MAINMSG_PLAYER),
+	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_PLAYER),
 		uint16(MSG_Player.SUBMSG_SC_EnterServer),
 		rsp)
 }

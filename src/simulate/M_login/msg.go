@@ -68,7 +68,7 @@ func UserLogin() {
 			uint16(MSG_Login.SUBMSG_CS_Login),
 			req)
 		go loginM.Run()
-		//UserEnter(loginM)
+		UserEnter(loginM)
 	}
 }
 

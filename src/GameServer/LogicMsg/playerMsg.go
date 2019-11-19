@@ -18,8 +18,7 @@ func onGetPlayerInfo(session *tcpNet.TcpSession, req *MSG_Player.CS_PlayerInfo_R
 		return
 	}
 	Log.FmtPrintf("get player info: %v.", data.BaseInfo[MSG_Player.EmBaseInfo_Name])
-	return session.SendMsg(uint16(session.SvrType),
-		uint16(MSG_MainModule.MAINMSG_PLAYER),
+	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_PLAYER),
 		uint16(MSG_Player.SUBMSG_SC_PlayerInfo),
 		rsp)
 }

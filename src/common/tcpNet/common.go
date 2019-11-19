@@ -123,6 +123,8 @@ type IProcessConnSession interface {
 	GetSessionByID(sessionID uint64) (session *TcpSession)
 	AddSession(session *TcpSession)
 	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
+	AddSessionByModuleID(moduleID uint16, session *TcpSession)
+	GetSessionByModuleID(moduleID uint16) (session *TcpSession)
 }
 
 type ITcpEngine interface {

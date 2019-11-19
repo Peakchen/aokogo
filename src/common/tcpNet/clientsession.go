@@ -71,6 +71,18 @@ func (this *TClient2ServerSession) RemoveSessionByType(RegPoint Define.ERouteId)
 	this.c2sSession.Delete(RegPoint)
 }
 
+func (this *TClient2ServerSession) AddSessionByModuleID(moduleID uint16, session *TcpSession) {
+	this.c2sSession.Store(moduleID, session)
+}
+
+func (this *TClient2ServerSession) GetSessionByModuleID(moduleID uint16) (session *TcpSession) {
+	val, exist := this.c2sSession.Load(moduleID)
+	if exist {
+		session = val.(*TcpSession)
+	}
+	return
+}
+
 func init() {
 	GClient2ServerSession = &TClient2ServerSession{}
 }

@@ -64,6 +64,18 @@ func (this *TServer2ServerSession) RemoveSessionByType(RegPoint Define.ERouteId)
 	this.s2sSession.Delete(RegPoint)
 }
 
+func (this *TServer2ServerSession) AddSessionByModuleID(moduleID uint16, session *TcpSession) {
+	this.s2sSession.Store(moduleID, session)
+}
+
+func (this *TServer2ServerSession) GetSessionByModuleID(moduleID uint16) (session *TcpSession) {
+	val, exist := this.s2sSession.Load(moduleID)
+	if exist {
+		session = val.(*TcpSession)
+	}
+	return
+}
+
 func init() {
 	GServer2ServerSession = &TServer2ServerSession{}
 }
