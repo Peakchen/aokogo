@@ -1,10 +1,10 @@
 [
-    {"username": "test1", "passwd": "123", "register": 0, "login": 0, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
-    {"username": "test2", "passwd": "123", "register": 0, "login": 0, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
-    {"username": "test3", "passwd": "123", "register": 0, "login": 0, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
-    {"username": "test4", "passwd": "123", "register": 0, "login": 0, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
-    {"username": "test5", "passwd": "123", "register": 0, "login": 0, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
-    {"username": "test6", "passwd": "123", "register": 0, "login": 0, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
+    {"username": "test1", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
+    {"username": "test2", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
+    {"username": "test3", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
+    {"username": "test4", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
+    {"username": "test5", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
+    {"username": "test6", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"},
     {"username": "test7", "passwd": "123", "register": 0, "login": 1, "list": "1,2,3", "list2D": "1,2,3;4,5,6", "property": "7,8", "propertylist": "7,8; 10,11"}
 
 ]
