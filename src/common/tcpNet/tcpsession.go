@@ -295,7 +295,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 				session := GServer2ServerSession.GetSessionByModuleID(mainID)
 				if session != nil {
 					if !session.isAlive {
-						this.Engine.RemoveSession(session)
+						GServer2ServerSession.RemoveSession(session)
 					} else {
 						succ = session.writeMessage(this.pack.GetSrcMsg())
 					}
@@ -309,7 +309,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 				session := GClient2ServerSession.GetSessionByType(Define.ERouteId(route))
 				if session != nil {
 					if !session.isAlive {
-						this.Engine.RemoveSession(session)
+						GClient2ServerSession.RemoveSession(session)
 					} else {
 						succ = session.writeMessage(this.pack.GetSrcMsg())
 					}
@@ -320,7 +320,7 @@ func (this *TcpSession) readMessage() (succ bool) {
 				session := GServer2ServerSession.GetSessionByType(Define.ERouteId_ER_ESG) // 内网转发回复
 				if session != nil {
 					if !session.isAlive {
-						this.Engine.RemoveSession(session)
+						GServer2ServerSession.RemoveSession(session)
 					} else {
 						succ = session.writeMessage(this.pack.GetSrcMsg())
 					}
@@ -337,6 +337,8 @@ func (this *TcpSession) readMessage() (succ bool) {
 	}
 	return
 }
+
+func ()
 
 func (this *TcpSession) msgCallBack() (succ bool, err error) {
 	route := this.pack.GetRouteID()
