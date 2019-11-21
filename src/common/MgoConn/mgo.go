@@ -228,7 +228,8 @@ func (this *AokoMgo) Save(redkey string, data interface{}) (err error) {
 	s := session.Clone()
 	defer s.Close()
 
-	main, sub, key := RedisConn.ParseRedisKey(redkey)
+	key, main, sub := RedisConn.ParseRedisKey(redkey)
+	Log.FmtPrintf("[mgo] origin: %v, main: %v, sub: %v, key: %v.", redkey, main, sub, key)
 	collection := s.DB(this.server).C(main)
 	operAction := bson.M{"$set": bson.M{sub: data}}
 	_, err = collection.UpsertId(key, operAction)
