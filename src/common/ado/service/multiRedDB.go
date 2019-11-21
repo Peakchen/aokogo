@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/globalsign/mgo/bson"
+	"github.com/gomodule/redigo/redis"
 )
 
 /*
@@ -21,7 +22,8 @@ import (
 */
 
 type TClusterDBProvider struct {
-	redConn []*RedisConn.TRedisConn
+	//redConn []*RedisConn.TRedisConn
+	redConn *RedisConn.TRedisConn
 	mgoConn *MgoConn.AokoMgo
 	Server  string
 	ctx     context.Context
@@ -31,7 +33,7 @@ type TClusterDBProvider struct {
 
 func (this *TClusterDBProvider) init(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
 	this.Server = Server
-	this.redConn = []*RedisConn.TRedisConn{}
+	//this.redConn = []*RedisConn.TRedisConn{}
 	this.mgoConn = MgoConn.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
 }
 
@@ -43,36 +45,30 @@ func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRed
 	this.runDBloop(RedisCfg)
 }
 
+func (this *TClusterDBProvider) Exit() {
+	this.mgoConn.Exit()
+	this.redConn.Exit()
+}
+
 func (this *TClusterDBProvider) runDBloop(RedisCfg *serverConfig.TRedisConfig) {
-	var (
-		cnt int32
-	)
-	for {
-		if cnt >= ado.EMgo_Thread_Cnt {
-			break
-		}
-
-		cnt++
-		rc := RedisConn.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
-		if rc != nil {
-			this.redConn = append(this.redConn, rc)
-		}
-	}
-
+	this.redConn = RedisConn.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
 	this.ctx, this.cancle = context.WithCancel(context.Background())
 	this.wg.Add(1)
 	go this.LoopDBUpdate(&this.wg)
 	this.wg.Wait()
-
 }
 
 func (this *TClusterDBProvider) LoopDBUpdate(wg *sync.WaitGroup) {
-	defer wg.Done()
+	defer func() {
+		this.Exit()
+		wg.Done()
+	}()
 
 	ticker := time.NewTicker(time.Duration(ado.EDB_DATA_SAVE_INTERVAL) * time.Second)
 	for {
 		select {
 		case <-this.ctx.Done():
+			ticker.Stop()
 			return
 		case <-ticker.C:
 			// do something...
@@ -84,6 +80,13 @@ func (this *TClusterDBProvider) LoopDBUpdate(wg *sync.WaitGroup) {
 }
 
 func (this *TClusterDBProvider) flushdb() {
+
+	c := this.redConn.RedPool.Get()
+	if c == nil {
+		Log.Error("redis conn invalid or disconntion.")
+		return
+	}
+
 	var (
 		ridx int32
 	)
@@ -93,29 +96,23 @@ func (this *TClusterDBProvider) flushdb() {
 		}
 
 		ridx++
-		this.dbupdate(ridx)
+		this.dbupdate(ridx, c)
 	}
 }
 
-func (this *TClusterDBProvider) dbupdate(ridx int32) {
+func (this *TClusterDBProvider) dbupdate(ridx int32, c redis.Conn) {
 	//Log.FmtPrintln("db update idx: ", ridx)
 	// TODO: Presist redis...
-	if this.redConn == nil || len(this.redConn) < int(ridx) {
-		Log.Error("redis conn invalid or conn number invalid, info: ", this.redConn, len(this.redConn), ridx)
+	if this.redConn == nil {
+		Log.Error("redis conn invalid or conn number invalid, info: ", this.redConn, ridx)
 		return
 	}
 
 	updateidx := strconv.Itoa(int(ridx))
 	onekey := RedisConn.ERedScript_Update + updateidx
-	c := this.redConn[ridx-1].RedPool.Get()
-	if c == nil {
-		Log.Error("redis invalid or disconntion, redis conn idx: ", ridx)
-		return
-	}
-
 	members, err := c.Do("HKEYS", onekey)
 	if err != nil || members == nil {
-		Log.Error("ClusterDBProvider get redis ", err)
+		Log.Error("ClusterDBProvider get redis,err: ", err)
 		return
 	}
 
@@ -129,7 +126,7 @@ func (this *TClusterDBProvider) dbupdate(ridx int32) {
 		dstkey := string(item.([]byte))
 		dstval, err := c.Do("GET", dstkey)
 		if err != nil {
-			Log.FmtPrintln("get fail, err: ", err)
+			Log.Error("get fail, err: ", err)
 			continue
 		}
 

@@ -182,7 +182,7 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 		logStr string
 	)
 
-	if len(format) == 0 && len(args) > 0 {
+	if len(format) >= 0 && len(args) > 0 {
 		logStr += title
 		for i, data := range args {
 			if i+1 <= len(args) {
@@ -192,10 +192,10 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 		logStr += "\n"
 	} else if len(args) == 0 && len(format) > 0 {
 		logStr = fmt.Sprintf(title + format)
-	} else if len(format) > 0 && len(args) > 0 {
+	} /*else if len(format) > 0 && len(args) > 0 {
 		logStr = fmt.Sprintf(title+format, args...)
 		logStr += "\n"
-	}
+	}*/
 
 	if len(logStr) == 0 {
 		return

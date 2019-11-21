@@ -101,6 +101,10 @@ func (this *TRedisConn) NewDial() error {
 	return nil
 }
 
+func (this *TRedisConn) Exit() {
+	this.RedPool.Close()
+}
+
 /*
 	Redis Oper func: Insert
 	SaveType: EDBOper_Insert
@@ -235,6 +239,7 @@ func (this *TRedisConn) redSetAct(key string, fieldkey string, data interface{},
 		return
 	}
 
+	Log.FmtPrintf("redis update succ, hashKey: %v.", strkey)
 	err = nil
 	return
 }

@@ -3,6 +3,7 @@ package MgoConn
 import (
 	"common/Log"
 	"common/RedisConn"
+	"common/ado"
 	. "common/public"
 	"fmt"
 	"reflect"
@@ -13,7 +14,6 @@ import (
 )
 
 type AokoMgo struct {
-	session     *mgo.Session
 	UserName    string
 	Passwd      string
 	ServiceHost string
@@ -28,8 +28,8 @@ func NewMgoConn(server, Username, Passwd, Host string) *AokoMgo {
 	aokomogo.Passwd = Passwd
 	aokomogo.ServiceHost = Host
 	aokomogo.server = server
-	//template set 10 session.
-	aokomogo.PoolCnt = 10
+	//template set 1000 session.
+	aokomogo.PoolCnt = int(ado.EMgo_Thread_Cnt)
 	aokomogo.chSessions = make(chan *mgo.Session, aokomogo.PoolCnt)
 	aokomogo.NewDial()
 	return aokomogo
@@ -54,10 +54,10 @@ func (this *AokoMgo) getSession() (session *mgo.Session, err error) {
 		Username:     this.UserName,
 		Password:     this.Passwd,
 		Direct:       false,
-		Timeout:      time.Second * 3,
+		Timeout:      time.Second * 10,
 		PoolLimit:    4096,
 		ReadTimeout:  time.Second * 5,
-		WriteTimeout: time.Second * 5,
+		WriteTimeout: time.Second * 10,
 	}
 
 	session, err = mgo.DialWithInfo(MdialInfo)
@@ -89,18 +89,10 @@ func (this *AokoMgo) getSession() (session *mgo.Session, err error) {
 	return
 }
 
-func (this *AokoMgo) Stop() {
-	if this.session != nil {
-		this.session.Close()
+func (this *AokoMgo) Exit() {
+	if this.chSessions != nil {
+		close(this.chSessions)
 	}
-}
-
-func (this *AokoMgo) GetDB() *mgo.Session {
-	if this.session == nil {
-		this.NewDial()
-	}
-
-	return this.session.Clone()
 }
 
 func (this *AokoMgo) GetSession() (sess *mgo.Session, err error) {
@@ -135,7 +127,8 @@ func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err 
 	}
 
 	s := session.Clone()
-	defer s.Close()
+	//defer s.Close()
+
 	collection := s.DB(this.server).C(OutParam.MainModel())
 	retQuerys := collection.Find(condition)
 	count, ret := retQuerys.Count()
@@ -175,7 +168,8 @@ func (this *AokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
 	}
 
 	s := session.Clone()
-	defer s.Close()
+	//defer s.Close()
+
 	collection := s.DB(this.server).C(OutParam.MainModel())
 	err = collection.Find(bson.M{"_id": Identify}).All(&OutParam)
 	if err != nil {
@@ -192,9 +186,11 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 	}
 
 	s := session.Clone()
-	defer s.Close()
+	//defer s.Close()
+
+	Log.FmtPrintf("[Insert] main: %v, sub: %v, key: %v.", InParam.MainModel(), InParam.SubModel(), InParam.Identify())
 	collection := s.DB(this.server).C(InParam.MainModel())
-	operAction := bson.M{InParam.SubModel(): InParam} //"_id": Identify,
+	operAction := bson.M{InParam.SubModel(): InParam}
 	err = collection.Insert(operAction)
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, InParam.MainModel(), InParam.SubModel(), err)
@@ -208,8 +204,10 @@ func (this *AokoMgo) SaveOne(Identify string, InParam IDBCache) (err error) {
 	if err != nil {
 		return err
 	}
+
 	s := session.Clone()
-	defer s.Close()
+	//defer s.Close()
+
 	collection := s.DB(this.server).C(InParam.MainModel())
 	operAction := bson.M{InParam.SubModel(): InParam}
 	err = collection.Update(bson.M{"_id": Identify}, operAction)
@@ -225,11 +223,12 @@ func (this *AokoMgo) Save(redkey string, data interface{}) (err error) {
 	if err != nil {
 		return err
 	}
+
 	s := session.Clone()
-	defer s.Close()
+	//defer s.Close()
 
 	key, main, sub := RedisConn.ParseRedisKey(redkey)
-	Log.FmtPrintf("[mgo] origin: %v, main: %v, sub: %v, key: %v.", redkey, main, sub, key)
+	Log.FmtPrintf("update origin: %v, main: %v, sub: %v, key: %v.", redkey, main, sub, key)
 	collection := s.DB(this.server).C(main)
 	operAction := bson.M{"$set": bson.M{sub: data}}
 	_, err = collection.UpsertId(key, operAction)
@@ -246,7 +245,8 @@ func (this *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
 		return err
 	}
 	s := session.Clone()
-	defer s.Close()
+	//defer s.Close()
+
 	c := s.DB(this.server).C(InParam.SubModel())
 	err = c.EnsureIndex(mgo.Index{Key: idxs})
 	return err
