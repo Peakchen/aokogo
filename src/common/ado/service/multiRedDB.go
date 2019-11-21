@@ -113,8 +113,8 @@ func (this *TClusterDBProvider) flushdb() {
 			break
 		}
 
-		ridx++
 		this.dbupdate(ridx, c)
+		ridx++
 	}
 }
 
