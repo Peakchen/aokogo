@@ -7,6 +7,7 @@ import (
 	. "common/public"
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/globalsign/mgo"
@@ -14,6 +15,9 @@ import (
 )
 
 type AokoMgo struct {
+	sync.Mutex
+
+	session     *mgo.Session
 	UserName    string
 	Passwd      string
 	ServiceHost string
@@ -36,28 +40,29 @@ func NewMgoConn(server, Username, Passwd, Host string) *AokoMgo {
 }
 
 func (this *AokoMgo) NewDial() {
+	session, err := this.NewMgoSession()
+	if err != nil {
+		Log.FmtPrintln(err)
+		return
+	}
 
+	this.session = session
 	for i := 1; i <= this.PoolCnt; i++ {
-		session, err := this.getSession()
-		if err != nil {
-			Log.FmtPrintln(err)
-			continue
-		}
-		this.chSessions <- session
+		this.chSessions <- session.Copy()
 	}
 	return
 }
 
-func (this *AokoMgo) getSession() (session *mgo.Session, err error) {
+func (this *AokoMgo) NewMgoSession() (session *mgo.Session, err error) {
 	MdialInfo := &mgo.DialInfo{
-		Addrs:        []string{this.ServiceHost},
-		Username:     this.UserName,
-		Password:     this.Passwd,
-		Direct:       false,
-		Timeout:      time.Second * 10,
-		PoolLimit:    4096,
-		ReadTimeout:  time.Second * 5,
-		WriteTimeout: time.Second * 10,
+		Addrs:     []string{this.ServiceHost},
+		Username:  this.UserName,
+		Password:  this.Passwd,
+		Direct:    false,
+		Timeout:   time.Second * 10,
+		PoolLimit: 4096,
+		//ReadTimeout: time.Second * 5,
+		//WriteTimeout: time.Second * 10,
 	}
 
 	session, err = mgo.DialWithInfo(MdialInfo)
@@ -95,11 +100,28 @@ func (this *AokoMgo) Exit() {
 	}
 }
 
-func (this *AokoMgo) GetSession() (sess *mgo.Session, err error) {
+func (this *AokoMgo) GetMgoSession() (sess *mgo.Session, err error) {
+	this.Lock()
+	defer this.Unlock()
+
+	if this.session == nil {
+		err = fmt.Errorf("aoko mongo session not get invalid.")
+		return
+	}
+
+	sess = this.session
+	err = nil
+	return
+}
+
+func (this *AokoMgo) getMgoSessionByChan() (sess *mgo.Session, err error) {
+	this.Lock()
+	defer this.Unlock()
+
 	select {
 	case s, _ := <-this.chSessions:
 		return s, nil
-	case <-time.After(time.Duration(time.Second)):
+	case <-time.After(time.Duration(1) * time.Second):
 	default:
 	}
 	return nil, fmt.Errorf("aoko mongo session time out and not get.")
@@ -120,14 +142,14 @@ func (this *AokoMgo) QueryOne(Identify string, OutParam IDBCache) (err error, ex
 }
 
 func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err error, exist bool) {
-	session, err := this.GetSession()
+	session, err := this.GetMgoSession()
 	if err != nil {
 		err = Log.RetError("get sesson err: %v.", err)
 		return
 	}
 
 	s := session.Clone()
-	//defer s.Close()
+	defer s.Close()
 
 	collection := s.DB(this.server).C(OutParam.MainModel())
 	retQuerys := collection.Find(condition)
@@ -162,13 +184,13 @@ func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err 
 }
 
 func (this *AokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
-	session, err := this.GetSession()
+	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
 	}
 
 	s := session.Clone()
-	//defer s.Close()
+	defer s.Close()
 
 	collection := s.DB(this.server).C(OutParam.MainModel())
 	err = collection.Find(bson.M{"_id": Identify}).All(&OutParam)
@@ -180,13 +202,13 @@ func (this *AokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
 }
 
 func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
-	session, err := this.GetSession()
+	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
 	}
 
 	s := session.Clone()
-	//defer s.Close()
+	defer s.Close()
 
 	Log.FmtPrintf("[Insert] main: %v, sub: %v, key: %v.", InParam.MainModel(), InParam.SubModel(), InParam.Identify())
 	collection := s.DB(this.server).C(InParam.MainModel())
@@ -200,13 +222,13 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 }
 
 func (this *AokoMgo) SaveOne(Identify string, InParam IDBCache) (err error) {
-	session, err := this.GetSession()
+	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
 	}
 
 	s := session.Clone()
-	//defer s.Close()
+	defer s.Close()
 
 	collection := s.DB(this.server).C(InParam.MainModel())
 	operAction := bson.M{InParam.SubModel(): InParam}
@@ -218,18 +240,13 @@ func (this *AokoMgo) SaveOne(Identify string, InParam IDBCache) (err error) {
 	return
 }
 
-func (this *AokoMgo) Save(redkey string, data interface{}) (err error) {
-	session, err := this.GetSession()
-	if err != nil {
-		return err
-	}
-
-	s := session.Clone()
-	//defer s.Close()
+func Save(mgosession *mgo.Session, dbserver, redkey string, data interface{}) (err error) {
+	s := mgosession.Clone()
+	defer s.Close()
 
 	key, main, sub := RedisConn.ParseRedisKey(redkey)
 	Log.FmtPrintf("update origin: %v, main: %v, sub: %v, key: %v.", redkey, main, sub, key)
-	collection := s.DB(this.server).C(main)
+	collection := s.DB(dbserver).C(main)
 	operAction := bson.M{"$set": bson.M{sub: data}}
 	_, err = collection.UpsertId(key, operAction)
 	if err != nil {
@@ -240,12 +257,12 @@ func (this *AokoMgo) Save(redkey string, data interface{}) (err error) {
 }
 
 func (this *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
-	session, err := this.GetSession()
+	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
 	}
 	s := session.Clone()
-	//defer s.Close()
+	defer s.Close()
 
 	c := s.DB(this.server).C(InParam.SubModel())
 	err = c.EnsureIndex(mgo.Index{Key: idxs})

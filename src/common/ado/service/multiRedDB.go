@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/gomodule/redigo/redis"
 )
@@ -23,18 +24,18 @@ import (
 
 type TClusterDBProvider struct {
 	//redConn []*RedisConn.TRedisConn
-	redConn *RedisConn.TRedisConn
-	mgoConn *MgoConn.AokoMgo
-	Server  string
-	ctx     context.Context
-	cancle  context.CancelFunc
-	wg      sync.WaitGroup
+	redConn     *RedisConn.TRedisConn
+	mgoConn     *MgoConn.AokoMgo
+	mgoSessions []*mgo.Session
+	Server      string
+	ctx         context.Context
+	cancle      context.CancelFunc
+	wg          sync.WaitGroup
 }
 
 func (this *TClusterDBProvider) init(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
 	this.Server = Server
-	//this.redConn = []*RedisConn.TRedisConn{}
-	this.mgoConn = MgoConn.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
+	this.mgoSessions = make([]*mgo.Session, ado.EMgo_Thread_Cnt)
 }
 
 func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
@@ -42,17 +43,34 @@ func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRed
 		http.ListenAndServe(RedisCfg.ConnAddr, nil)
 	}()
 	this.init(Server, RedisCfg, MgoCfg)
-	this.runDBloop(RedisCfg)
+	this.runDBloop(Server, RedisCfg, MgoCfg)
 }
 
 func (this *TClusterDBProvider) Exit() {
-	this.mgoConn.Exit()
-	this.redConn.Exit()
+	if this.mgoConn != nil {
+		this.mgoConn.Exit()
+	}
+
+	if this.redConn != nil {
+		this.redConn.Exit()
+	}
 }
 
-func (this *TClusterDBProvider) runDBloop(RedisCfg *serverConfig.TRedisConfig) {
+func (this *TClusterDBProvider) runDBloop(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
 	this.redConn = RedisConn.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
 	this.ctx, this.cancle = context.WithCancel(context.Background())
+
+	this.mgoConn = MgoConn.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
+	session, err := this.mgoConn.GetMgoSession()
+	if err != nil {
+		Log.Error(err)
+		return
+	}
+
+	for midx := int32(0); midx < ado.EMgo_Thread_Cnt; midx++ {
+		this.mgoSessions[midx] = session.Copy()
+	}
+
 	this.wg.Add(1)
 	go this.LoopDBUpdate(&this.wg)
 	this.wg.Wait()
@@ -117,7 +135,8 @@ func (this *TClusterDBProvider) dbupdate(ridx int32, c redis.Conn) {
 	}
 
 	// TODO: Presist mgo...
-	if this.mgoConn == nil {
+	mgosession := this.mgoSessions[ridx]
+	if mgosession == nil {
 		Log.Error("mgoConn invalid or disconntion.")
 		return
 	}
@@ -131,7 +150,7 @@ func (this *TClusterDBProvider) dbupdate(ridx int32, c redis.Conn) {
 		}
 
 		bsdata := bson.Raw{Kind: byte(0), Data: dstval.([]byte)}
-		err = this.mgoConn.Save(dstkey, bsdata)
+		err = MgoConn.Save(mgosession, this.Server, dstkey, bsdata)
 		if err != nil {
 			Log.Error("mgo update err: ", err)
 		}

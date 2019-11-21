@@ -183,7 +183,7 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 	)
 
 	if len(format) >= 0 && len(args) > 0 {
-		logStr += title
+		logStr += fmt.Sprintf(title + format)
 		for i, data := range args {
 			if i+1 <= len(args) {
 				logStr += fmt.Sprintf("%v", data)
