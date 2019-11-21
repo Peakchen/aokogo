@@ -198,7 +198,7 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 	err = collection.Insert(operAction)
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, InParam.MainModel(), InParam.SubModel(), err)
-		Log.Error("[SaveOne] err: %v.\n", err)
+		Log.Error("[InsertOne] err: %v.\n", err)
 	}
 	return
 }
@@ -230,7 +230,7 @@ func (this *AokoMgo) Save(redkey string, data interface{}) (err error) {
 
 	main, sub, key := RedisConn.ParseRedisKey(redkey)
 	collection := s.DB(this.server).C(main)
-	operAction := bson.M{sub: data}
+	operAction := bson.M{"$set": bson.M{sub: data}}
 	_, err = collection.UpsertId(key, operAction)
 	if err != nil {
 		err = fmt.Errorf("main: %v, sub: %v, key: %v, err: %v.\n", main, sub, key, err)

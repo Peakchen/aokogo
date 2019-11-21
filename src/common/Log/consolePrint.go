@@ -19,7 +19,7 @@ func FmtPrintf(src string, params ...interface{}) {
 	}
 
 	fmt.Println(dst)
-	WriteLog(EnLogType_Info, "[Info]", dst)
+	//WriteLog(EnLogType_Info, "[Info]", dst)
 }
 
 func FmtPrintln(params ...interface{}) {
@@ -29,7 +29,7 @@ func FmtPrintln(params ...interface{}) {
 		content = append(content, params...)
 	}
 	fmt.Println(content...)
-	WriteLog(EnLogType_Info, "[Info]", "", content...)
+	//WriteLog(EnLogType_Info, "[Info]", "", content...)
 }
 
 func RetError(context string, params ...interface{}) error {
