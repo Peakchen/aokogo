@@ -1,8 +1,0 @@
-[Info]2019-11-20 20:39:56.213000 +0800 start login server.
-[Info]2019-11-20 20:42:11.754000 +0800 SetCmd data len: 2
-[Info]2019-11-20 20:43:42.946500 +0800 SetCmd data len: 2
-[Info]2019-11-20 20:44:22.556500 +0800 [onUserLogin] SessionID: 1, Account: test775, Passwd: 123.0, DeviceSerial: 456, DeviceName: iso.
-[Info]2019-11-20 20:45:16.857000 +0800 redis act, hashKey: update698, fieldkey: AccMain.AccSub.5dd5355c0753bffc98f445c9.
-[Info]2019-11-20 20:45:28.245000 +0800 begin send response message to client.
-[Info]2019-11-20 20:45:39.837000 +0800 redis act, hashKey: update694, fieldkey: AccMain.AccSub.5dd535730753bffc98f446ad.
-[Info]2019-11-20 20:45:51.186000 +0800 begin send response message to client.
