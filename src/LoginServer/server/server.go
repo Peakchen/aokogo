@@ -12,6 +12,7 @@ func StartServer(servercfg *serverConfig.TServerBaseConfig) {
 	server := servercfg.LoginConfig.Zone + servercfg.LoginConfig.No
 	dbo.StartDBSerice(server, servercfg.RedisConfig, servercfg.MgoConfig)
 	gameSvr := tcpNet.NewClient(servercfg.LoginConfig.ListenAddr,
+		servercfg.LoginConfig.PProfAddr,
 		Define.ERouteId_ER_Login,
 		LogicMsg.LoginMessageCallBack,
 		nil,

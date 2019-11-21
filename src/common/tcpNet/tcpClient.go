@@ -11,19 +11,19 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	//"time"
 	"context"
 )
 
 type TcpClient struct {
-	wg       sync.WaitGroup
-	ctx      context.Context
-	cancel   context.CancelFunc
-	host     string
-	dialsess *TcpSession
-	cb       MessageCb
+	wg        sync.WaitGroup
+	ctx       context.Context
+	cancel    context.CancelFunc
+	host      string
+	pprofAddr string
+	dialsess  *TcpSession
+	cb        MessageCb
 	// person offline flag
 	off chan *TcpSession
 	// person online
@@ -34,9 +34,10 @@ type TcpClient struct {
 	SessionMgr IProcessConnSession
 }
 
-func NewClient(host string, SvrType Define.ERouteId, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
+func NewClient(host, pprofAddr string, SvrType Define.ERouteId, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
 	return &TcpClient{
 		host:       host,
+		pprofAddr:  pprofAddr,
 		cb:         cb,
 		SvrType:    SvrType,
 		Adacb:      Ada,
@@ -54,18 +55,13 @@ func (this *TcpClient) Run() {
 	go this.loopconn(&this.wg)
 	go this.loopoff(&this.wg)
 	go func() {
-		http.ListenAndServe(this.host, nil)
+		Log.FmtPrintln("[client] run http server, host: ", this.pprofAddr)
+		http.ListenAndServe(this.pprofAddr, nil)
 	}()
 	this.wg.Wait()
 }
 
 func (this *TcpClient) connect(sw *sync.WaitGroup) error {
-	if this.dialsess != nil {
-		if this.dialsess.isAlive {
-			return nil
-		}
-	}
-
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
 		Log.Error("resolve tcp error: %v.", err.Error())
@@ -88,27 +84,33 @@ func (this *TcpClient) connect(sw *sync.WaitGroup) error {
 }
 
 func (this *TcpClient) loopconn(sw *sync.WaitGroup) {
-	defer sw.Done()
-	defer this.Exit(sw)
+	defer func() {
+		sw.Done()
+		this.Exit(sw)
+	}()
 
-	conntick := time.NewTicker(time.Duration(3 * time.Second))
 	for {
 		select {
 		case <-this.ctx.Done():
 			return
-		case <-conntick.C:
-			if err := this.connect(sw); err != nil {
-				Log.FmtPrintf("dail to server fail, host: %v.", this.host)
+		default:
+			if this.dialsess != nil && this.dialsess.isAlive {
 				continue
 			}
-		default:
 
+			if err := this.connect(sw); err != nil {
+				Log.FmtPrintf("dail to server fail, host: %v.", this.host)
+			}
 		}
 	}
 }
 
 func (this *TcpClient) loopoff(sw *sync.WaitGroup) {
-	defer this.Exit(sw)
+	defer func() {
+		sw.Done()
+		this.Exit(sw)
+	}()
+
 	for {
 		select {
 		case os, ok := <-this.off:
@@ -168,6 +170,7 @@ func (this *TcpClient) GetSessionByID(sessionID uint64) (session *TcpSession) {
 func (this *TcpClient) Exit(sw *sync.WaitGroup) {
 	this.dialsess = nil
 	this.cancel()
+	pprof.Exit()
 	sw.Wait()
 }
 

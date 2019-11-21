@@ -227,7 +227,7 @@ func (this *TAokoLog) endLog() {
 
 func (this *TAokoLog) exit() {
 	fmt.Println("log exit: ", <-this.data, this.filesize, this.logNum)
-	this.loopflush()
+	this.flush()
 	this.endLog()
 	close(this.data)
 	this.sw.Wait()
@@ -236,41 +236,25 @@ func (this *TAokoLog) exit() {
 func (this *TAokoLog) loop() {
 	defer this.sw.Done()
 
+	if s, ok := <-exitchan; ok {
+		this.exit()
+		time.Sleep(time.Duration(3) * time.Second)
+		fmt.Println("Got signal:", s)
+		return
+	}
+
 	tick := time.NewTicker(time.Duration(30 * time.Second))
 	for {
-		if s, ok := <-exitchan; ok {
-			tick.Stop()
-			this.exit()
-			time.Sleep(time.Duration(3) * time.Second)
-			fmt.Println("Got signal:", s)
-			return
-		}
-
 		select {
 		case <-this.ctx.Done():
 			tick.Stop()
 			return
 		case <-tick.C:
-			go this.loopflush()
+			this.flush()
 		default:
 
 		}
 	}
-}
-
-func (this *TAokoLog) loopflush() {
-	for {
-		select {
-		case val, ok := <-this.data:
-			if ok {
-				_, err := this.filehandle.WriteString(val)
-				if err != nil {
-					return
-				}
-			}
-		}
-	}
-
 }
 
 func (this *TAokoLog) flush() {

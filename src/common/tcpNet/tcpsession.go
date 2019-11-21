@@ -169,7 +169,6 @@ func (this *TcpSession) exit(sw *sync.WaitGroup) {
 	this.conn.CloseRead()
 	this.conn.CloseWrite()
 	this.conn.Close()
-	sw.Wait()
 }
 
 func (this *TcpSession) SetSendCache(data []byte) {
@@ -177,8 +176,8 @@ func (this *TcpSession) SetSendCache(data []byte) {
 }
 
 func (this *TcpSession) Sendloop(sw *sync.WaitGroup) {
-	defer sw.Done()
 	defer func() {
+		sw.Done()
 		this.exit(sw)
 	}()
 
@@ -195,8 +194,8 @@ func (this *TcpSession) Sendloop(sw *sync.WaitGroup) {
 }
 
 func (this *TcpSession) Recvloop(sw *sync.WaitGroup) {
-	defer sw.Done()
 	defer func() {
+		sw.Done()
 		this.exit(sw)
 	}()
 

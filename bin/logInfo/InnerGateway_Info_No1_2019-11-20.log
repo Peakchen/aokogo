@@ -1,0 +1,19 @@
+[Info]2019-11-20 20:45:01.262500 +0800 start InnerGateway.
+[Info]2019-11-20 20:45:16.657000 +0800 inner respnse.
+[Info]2019-11-20 20:45:23.125500 +0800 message head: routepoint: 2, mainid: 2, subid: 4.
+[Info]2019-11-20 20:45:29.592000 +0800 inner respnse.
+[Info]2019-11-20 20:45:36.018500 +0800 inner respnse.
+[Info]2019-11-20 20:45:42.450000 +0800 inner respnse.
+[Info]2019-11-20 20:45:48.883000 +0800 inner respnse.
+[Info]2019-11-20 20:45:55.347000 +0800 inner respnse.
+[Info]2019-11-20 20:46:01.873000 +0800 message head: routepoint: 2, mainid: 2, subid: 4.
+[Info]2019-11-20 20:46:08.296500 +0800 inner respnse.
+1-20 20:39:24.230000 +0800 server UnPackAction-> len: 2
+[Info]2019-11-20 20:39:30.642500 +0800 server UnPackAction-> len: 2
+[Info]2019-11-20 20:39:37.053000 +0800 server UnPackAction-> len: 2
+[Info]2019-11-20 20:39:43.454000 +0800 server UnPackAction-> len: 2
+[Info]2019-11-20 20:41:04.267000 +0800 begin send response message to client.
+[Info]2019-11-20 20:42:13.156000 +0800 begin send response message to client.
+[Info]2019-11-20 20:42:14.110500 +0800 route (2) forward.
+[Info]2019-11-20 20:43:43.854000 +0800 begin send response message to client.
+[Info]2019-11-20 20:44:06.469500 +0800 begin send response message to client.

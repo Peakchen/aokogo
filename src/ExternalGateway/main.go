@@ -67,6 +67,7 @@ func init() {
 func main() {
 	Log.FmtPrintf("start ExternalGateWay.")
 	newExternalServer := tcpNet.NewTcpServer(serverConfig.GExternalGWConfig.ListenAddr,
+		serverConfig.GExternalGWConfig.PProfAddr,
 		Define.ERouteId_ER_ESG,
 		LogicMsg.ExternalGatewayMessageCallBack,
 		tcpNet.GClient2ServerSession)

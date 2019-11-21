@@ -63,14 +63,15 @@ import (
 )
 
 type TcpServer struct {
-	sw       *sync.WaitGroup
-	host     string
-	listener *net.TCPListener
-	ctx      context.Context
-	cancel   context.CancelFunc
-	cb       MessageCb
-	off      chan *TcpSession
-	session  *TcpSession
+	sw        *sync.WaitGroup
+	host      string
+	pprofAddr string
+	listener  *net.TCPListener
+	ctx       context.Context
+	cancel    context.CancelFunc
+	cb        MessageCb
+	off       chan *TcpSession
+	session   *TcpSession
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
@@ -80,9 +81,10 @@ type TcpServer struct {
 	SessionID uint64
 }
 
-func NewTcpServer(addr string, SvrType Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
+func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
 	return &TcpServer{
-		host:       addr,
+		host:       listenAddr,
+		pprofAddr:  pprofAddr,
 		cb:         cb,
 		SvrType:    SvrType,
 		SessionMgr: sessionMgr,
@@ -105,13 +107,17 @@ func (this *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, c
 	go this.loop(sw)
 	go this.loopoff(sw)
 	go func() {
-		http.ListenAndServe(this.host, nil)
+		Log.FmtPrintln("[server] run http server, host: ", this.pprofAddr)
+		http.ListenAndServe(this.pprofAddr, nil)
 	}()
 	sw.Wait()
 }
 
 func (this *TcpServer) loop(sw *sync.WaitGroup) {
-	defer this.Exit(sw)
+	defer func() {
+		sw.Done()
+		this.Exit(sw)
+	}()
 	for {
 		select {
 		case <-this.ctx.Done():
@@ -136,7 +142,10 @@ func (this *TcpServer) loop(sw *sync.WaitGroup) {
 }
 
 func (this *TcpServer) loopoff(sw *sync.WaitGroup) {
-	defer this.Exit(sw)
+	defer func() {
+		sw.Done()
+		this.Exit(sw)
+	}()
 	for {
 		select {
 		case os, ok := <-this.off:
@@ -200,6 +209,7 @@ func (this *TcpServer) GetSessionByID(sessionID uint64) (session *TcpSession) {
 func (this *TcpServer) Exit(sw *sync.WaitGroup) {
 	this.listener.Close()
 	this.cancel()
+	pprof.Exit()
 	sw.Wait()
 }
 

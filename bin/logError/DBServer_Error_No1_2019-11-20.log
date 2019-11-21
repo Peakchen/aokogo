@@ -1,0 +1,6 @@
+[Error]			2019-11-20 20:38:33.802000 +0800%!(EXTRA []interface {}=[mgo update err:  aoko mongo session time out and not get.])
+[Error]			2019-11-20 20:39:13.698000 +0800%!(EXTRA []interface {}=[mgo update err:  aoko mongo session time out and not get.])
+[Error]			2019-11-20 20:39:33.689000 +0800%!(EXTRA []interface {}=[mgo update err:  aoko mongo session time out and not get.])
+[Error]			2019-11-20 20:39:43.709500 +0800%!(EXTRA []interface {}=[mgo update err:  aoko mongo session time out and not get.])
+[Error]			2019-11-20 20:39:54.553500 +0800%!(EXTRA []interface {}=[mgo update err:  aoko mongo session time out and not get.])
+[Error]			2019-11-20 20:43:04.882000 +0800%!(EXTRA []interface {}=[mgo update err:  aoko mongo session time out and not get.])

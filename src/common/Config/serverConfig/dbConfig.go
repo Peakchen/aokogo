@@ -10,6 +10,8 @@ type TRedisConfig struct {
 	ShareConnAddr string
 	ShareDBIndex  int32
 	ShareDBPasswd string
+
+	PProfAddr string
 }
 
 type TMgoConfig struct {
@@ -22,16 +24,20 @@ type TMgoConfig struct {
 	ShareUserName string
 	SharePasswd   string
 	ShareHost     string
+
+	PProfAddr string
 }
 
 var GRedisCfgProvider *TRedisConfig = &TRedisConfig{
-	ConnAddr: "0.0.0.0:6379",
-	DBIndex:  1,
-	Passwd:   "",
+	ConnAddr:  "0.0.0.0:6379",
+	DBIndex:   1,
+	Passwd:    "",
+	PProfAddr: "11000",
 }
 
 var GMgoCfgProvider *TMgoConfig = &TMgoConfig{
-	Host:     "0.0.0.0:27017",
-	UserName: "",
-	Passwd:   "",
+	Host:      "0.0.0.0:27017",
+	UserName:  "",
+	Passwd:    "",
+	PProfAddr: "11000",
 }

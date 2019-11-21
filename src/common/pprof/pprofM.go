@@ -24,6 +24,8 @@ const (
 type TPProfMgr struct {
 	ctx context.Context
 	wg  sync.WaitGroup
+	cpu *os.File
+	mem *os.File
 }
 
 var (
@@ -38,49 +40,52 @@ func Run(ctx context.Context) {
 	_pprofobj.StartPProf(ctx)
 }
 
+func Exit() {
+	_pprofobj.Exit()
+}
+
 func (this *TPProfMgr) StartPProf(ctx context.Context) {
 	this.ctx = ctx
 	this.wg.Add(1)
 	checkcreateTempDir()
-	cpu := createCpu()
-	mem := createMem()
-	go this.loop(cpu, mem)
+	this.cpu = createCpu()
+	this.mem = createMem()
+	go this.loop()
 }
 
-func (this *TPProfMgr) exitPProf(cpu, mem *os.File) {
+func (this *TPProfMgr) Exit() {
 	Log.FmtPrintln("pprof exist.")
-	this.flush(cpu, mem)
-	this.wg.Wait()
+	this.flush()
 }
 
-func (this *TPProfMgr) flush(cpu, mem *os.File) {
+func (this *TPProfMgr) flush() {
 	Log.FmtPrintln("pprof flush.")
-	if cpu != nil {
+	if this.cpu != nil {
 		pprof.StopCPUProfile()
-		cpu.Close()
+		this.cpu.Close()
 	}
-	if mem != nil {
-		pprof.WriteHeapProfile(mem)
-		mem.Close()
+	if this.mem != nil {
+		pprof.WriteHeapProfile(this.mem)
+		this.mem.Close()
 	}
 }
 
-func (this *TPProfMgr) loop(cpu, mem *os.File) {
+func (this *TPProfMgr) loop() {
 	defer this.wg.Done()
 	t := time.NewTicker(time.Duration(const_PProfWriteInterval) * time.Second)
 	for {
 		select {
 		case <-this.ctx.Done():
-			this.exitPProf(cpu, mem)
+			this.Exit()
 		case <-t.C:
 			// do nothing...
-			this.flush(cpu, mem)
+			this.flush()
 		}
 	}
 }
 
 func Newpprof(file string) (retfile string) {
-	timeformat := time.Now().Format("2006-01-02_15-04-05")
+	timeformat := time.Now().Format("2006-01-02")
 	retfile = timeformat + "_" + file
 	execpath, err := os.Executable()
 	if err != nil {

@@ -194,7 +194,7 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 	s := session.Clone()
 	defer s.Close()
 	collection := s.DB(this.server).C(InParam.MainModel())
-	operAction := bson.M{"_id": Identify, InParam.SubModel(): InParam}
+	operAction := bson.M{InParam.SubModel(): InParam} //"_id": Identify,
 	err = collection.Insert(operAction)
 	if err != nil {
 		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, InParam.MainModel(), InParam.SubModel(), err)
