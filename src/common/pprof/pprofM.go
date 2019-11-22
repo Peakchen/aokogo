@@ -59,7 +59,7 @@ func (this *TPProfMgr) Exit() {
 }
 
 func (this *TPProfMgr) flush() {
-	Log.FmtPrintln("pprof flush.")
+	//Log.FmtPrintln("pprof flush.")
 	if this.cpu != nil {
 		pprof.StopCPUProfile()
 		this.cpu.Close()
