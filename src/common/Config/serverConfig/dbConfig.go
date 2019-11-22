@@ -32,12 +32,12 @@ var GRedisCfgProvider *TRedisConfig = &TRedisConfig{
 	ConnAddr:  "0.0.0.0:6379",
 	DBIndex:   1,
 	Passwd:    "",
-	PProfAddr: "11000",
+	PProfAddr: "12000",
 }
 
 var GMgoCfgProvider *TMgoConfig = &TMgoConfig{
 	Host:      "0.0.0.0:27017",
 	UserName:  "",
 	Passwd:    "",
-	PProfAddr: "11000",
+	PProfAddr: "12000",
 }

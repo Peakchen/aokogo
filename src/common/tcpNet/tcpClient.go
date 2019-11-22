@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	//"time"
 	"context"
@@ -65,10 +64,6 @@ func (this *TcpClient) Run() {
 }
 
 func (this *TcpClient) connect(sw *sync.WaitGroup) (err error) {
-	if this.dialsess != nil && this.dialsess.isAlive {
-		return nil
-	}
-
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
 		Log.Error("resolve tcp error: %v.", err.Error())
@@ -85,7 +80,6 @@ func (this *TcpClient) connect(sw *sync.WaitGroup) (err error) {
 	c.SetNoDelay(true)
 	this.dialsess = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.mpobj, this)
 	this.dialsess.HandleSession(sw)
-	//this.AddSession(this.dialsess)
 	this.afterDial()
 	return nil
 }
@@ -96,22 +90,16 @@ func (this *TcpClient) loopconn(sw *sync.WaitGroup) {
 		this.Exit(sw)
 	}()
 
-	ticker := time.NewTicker(time.Duration(200) * time.Millisecond)
-	defer ticker.Stop()
-
 	for {
 		select {
 		case <-this.ctx.Done():
 			return
-		case <-ticker.C:
-			this.Lock()
-
-			if err := this.connect(sw); err != nil {
-				Log.FmtPrintf("dail to server fail, host: %v.", this.host)
-			}
-
-			this.Unlock()
 		default:
+			if this.dialsess == nil || false == this.dialsess.isAlive {
+				if err := this.connect(sw); err != nil {
+					Log.FmtPrintf("dail to server fail, host: %v.", this.host)
+				}
+			}
 		}
 	}
 }

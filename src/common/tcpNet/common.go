@@ -144,6 +144,12 @@ const (
 	ESessionType_Client ESessionType = 2
 )
 
+//session begin number with 10000
 const (
 	ESessionBeginNum = uint64(10000)
+)
+
+//client reconnect check interval (ms)
+const (
+	EClientSessionCheckInterval = 5000
 )

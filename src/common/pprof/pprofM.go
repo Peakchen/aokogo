@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	const_PProfWriteInterval = int32(60 * 5)
+	const_PProfWriteInterval = int32(60 * 1)
 )
 
 type TPProfMgr struct {

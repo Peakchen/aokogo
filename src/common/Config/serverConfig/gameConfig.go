@@ -10,7 +10,7 @@ type TGameConfig struct {
 var (
 	GGameConfig = &TGameConfig{
 		ListenAddr: "127.0.0.1:19000",
-		PProfAddr:  "127.0.0.1:11001",
+		PProfAddr:  "127.0.0.1:12001",
 		No:         "1",
 		Zone:       "Server",
 	}
