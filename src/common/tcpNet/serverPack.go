@@ -2,6 +2,7 @@ package tcpNet
 
 import (
 	"common/Log"
+	"common/utls"
 	"encoding/binary"
 	"fmt"
 	"reflect"
@@ -54,8 +55,8 @@ func (this *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
 	this.length = binary.LittleEndian.Uint32(InData[pos:])
 	pos += 4
 
-	if len(InData) < int(pos+int32(this.length)) {
-		err = fmt.Errorf("server err: InData len: %v, pos: %v, data len: %v.", len(InData), pos, this.length)
+	if utls.SliceBytesLength(InData) < int(pos+int32(this.length)) {
+		err = fmt.Errorf("server routepoint: %v, mainid: %v, subid: %v; err: InData len: %v, pos: %v, data len: %v.", this.routepoint, this.mainid, this.subid, len(InData), pos, this.length)
 		return
 	}
 

@@ -71,3 +71,8 @@ func SliceByte2String(b []byte) string {
 	}
 	return *(*string)(unsafe.Pointer(&sh))
 }
+
+func SliceBytesLength(data []byte) int {
+	dst := SliceByte2String(data)
+	return len(dst)
+}
