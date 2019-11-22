@@ -207,17 +207,9 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 		return err
 	}
 
-	s := session.Clone()
-	defer s.Close()
-
 	Log.FmtPrintf("[Insert] main: %v, sub: %v, key: %v.", InParam.MainModel(), InParam.SubModel(), InParam.Identify())
-	collection := s.DB(this.server).C(InParam.MainModel())
-	operAction := bson.M{InParam.SubModel(): InParam}
-	err = collection.Insert(operAction)
-	if err != nil {
-		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, InParam.MainModel(), InParam.SubModel(), err)
-		Log.Error("[InsertOne] err: %v.\n", err)
-	}
+	redkey := MakeMgoModel(InParam.Identify(), InParam.MainModel(), InParam.SubModel())
+	err = Save(session, this.server, redkey, InParam)
 	return
 }
 
@@ -227,16 +219,8 @@ func (this *AokoMgo) SaveOne(Identify string, InParam IDBCache) (err error) {
 		return err
 	}
 
-	s := session.Clone()
-	defer s.Close()
-
-	collection := s.DB(this.server).C(InParam.MainModel())
-	operAction := bson.M{InParam.SubModel(): InParam}
-	err = collection.Update(bson.M{"_id": Identify}, operAction)
-	if err != nil {
-		err = fmt.Errorf("Identify: %v, MainModel: %v, SubModel: %v, err: %v.\n", Identify, InParam.MainModel(), InParam.SubModel(), err)
-		Log.Error("[SaveOne] err: %v.\n", err)
-	}
+	redkey := MakeMgoModel(InParam.Identify(), InParam.MainModel(), InParam.SubModel())
+	err = Save(session, this.server, redkey, InParam)
 	return
 }
 

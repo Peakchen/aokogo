@@ -79,6 +79,8 @@ const (
 	EDBOper_Update EDBOperType = 2
 	EDBOper_Delete EDBOperType = 3
 	EDBOper_DB     EDBOperType = 4
+	EDBOper_EXPIRE EDBOperType = 5
+	EDBOper_LAND   EDBOperType = 6
 	// ...
 )
 

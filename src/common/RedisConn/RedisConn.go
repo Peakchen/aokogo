@@ -110,8 +110,17 @@ func (this *TRedisConn) Exit() {
 	SaveType: EDBOper_Insert
 	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (this *TRedisConn) Insert(Identify string, Input public.IDBCache) error {
-	return this.Update(Identify, Input, ado.EDBOper_Insert)
+func (this *TRedisConn) Insert(Identify string, Input public.IDBCache) (err error) {
+	RedisKey := MakeRedisModel(Identify, Input.MainModel(), Input.SubModel())
+	BMarlData, err := bson.Marshal(Input)
+	if err != nil {
+		err = fmt.Errorf("bson.Marshal err: %v.\n", err)
+		Log.Error("[Update] err: %v", err)
+		return
+	}
+
+	err = this.Save(Identify, RedisKey, BMarlData, ado.EDBOper_Insert)
+	return //this.Update(Identify, Input, ado.EDBOper_Insert)
 }
 
 /*
@@ -166,7 +175,7 @@ func (this *TRedisConn) Save(rolekey, RedisKey string, data interface{}, SaveTyp
 	ret = nil
 	switch SaveType {
 	case ado.EDBOper_Insert:
-		ExpendCmd := []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
+		ExpendCmd := []interface{}{RedisKey, data}
 		Ret, err := this.RedPool.Get().Do("SETNX", ExpendCmd...) // set if not exist
 		if err != nil {
 			Log.Error("[Save] SETNX data: %v, err: %v.\n", data, err)
@@ -184,7 +193,7 @@ func (this *TRedisConn) Save(rolekey, RedisKey string, data interface{}, SaveTyp
 	case ado.EDBOper_Update:
 		// connect key and value.
 		var ExpendCmd = []interface{}{RedisKey, data, "EX", REDIS_SET_DEADLINE}
-		if _, err := this.RedPool.Get().Do("SET", ExpendCmd...); err != nil {
+		if _, err := this.RedPool.Get().Do("SETEX", ExpendCmd...); err != nil {
 			Log.Error("[Save] Update Set data: %v, err: %v.\n", data, err)
 			return
 		}
@@ -209,7 +218,15 @@ func (this *TRedisConn) Save(rolekey, RedisKey string, data interface{}, SaveTyp
 }
 
 func (this *TRedisConn) SaveEx(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
-	ret = this.redSetAct(rolekey, RedisKey, data, false, 0)
+	var (
+		extime int32
+		bsetEx bool
+	)
+	if SaveType == ado.EDBOper_EXPIRE {
+		extime = ado.EDB_DATA_SAVE_INTERVAL
+		bsetEx = true
+	}
+	ret = this.redSetAct(rolekey, RedisKey, data, bsetEx, extime)
 	return
 }
 
