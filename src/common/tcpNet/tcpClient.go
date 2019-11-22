@@ -113,10 +113,10 @@ func (this *TcpClient) loopoff(sw *sync.WaitGroup) {
 	for {
 		select {
 		case os, ok := <-this.off:
-			if !ok {
-				return
+			if ok {
+				this.offline(os)
 			}
-			this.offline(os)
+
 		case <-this.ctx.Done():
 			return
 		}

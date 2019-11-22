@@ -41,6 +41,8 @@ func (this *ClientProtocol) PackAction(Output []byte) {
 }
 
 func (this *ClientProtocol) UnPackAction(InData []byte) (pos int32, err error) {
+	defer catchRecover()
+
 	this.routepoint = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 

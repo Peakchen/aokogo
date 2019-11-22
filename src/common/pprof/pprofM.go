@@ -56,17 +56,20 @@ func (this *TPProfMgr) StartPProf(ctx context.Context) {
 func (this *TPProfMgr) Exit() {
 	Log.FmtPrintln("pprof exist.")
 	this.flush()
-}
-
-func (this *TPProfMgr) flush() {
-	//Log.FmtPrintln("pprof flush.")
 	if this.cpu != nil {
-		pprof.StopCPUProfile()
 		this.cpu.Close()
 	}
 	if this.mem != nil {
 		pprof.WriteHeapProfile(this.mem)
-		this.mem.Close()
+	}
+}
+
+func (this *TPProfMgr) flush() {
+	if this.cpu != nil {
+		pprof.StopCPUProfile()
+	}
+	if this.mem != nil {
+		pprof.WriteHeapProfile(this.mem)
 	}
 }
 

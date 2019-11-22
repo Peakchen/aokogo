@@ -216,9 +216,9 @@ func (this *TcpSession) writeMessage(data []byte) (succ bool) {
 		return
 	}
 
-	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
-	//pack message then send.
+	defer catchRecover()
 
+	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//send...
 	Log.FmtPrintln("begin send response message to client.")
 	_, err := this.conn.Write(data)
@@ -231,6 +231,8 @@ func (this *TcpSession) writeMessage(data []byte) (succ bool) {
 }
 
 func (this *TcpSession) readMessage() (succ bool) {
+	defer catchRecover()
+
 	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	packLenBuf := make([]byte, EnMessage_NoDataLen)
 	readn, err := io.ReadFull(this.conn, packLenBuf)

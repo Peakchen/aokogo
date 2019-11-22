@@ -2,6 +2,7 @@ package tcpNet
 
 import (
 	"common/Define"
+	"common/Log"
 	"net"
 	"reflect"
 
@@ -153,3 +154,9 @@ const (
 const (
 	EClientSessionCheckInterval = 5000
 )
+
+func catchRecover() {
+	if r := recover(); r != nil {
+		Log.Error("catch recover: ", r)
+	}
+}

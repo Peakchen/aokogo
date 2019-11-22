@@ -42,6 +42,8 @@ func (this *ServerProtocol) PackAction(Output []byte) {
 }
 
 func (this *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
+	defer catchRecover()
+
 	this.routepoint = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
@@ -60,7 +62,6 @@ func (this *ServerProtocol) UnPackAction(InData []byte) (pos int32, err error) {
 		return
 	}
 
-	Log.FmtPrintf("normal: InData len: %v, pos: %v, data len: %v.", len(InData), pos, this.length)
 	Log.FmtPrintf("message head: routepoint: %v, mainid: %v, subid: %v.", this.routepoint, this.mainid, this.subid)
 	this.data = InData[pos : pos+int32(this.length)]
 	this.srcdata = InData
