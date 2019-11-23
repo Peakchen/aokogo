@@ -15,13 +15,6 @@ type TServer2ServerSession struct {
 	s2sSession sync.Map
 }
 
-func (this *TServer2ServerSession) AddSessionByID(session *TcpSession, cmd []uint32) {
-	this.Lock()
-	defer this.Unlock()
-
-	this.s2sSession.Store(session.SessionID, cmd)
-}
-
 func (this *TServer2ServerSession) AddSessionByCmd(session *TcpSession, cmds []uint32) {
 	this.Lock()
 	defer this.Unlock()
@@ -38,41 +31,11 @@ func (this *TServer2ServerSession) RemoveSessionByID(session *TcpSession) {
 	this.s2sSession.Delete(session.SessionID)
 }
 
-func (this *TServer2ServerSession) RemoveByCmd(cmd uint32) {
+func (this *TServer2ServerSession) AddSession(key interface{}, session *TcpSession) {
 	this.Lock()
 	defer this.Unlock()
 
-	this.s2sSession.Delete(cmd)
-}
-
-func (this *TServer2ServerSession) GetByCmd(cmd uint32) (session *TcpSession) {
-	this.Lock()
-	defer this.Unlock()
-
-	val, exist := this.s2sSession.Load(cmd)
-	if exist {
-		session = val.(*TcpSession)
-	}
-	return
-}
-
-func (this *TServer2ServerSession) GetSessionByID(sessionID uint64) (session *TcpSession) {
-	this.Lock()
-	defer this.Unlock()
-
-	val, exist := this.s2sSession.Load(sessionID)
-	if exist {
-		session = val.(*TcpSession)
-	}
-	return
-}
-
-func (this *TServer2ServerSession) AddSession(session *TcpSession) {
-	this.Lock()
-	defer this.Unlock()
-
-	this.s2sSession.Store(session.SessionID, session)
-	this.s2sSession.Store(session.RegPoint, session)
+	this.s2sSession.Store(key, session)
 }
 
 func (this *TServer2ServerSession) GetSessionByType(RegPoint Define.ERouteId) (session *TcpSession) {

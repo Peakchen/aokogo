@@ -135,7 +135,6 @@ func (this *TcpServer) loop(sw *sync.WaitGroup) {
 			Log.FmtPrintf("[server] accept connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
 			this.session = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.pack, this)
 			this.session.HandleSession(sw)
-			//this.AddSession(this.session)
 			this.online()
 		}
 	}
@@ -173,37 +172,15 @@ func (this *TcpServer) SendMessage() {
 }
 
 func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
-	if this.SessionMgr == nil {
-		return
-	}
 	Log.FmtPrintf("[server] push session, SvrType: %v, RegPoint: %v.", session.SvrType, session.RegPoint)
-	//this.SessionMgr.AddSessionByCmd(session, cmds)
 	if session.SvrType == Define.ERouteId_ER_ISG {
-		GClient2ServerSession.AddSession(session)
+		GClient2ServerSession.AddSession(session.RegPoint, session)
+	} else {
+		if this.SessionMgr == nil {
+			return
+		}
+		this.SessionMgr.AddSession(session.RegPoint, session)
 	}
-
-	this.AddSession(session)
-}
-
-func (this *TcpServer) GetSessionByCmd(cmd uint32) (session *TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	return this.SessionMgr.GetByCmd(cmd)
-}
-
-func (this *TcpServer) AddSession(session *TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	this.SessionMgr.AddSession(session)
-}
-
-func (this *TcpServer) GetSessionByID(sessionID uint64) (session *TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	return this.SessionMgr.GetSessionByID(sessionID)
 }
 
 func (this *TcpServer) Exit(sw *sync.WaitGroup) {

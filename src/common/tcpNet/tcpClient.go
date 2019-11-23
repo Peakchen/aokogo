@@ -137,33 +137,15 @@ func (this *TcpClient) SendMessage() {
 }
 
 func (this *TcpClient) PushCmdSession(session *TcpSession, cmds []uint32) {
-	if this.SessionMgr == nil {
-		return
-	}
 	Log.FmtPrintf("[client] push session, SvrType: %v, RegPoint: %v.", session.SvrType, session.RegPoint)
-	//this.SessionMgr.AddSessionByCmd(session, cmds)
 	if session.RegPoint == Define.ERouteId_ER_ESG {
-		GServer2ServerSession.AddSession(session)
+		GServer2ServerSession.AddSession(session.RegPoint, session)
+	} else {
+		if this.SessionMgr == nil {
+			return
+		}
+		this.SessionMgr.AddSession(session.RegPoint, session)
 	}
-	this.AddSession(session)
-}
-
-func (this *TcpClient) GetSessionByCmd(cmd uint32) (session *TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	return this.SessionMgr.GetByCmd(cmd)
-}
-
-func (this *TcpClient) AddSession(session *TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	this.SessionMgr.AddSession(session)
-}
-
-func (this *TcpClient) GetSessionByID(sessionID uint64) (session *TcpSession) {
-	return this.SessionMgr.GetSessionByID(sessionID)
 }
 
 func (this *TcpClient) Exit(sw *sync.WaitGroup) {

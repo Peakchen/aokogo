@@ -115,14 +115,9 @@ type TConnSession struct {
 }
 
 type IProcessConnSession interface {
-	AddSessionByID(session *TcpSession, cmd []uint32)
-	AddSessionByCmd(session *TcpSession, cmds []uint32)
 	RemoveSessionByID(session *TcpSession)
-	RemoveByCmd(cmd uint32)
 	RemoveSessionByType(svrType Define.ERouteId)
-	GetByCmd(cmd uint32) (session *TcpSession)
-	GetSessionByID(sessionID uint64) (session *TcpSession)
-	AddSession(session *TcpSession)
+	AddSession(key interface{}, session *TcpSession)
 	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
 	AddSessionByModuleID(moduleID uint16, session *TcpSession)
 	GetSessionByModuleID(moduleID uint16) (session *TcpSession)
@@ -130,9 +125,6 @@ type IProcessConnSession interface {
 
 type ITcpEngine interface {
 	PushCmdSession(session *TcpSession, cmds []uint32)
-	GetSessionByCmd(cmd uint32) (session *TcpSession)
-	AddSession(session *TcpSession)
-	GetSessionByID(sessionID uint64) (session *TcpSession)
 	SessionType() (st ESessionType)
 	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
 	RemoveSession(session *TcpSession)
