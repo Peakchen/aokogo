@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	//"time"
 	"context"
@@ -19,8 +20,6 @@ import (
 type TcpClient struct {
 	sync.Mutex
 
-	wg        sync.WaitGroup
-	ctx       context.Context
 	cancel    context.CancelFunc
 	host      string
 	pprofAddr string
@@ -49,21 +48,27 @@ func NewClient(host, pprofAddr string, SvrType Define.ERouteId, cb MessageCb, Ad
 
 func (this *TcpClient) Run() {
 	os.Setenv("GOTRACEBACK", "crash")
-	this.ctx, this.cancel = context.WithCancel(context.Background())
+
+	var (
+		ctx context.Context
+		sw  = sync.WaitGroup{}
+	)
+
+	ctx, this.cancel = context.WithCancel(context.Background())
 	this.mpobj = &ClientProtocol{}
-	this.connect(&this.wg)
-	pprof.Run(this.ctx)
-	this.wg.Add(3)
-	go this.loopconn(&this.wg)
-	go this.loopoff(&this.wg)
+	this.connect(ctx, &sw)
+	pprof.Run(ctx)
+	sw.Add(3)
+	go this.loopconn(ctx, &sw)
+	go this.loopoff(ctx, &sw)
 	go func() {
 		Log.FmtPrintln("[client] run http server, host: ", this.pprofAddr)
 		http.ListenAndServe(this.pprofAddr, nil)
 	}()
-	this.wg.Wait()
+	sw.Wait()
 }
 
-func (this *TcpClient) connect(sw *sync.WaitGroup) (err error) {
+func (this *TcpClient) connect(ctx context.Context, sw *sync.WaitGroup) (err error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	if err != nil {
 		Log.Error("resolve tcp error: %v.", err.Error())
@@ -78,33 +83,42 @@ func (this *TcpClient) connect(sw *sync.WaitGroup) (err error) {
 
 	Log.FmtPrintf("[----------client-----------], svrtype: %v.", this.SvrType)
 	c.SetNoDelay(true)
-	this.dialsess = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.mpobj, this)
+	this.dialsess = NewSession(this.host, c, ctx, this.SvrType, this.cb, this.off, this.mpobj, this)
 	this.dialsess.HandleSession(sw)
 	this.afterDial()
 	return nil
 }
 
-func (this *TcpClient) loopconn(sw *sync.WaitGroup) {
+func (this *TcpClient) loopconn(ctx context.Context, sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
 		this.Exit(sw)
 	}()
 
+	ticker := time.NewTicker(time.Duration(EClientSessionCheckInterval) * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
 		select {
-		case <-this.ctx.Done():
+		case <-ctx.Done():
 			return
-		default:
+		case <-ticker.C:
 			if this.dialsess == nil || false == this.dialsess.isAlive {
-				if err := this.connect(sw); err != nil {
+				if err := this.connect(ctx, sw); err != nil {
 					Log.FmtPrintf("dail to server fail, host: %v.", this.host)
 				}
 			}
+			//default:
+			// if this.dialsess == nil || false == this.dialsess.isAlive {
+			// 	if err := this.connect(sw); err != nil {
+			// 		Log.FmtPrintf("dail to server fail, host: %v.", this.host)
+			// 	}
+			// }
 		}
 	}
 }
 
-func (this *TcpClient) loopoff(sw *sync.WaitGroup) {
+func (this *TcpClient) loopoff(ctx context.Context, sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
 		this.Exit(sw)
@@ -117,7 +131,7 @@ func (this *TcpClient) loopoff(sw *sync.WaitGroup) {
 				this.offline(os)
 			}
 
-		case <-this.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}

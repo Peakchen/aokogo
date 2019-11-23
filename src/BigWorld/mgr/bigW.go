@@ -36,7 +36,7 @@ func (this *TBigWordMgr) Run() {
 	this.ctx, this.cancle = context.WithCancel(context.Background())
 	this.wg.Add(1)
 	this.tcpsvr = NewTcpServer(this.host, this.srcSvr, this.dstSvr, this.Recv)
-	this.tcpsvr.StartTcpServer()
+	this.tcpsvr.Run()
 }
 //tcp net message recv call back.
 func (this *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {

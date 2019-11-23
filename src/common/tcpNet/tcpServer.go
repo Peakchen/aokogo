@@ -63,11 +63,11 @@ import (
 )
 
 type TcpServer struct {
-	sw        *sync.WaitGroup
+	sync.Mutex
+
 	host      string
 	pprofAddr string
 	listener  *net.TCPListener
-	ctx       context.Context
 	cancel    context.CancelFunc
 	cb        MessageCb
 	off       chan *TcpSession
@@ -92,20 +92,26 @@ func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, cb Mess
 	}
 }
 
-func (this *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc) {
+func (this *TcpServer) Run( /*sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc*/ ) {
 	os.Setenv("GOTRACEBACK", "crash")
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 	this.listener = listener
-	this.ctx, this.cancel = ctx, cancle
-	pprof.Run(this.ctx)
+
+	var (
+		ctx context.Context
+		sw  = sync.WaitGroup{}
+	)
+
+	ctx, this.cancel = context.WithCancel(context.Background())
+	pprof.Run(ctx)
 
 	this.pack = &ServerProtocol{}
 	sw.Add(3)
-	go this.loop(sw)
-	go this.loopoff(sw)
+	go this.loop(ctx, &sw)
+	go this.loopoff(ctx, &sw)
 	go func() {
 		Log.FmtPrintln("[server] run http server, host: ", this.pprofAddr)
 		http.ListenAndServe(this.pprofAddr, nil)
@@ -113,14 +119,14 @@ func (this *TcpServer) StartTcpServer(sw *sync.WaitGroup, ctx context.Context, c
 	sw.Wait()
 }
 
-func (this *TcpServer) loop(sw *sync.WaitGroup) {
+func (this *TcpServer) loop(ctx context.Context, sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
 		this.Exit(sw)
 	}()
 	for {
 		select {
-		case <-this.ctx.Done():
+		case <-ctx.Done():
 			return
 		default:
 			c, err := this.listener.AcceptTCP()
@@ -133,14 +139,14 @@ func (this *TcpServer) loop(sw *sync.WaitGroup) {
 			c.SetKeepAlive(true)
 			atomic.AddUint64(&this.SessionID, 1)
 			Log.FmtPrintf("[server] accept connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
-			this.session = NewSession(this.host, c, this.ctx, this.SvrType, this.cb, this.off, this.pack, this)
+			this.session = NewSession(this.host, c, ctx, this.SvrType, this.cb, this.off, this.pack, this)
 			this.session.HandleSession(sw)
 			this.online()
 		}
 	}
 }
 
-func (this *TcpServer) loopoff(sw *sync.WaitGroup) {
+func (this *TcpServer) loopoff(ctx context.Context, sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
 		this.Exit(sw)
@@ -152,7 +158,7 @@ func (this *TcpServer) loopoff(sw *sync.WaitGroup) {
 				return
 			}
 			this.offline(os)
-		case <-this.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}

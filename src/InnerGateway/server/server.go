@@ -6,8 +6,6 @@ import (
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
-	"context"
-	"sync"
 )
 
 func StartServer() {
@@ -18,7 +16,5 @@ func StartServer() {
 		LogicMsg.InnerGatewayMessageCallBack,
 		tcpNet.GServer2ServerSession)
 
-	sw := sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(context.Background())
-	newInnerServer.StartTcpServer(&sw, ctx, cancel)
+	newInnerServer.Run()
 }

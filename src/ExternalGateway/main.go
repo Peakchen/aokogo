@@ -55,13 +55,10 @@ import (
 	"common/Define"
 	"common/Log"
 	"common/tcpNet"
-	"context"
-	"runtime"
-	"sync"
 )
 
 func init() {
-	runtime.GOMAXPROCS(1)
+
 }
 
 func main() {
@@ -72,7 +69,5 @@ func main() {
 		LogicMsg.ExternalGatewayMessageCallBack,
 		tcpNet.GClient2ServerSession)
 
-	sw := sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(context.Background())
-	newExternalServer.StartTcpServer(&sw, ctx, cancel)
+	newExternalServer.Run()
 }

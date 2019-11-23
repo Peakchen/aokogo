@@ -91,8 +91,6 @@ func (this *TClusterDBProvider) LoopDBUpdate(wg *sync.WaitGroup) {
 		case <-ticker.C:
 			// do something...
 			this.flushdb()
-		default:
-			// nothing...
 		}
 	}
 }
