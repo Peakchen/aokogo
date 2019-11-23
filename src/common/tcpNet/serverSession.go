@@ -15,15 +15,6 @@ type TServer2ServerSession struct {
 	s2sSession sync.Map
 }
 
-func (this *TServer2ServerSession) AddSessionByCmd(session *TcpSession, cmds []uint32) {
-	this.Lock()
-	defer this.Unlock()
-
-	for _, cmd := range cmds {
-		this.s2sSession.Store(cmd, session)
-	}
-}
-
 func (this *TServer2ServerSession) RemoveSessionByID(session *TcpSession) {
 	this.Lock()
 	defer this.Unlock()
@@ -54,13 +45,6 @@ func (this *TServer2ServerSession) RemoveSessionByType(RegPoint Define.ERouteId)
 	defer this.Unlock()
 
 	this.s2sSession.Delete(RegPoint)
-}
-
-func (this *TServer2ServerSession) AddSessionByModuleID(moduleID uint16, session *TcpSession) {
-	this.Lock()
-	defer this.Unlock()
-
-	this.s2sSession.Store(moduleID, session)
 }
 
 func (this *TServer2ServerSession) GetSessionByModuleID(moduleID uint16) (session *TcpSession) {

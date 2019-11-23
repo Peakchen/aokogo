@@ -119,7 +119,6 @@ type IProcessConnSession interface {
 	RemoveSessionByType(svrType Define.ERouteId)
 	AddSession(key interface{}, session *TcpSession)
 	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
-	AddSessionByModuleID(moduleID uint16, session *TcpSession)
 	GetSessionByModuleID(moduleID uint16) (session *TcpSession)
 }
 

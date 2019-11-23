@@ -305,7 +305,7 @@ func externalRouteAct(route, mainID uint16, obj *TcpSession, data []byte) (succ 
 		obj.Lock()
 		defer obj.Unlock()
 
-		GServer2ServerSession.AddSessionByModuleID(mainID, obj)
+		GServer2ServerSession.AddSession(mainID, obj)
 		session := obj.Engine.GetSessionByType(Define.ERouteId_ER_ISG)
 		if session != nil {
 			if !session.isAlive {
