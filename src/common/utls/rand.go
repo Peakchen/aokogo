@@ -1,0 +1,57 @@
+package utls
+
+import (
+	"math/rand"
+	"time"
+)
+
+/*
+	rand api
+*/
+
+func init() {
+	t := time.Now().Unix()
+	s := rand.NewSource(t)
+	rand.New(s).Seed(t)
+}
+
+/*
+	rand int32 number
+	space: [0,n)
+	min: 1
+	max: n
+*/
+func RandInt32FromZero(n int32) (result int32) {
+	result = rand.Int31n(n)
+	return
+}
+
+/*
+	rand int32 number
+	space: [1,n]
+	min: 1
+	max: n
+*/
+func RandInt32(n int32) (result int32) {
+	n = n + 1
+	result = rand.Int31n(n)
+	if result == 0 {
+		result = 1
+	}
+	return
+}
+
+/*
+	rand int64 number
+	space: [1,n]
+	min: 1
+	max: n
+*/
+func RandInt64(n int64) (result int64) {
+	n = n + 1
+	result = rand.Int63n(n)
+	if result == 0 {
+		result = 1
+	}
+	return
+}
