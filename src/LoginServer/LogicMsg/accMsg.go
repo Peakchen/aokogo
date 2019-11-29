@@ -14,8 +14,8 @@ func onUserBind(key string, req *MSG_Login.CS_UserBind_Req) (succ bool, err erro
 	return
 }
 
-func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_Req) (succ bool, err error) {
-	Log.FmtPrintf("[onUserRegister] SessionID: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.SessionID, req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
+func onUserRegister(session tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_Req) (succ bool, err error) {
+	Log.FmtPrintf("[onUserRegister] identify: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.GetIdentify(), req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
 	rsp := &MSG_Login.SC_UserRegister_Rsp{}
 	rsp.Ret = MSG_Login.ErrorCode_Success
 
@@ -28,17 +28,18 @@ func onUserRegister(session *tcpNet.TcpSession, req *MSG_Login.CS_UserRegister_R
 
 	if err, exist := UserAccount.RegisterUseAcc(acc); err != nil || !exist {
 		rsp.Ret = MSG_Login.ErrorCode_Fail
-	} else {
-		session.SetIdentify(acc.Identify())
 	}
 
-	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
+	session.SetIdentify(acc.Identify())
+
+	return session.SendInnerMsg(acc.Identify(), //uint16(Define.ERouteId_ER_ISG),
+		uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_UserRegister),
 		rsp)
 }
 
-func onUserLogin(session *tcpNet.TcpSession, req *MSG_Login.CS_Login_Req) (succ bool, err error) {
-	Log.FmtPrintf("[onUserLogin] SessionID: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.SessionID, req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
+func onUserLogin(session tcpNet.TcpSession, req *MSG_Login.CS_Login_Req) (succ bool, err error) {
+	Log.FmtPrintf("[onUserLogin] identify: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.GetIdentify(), req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
 
 	rsp := &MSG_Login.SC_Login_Rsp{}
 	rsp.Ret = MSG_Login.ErrorCode_Success
@@ -53,8 +54,9 @@ func onUserLogin(session *tcpNet.TcpSession, req *MSG_Login.CS_Login_Req) (succ 
 	if _, exist := UserAccount.GetUserAcc(acc); !exist {
 		rsp.Ret = MSG_Login.ErrorCode_UserNotExistOrPasswdErr
 	}
-
-	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
+	session.SetIdentify(acc.Identify())
+	return session.SendInnerMsg(acc.Identify(),
+		uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_Login),
 		rsp)
 }

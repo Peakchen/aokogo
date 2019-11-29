@@ -69,9 +69,3 @@ func (this *TSvrBalanceV2) GetSvr() (s string) {
 	s = svrs[randidx]
 	return
 }
-
-func init(){
-	t := time.Now().Unix()
-	s := rand.NewSource(t)
-	rand.New(s).Seed(t)
-}

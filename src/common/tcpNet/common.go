@@ -5,6 +5,7 @@ import (
 	"common/Log"
 	"net"
 	"reflect"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -59,16 +60,24 @@ LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
 type IMessagePack interface {
-	PackAction(Output []byte)
+	PackAction(Output []byte) (err error)
+	PackAction4Client(Output []byte) (err error)
 	PackData(msg proto.Message) (data []byte, err error)
-	UnPackAction(InData []byte) (pos int32, err error)
+	UnPackMsg4Client(InData []byte) (pos int, err error)
 	UnPackData() (msg proto.Message, cb reflect.Value, err error, exist bool)
 	GetRouteID() (route uint16)
 	GetMessageID() (mainID uint16, subID uint16)
 	Clean()
 	SetCmd(routepoint, mainid, subid uint16, data []byte)
-	PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte)
+	PackMsg(routepoint, mainid, subid uint16, msg proto.Message) (out []byte, err error)
+	PackMsg4Client(routepoint, mainid, subid uint16, msg proto.Message) (out []byte, err error)
 	GetSrcMsg() (data []byte)
+	SetIdentify(identify string)
+	GetIdentify() string
+	UnPackMsg4Svr(InData []byte) (pos int, err error)
+	GetDataLen() (datalen uint32)
+	SetRemoteAddr(addr string)
+	GetRemoteAddr() (addr string)
 }
 
 /*
@@ -99,34 +108,61 @@ const (
 	EnMessage_RoutePoint    = 2  //转发位置
 	EnMessage_MainIDPackLen = 2  //主命令
 	EnMessage_SubIDPackLen  = 2  //次命令
-	EnMessage_DataPackLen   = 6  //真实数据长度
-	EnMessage_NoDataLen     = 10 //非data数据长度(包体之前的)
+	EnMessage_DataPackLen   = 6  //真实数据长度 (转发位置+主命令+次命令)
+	EnMessage_NoDataLen     = 10 //非data数据长度(包体之前的)->(转发位置+主命令+次命令+datalen)
+
+	EnMessage_SvrDataPackLen  = 50 //真实数据长度 (转发位置+主命令+次命令+ Identify长度 + Identify内容+RemoteAddr 长度+RemoteAddr 内容)
+	EnMessage_SvrNoDataLen    = 54 //非data数据长度(包体之前的)->(转发位置+主命令+次命令+ Identify长度 + Identify内容+datalen+RemoteAddr 长度+RemoteAddr 内容)
+	EnMessage_IdentifyEixst   = 1  //Identify 长度
+	EnMessage_IdentifyLen     = 21 //Identify 内容
+	EnMessage_RemoteAddrEixst = 1  //RemoteAddr 长度
+	EnMessage_RemoteAddrLen   = 21 //RemoteAddr 内容
 )
 
 // session, data, data len
 type MessageCb func(c net.Conn, mainID uint16, subID uint16, msg proto.Message)
 
+type TcpSession interface {
+	GetRemoteAddr() string
+	GetRegPoint() (RegPoint Define.ERouteId)
+	GetIdentify() string
+	SetSendCache(data []byte)
+	Push(RegPoint Define.ERouteId)
+	SetIdentify(StrIdentify string)
+	SendMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	SendInnerMsg(identify string, mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	WriteMessage(data []byte) (succ bool)
+	Alive() bool
+}
+
 // after dial connect todo action.
-type AfterDialAct func(s *TcpSession)
+type AfterDialAct func(s TcpSession)
 
 type TConnSession struct {
 	Connsess *TcpSession
 	Svr      int32
 }
 
+type ESessionGetType int
+
+const (
+	ESessionGetType_Identify ESessionGetType = 1
+	ESessionGetType_RegPoint ESessionGetType = 2
+)
+
 type IProcessConnSession interface {
-	RemoveSessionByID(session *TcpSession)
-	RemoveSessionByType(svrType Define.ERouteId)
-	AddSession(key interface{}, session *TcpSession)
-	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
-	GetSessionByModuleID(moduleID uint16) (session *TcpSession)
+	RemoveSession(key interface{})
+	AddSession(key interface{}, session TcpSession)
+	GetSession(key interface{}) (session TcpSession)
+	GetSessionByIdentify(key interface{}) (session TcpSession)
+	GetSessionByModuleID(moduleID uint16) (session TcpSession)
 }
 
 type ITcpEngine interface {
-	PushCmdSession(session *TcpSession, cmds []uint32)
+	//PushCmdSession(session TcpSession, cmds []uint32)
 	SessionType() (st ESessionType)
-	GetSessionByType(svrType Define.ERouteId) (session *TcpSession)
-	RemoveSession(session *TcpSession)
+	GetSession(key interface{}) (session TcpSession)
+	//RemoveSession(session TcpSession)
 }
 
 type ESessionType int8
@@ -144,6 +180,22 @@ const (
 //client reconnect check interval (ms)
 const (
 	EClientSessionCheckInterval = 5000
+)
+
+const (
+	// Time allowed to write a message to the peer.
+	writeWait = 3 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	pongWait = 60 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
+
+	// Maximum message size allowed from peer.
+	maxMessageSize = 4096
+	//offline session
+	maxOfflineSize = 1024
 )
 
 func catchRecover() {

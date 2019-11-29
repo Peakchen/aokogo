@@ -15,16 +15,17 @@ func GameMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg proto.Mess
 	Log.FmtPrintf("Exec game server message call back.", c.RemoteAddr(), c.LocalAddr())
 }
 
-func AfterDialCallBack(s *tcpNet.TcpSession) {
+func AfterDialCallBack(s tcpNet.TcpSession) {
 	Log.FmtPrintf("After dial call back.")
 }
 
-func onServer(session *tcpNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (succ bool, err error) {
-	Log.FmtPrintf("SessionID: %v, player(%v) enter game server.", session.SessionID, session.StrIdentify)
-	logic.EnterGameReady(session.StrIdentify)
+func onServer(session tcpNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (succ bool, err error) {
+	Log.FmtPrintf("onServer player(%v) enter game server.", session.GetIdentify())
+	logic.EnterGameReady(session.GetIdentify())
 	rsp := &MSG_Player.SC_EnterServer_Rsp{}
 	rsp.Ret = MSG_Player.ErrorCode_Success
-	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_PLAYER),
+	return session.SendInnerMsg(session.GetIdentify(),
+		uint16(MSG_MainModule.MAINMSG_PLAYER),
 		uint16(MSG_Player.SUBMSG_SC_EnterServer),
 		rsp)
 }

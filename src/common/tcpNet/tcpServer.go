@@ -70,8 +70,8 @@ type TcpServer struct {
 	listener  *net.TCPListener
 	cancel    context.CancelFunc
 	cb        MessageCb
-	off       chan *TcpSession
-	session   *TcpSession
+	off       chan *SvrTcpSession
+	session   *SvrTcpSession
 	// person online
 	person     int32
 	SvrType    Define.ERouteId
@@ -139,7 +139,7 @@ func (this *TcpServer) loop(ctx context.Context, sw *sync.WaitGroup) {
 			c.SetKeepAlive(true)
 			atomic.AddUint64(&this.SessionID, 1)
 			Log.FmtPrintf("[server] accept connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
-			this.session = NewSession(this.host, c, ctx, this.SvrType, this.cb, this.off, this.pack, this)
+			this.session = NewSvrSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.pack, this)
 			this.session.HandleSession(sw)
 			this.online()
 		}
@@ -168,7 +168,7 @@ func (this *TcpServer) online() {
 	this.person++
 }
 
-func (this *TcpServer) offline(os *TcpSession) {
+func (this *TcpServer) offline(os *SvrTcpSession) {
 	// process
 	this.person--
 }
@@ -177,16 +177,19 @@ func (this *TcpServer) SendMessage() {
 
 }
 
-func (this *TcpServer) PushCmdSession(session *TcpSession, cmds []uint32) {
-	Log.FmtPrintf("[server] push session, SvrType: %v, RegPoint: %v.", session.SvrType, session.RegPoint)
-	if session.SvrType == Define.ERouteId_ER_ISG {
-		GClient2ServerSession.AddSession(session.RegPoint, session)
-	} else {
-		if this.SessionMgr == nil {
-			return
-		}
-		this.SessionMgr.AddSession(session.RegPoint, session)
-	}
+func (this *TcpServer) PushCmdSession(session *SvrTcpSession, cmds []uint32) {
+	Log.FmtPrintf("[server] push session, SvrType: %v, RegPoint: %v, addr: %v.", session.SvrType, session.RegPoint, session.RemoteAddr)
+	//GServer2ServerSession.AddSession(session.StrIdentify, session)
+	// if session.SvrType == Define.ERouteId_ER_ISG {
+	// 	//GClient2ServerSession.AddSession(session.RegPoint, session)
+	// 	GClient2ServerSession.AddSessionSvr(session.StrIdentify, session)
+	// } else {
+	// 	if this.SessionMgr == nil {
+	// 		return
+	// 	}
+	// 	//this.SessionMgr.AddSession(session.RegPoint, session)
+	// 	this.SessionMgr.AddSessionSvr(session.StrIdentify, session)
+	// }
 }
 
 func (this *TcpServer) Exit(sw *sync.WaitGroup) {
@@ -200,22 +203,22 @@ func (this *TcpServer) SessionType() (st ESessionType) {
 	return ESessionType_Server
 }
 
-func (this *TcpServer) GetSessionByType(svrType Define.ERouteId) (session *TcpSession) {
+func (this *TcpServer) GetSession(key interface{}) (session TcpSession) {
 	if this.SessionMgr == nil {
 		return
 	}
-	return this.SessionMgr.GetSessionByType(svrType)
+	return this.SessionMgr.GetSession(key)
 }
 
-func (this *TcpServer) RemoveSession(session *TcpSession) {
+func (this *TcpServer) RemoveSession(session *SvrTcpSession) {
 	if this.SessionMgr == nil {
 		return
 	}
 
 	if session.RegPoint != Define.ERouteId_ER_Invalid {
-		this.SessionMgr.RemoveSessionByType(session.RegPoint)
+		this.SessionMgr.RemoveSession(session.RemoteAddr)
 	} else {
-		this.SessionMgr.RemoveSessionByID(session)
+		this.SessionMgr.RemoveSession(session.StrIdentify)
 	}
 
 }

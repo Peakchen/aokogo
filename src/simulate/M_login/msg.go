@@ -13,14 +13,18 @@ import (
 	"time"
 )
 
+const (
+	cstSendInterval = 200
+)
+
 func LoginRun() {
 	Log.FmtPrintf("login msg test.")
 	MessageRegister()
 	var sw sync.WaitGroup
 
-	sw.Add(2)
+	sw.Add(1)
 	go UserRegister()
-	go UserLogin()
+	//go UserLogin()
 	//go AlostOfPeopleLogin()
 	sw.Wait()
 }
@@ -33,46 +37,46 @@ func UserRegister() {
 	Log.FmtPrintf("user register.")
 	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
 	for _, item := range M_config.GloginConfig.Get() {
-		if item.Register == M_config.CstRegister_No {
-			continue
+		if item.Register != M_config.CstRegister_No {
+			req := &MSG_Login.CS_UserRegister_Req{}
+			req.Account = item.Username
+			req.Passwd = item.Passwd
+			req.DeviceSerial = "123"
+			req.DeviceName = "androd"
+			Log.FmtPrintln("UserRegister: ", item.Username, item.Passwd)
+			loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
+				uint16(MSG_MainModule.MAINMSG_LOGIN),
+				uint16(MSG_Login.SUBMSG_CS_UserRegister),
+				req)
+			go loginM.Run()
+			time.Sleep(time.Duration(cstSendInterval) * time.Millisecond)
 		}
-		req := &MSG_Login.CS_UserRegister_Req{}
-		req.Account = item.Username
-		req.Passwd = item.Passwd
-		req.DeviceSerial = "123"
-		req.DeviceName = "androd"
-		Log.FmtPrintln("UserRegister: ", item.Username, item.Passwd)
-		loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
-			uint16(MSG_MainModule.MAINMSG_LOGIN),
-			uint16(MSG_Login.SUBMSG_CS_UserRegister),
-			req)
-		go loginM.Run()
-		time.Sleep(time.Duration(100) * time.Millisecond)
+
+		UserLogin(loginM, item)
 	}
 
 }
 
-func UserLogin() {
+func UserLogin(pack *M_Common.TModuleCommon, item *M_config.TSimulateLoginBase) {
 	Log.FmtPrintf("user login.")
-	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	for _, item := range M_config.GloginConfig.Get() {
-		if item.Login == M_config.CstLogin_No {
-			continue
-		}
-		req := &MSG_Login.CS_UserRegister_Req{}
-		req.Account = item.Username
-		req.Passwd = item.Passwd
-		req.DeviceSerial = "456"
-		req.DeviceName = "iso"
-		Log.FmtPrintln("UserLogin: ", item.Username, item.Passwd)
-		loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
-			uint16(MSG_MainModule.MAINMSG_LOGIN),
-			uint16(MSG_Login.SUBMSG_CS_Login),
-			req)
-		go loginM.Run()
-		time.Sleep(time.Duration(100) * time.Millisecond)
-		//UserEnter(loginM)
+	if item.Login == M_config.CstLogin_No {
+		return
 	}
+
+	req := &MSG_Login.CS_UserRegister_Req{}
+	req.Account = item.Username
+	req.Passwd = item.Passwd
+	req.DeviceSerial = "456"
+	req.DeviceName = "iso"
+	Log.FmtPrintln("UserLogin: ", item.Username, item.Passwd)
+	pack.PushMsg(uint16(Define.ERouteId_ER_Login),
+		uint16(MSG_MainModule.MAINMSG_LOGIN),
+		uint16(MSG_Login.SUBMSG_CS_Login),
+		req)
+	go pack.Run()
+	time.Sleep(time.Duration(cstSendInterval) * time.Millisecond)
+	UserEnter(pack)
+
 }
 
 func AlostOfPeopleLogin() {
@@ -100,4 +104,5 @@ func UserEnter(pack *M_Common.TModuleCommon) {
 		uint16(MSG_Player.SUBMSG_CS_EnterServer),
 		req)
 	go pack.Run()
+	time.Sleep(time.Duration(cstSendInterval) * time.Millisecond)
 }

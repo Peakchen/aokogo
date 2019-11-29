@@ -37,10 +37,15 @@ func NewModule(host, module string) *TModuleCommon {
 }
 
 func (this *TModuleCommon) PushMsg(dstpoint, mainid, subid uint16, msg proto.Message) {
-	buff := this.clientPack.PackMsg(dstpoint,
+	this.clientPack.SetIdentify(this.host)
+	buff, err := this.clientPack.PackMsg4Client(dstpoint,
 		mainid,
 		subid,
 		msg)
+	if err != nil {
+		Log.Error(err)
+		return
+	}
 	this.data = make([]byte, len(buff))
 	copy(this.data, buff)
 	Log.FmtPrintln("msg len: ", len(this.data))
@@ -85,7 +90,7 @@ func (this *TModuleCommon) readloop(conn net.Conn) {
 				continue
 			}
 
-			_, err = this.clientPack.UnPackAction(buffer)
+			_, err = this.clientPack.UnPackMsg4Client(buffer)
 			if err != nil {
 				Log.Error("unpack action err: ", err)
 				return
@@ -182,8 +187,9 @@ func (this *TModuleCommon) exitloop() {
 		//Block until a signal is received.
 		if s, ok := <-exitchan; ok {
 			fmt.Println("Got signal:", s)
+			os.Exit(1)
 		}
-		os.Exit(1)
+
 		select {
 		case <-this.ctx.Done():
 			this.sw.Done()

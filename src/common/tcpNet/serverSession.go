@@ -2,62 +2,84 @@ package tcpNet
 
 import (
 	"common/Define"
+	"common/utls"
 	"sync"
 )
 
 var (
-	GServer2ServerSession *TServer2ServerSession
+	GServer2ServerSession *TSvr2SvrSession
 )
 
-type TServer2ServerSession struct {
+type TSvr2SvrSession struct {
 	sync.Mutex
 
 	s2sSession sync.Map
 }
 
-func (this *TServer2ServerSession) RemoveSessionByID(session *TcpSession) {
+func (this *TSvr2SvrSession) RemoveSession(key interface{}) {
 	this.Lock()
 	defer this.Unlock()
 
-	this.s2sSession.Delete(session.SessionID)
+	this.s2sSession.Delete(key)
 }
 
-func (this *TServer2ServerSession) AddSession(key interface{}, session *TcpSession) {
+func (this *TSvr2SvrSession) AddSession(key interface{}, session TcpSession) {
 	this.Lock()
 	defer this.Unlock()
 
 	this.s2sSession.Store(key, session)
 }
 
-func (this *TServer2ServerSession) GetSessionByType(RegPoint Define.ERouteId) (session *TcpSession) {
+func (this *TSvr2SvrSession) GetSession(key interface{}) (session TcpSession) {
 	this.Lock()
 	defer this.Unlock()
 
-	val, exist := this.s2sSession.Load(RegPoint)
+	var (
+		sessions = []TcpSession{}
+		slen     int32
+		randIdx  int32
+	)
+	this.s2sSession.Range(func(k, v interface{}) bool {
+		cs := v.(TcpSession)
+		if cs.GetRegPoint() == key.(Define.ERouteId) && cs.Alive() {
+			sessions = append(sessions, cs)
+		}
+		return true
+	})
+
+	slen = int32(len(sessions))
+	if slen > 1 {
+		randIdx = utls.RandInt32FromZero(slen)
+	} else if slen == 0 {
+		return
+	}
+
+	session = sessions[randIdx]
+	return
+}
+
+func (this *TSvr2SvrSession) GetSessionByIdentify(key interface{}) (session TcpSession) {
+	this.Lock()
+	defer this.Unlock()
+
+	val, exist := this.s2sSession.Load(key)
 	if exist {
-		session = val.(*TcpSession)
+		session = val.(TcpSession)
 	}
 	return
 }
 
-func (this *TServer2ServerSession) RemoveSessionByType(RegPoint Define.ERouteId) {
-	this.Lock()
-	defer this.Unlock()
-
-	this.s2sSession.Delete(RegPoint)
-}
-
-func (this *TServer2ServerSession) GetSessionByModuleID(moduleID uint16) (session *TcpSession) {
+func (this *TSvr2SvrSession) GetSessionByModuleID(moduleID uint16) (session TcpSession) {
 	this.Lock()
 	defer this.Unlock()
 
 	val, exist := this.s2sSession.Load(moduleID)
 	if exist {
-		session = val.(*TcpSession)
+		session = val.(TcpSession)
 	}
 	return
 }
 
 func init() {
-	GServer2ServerSession = &TServer2ServerSession{}
+	GServer2ServerSession = &TSvr2SvrSession{}
 }

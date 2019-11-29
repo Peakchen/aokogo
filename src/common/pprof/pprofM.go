@@ -80,6 +80,7 @@ func (this *TPProfMgr) loop() {
 		select {
 		case <-this.ctx.Done():
 			this.Exit()
+			return
 		case <-t.C:
 			// do nothing...
 			this.flush()
