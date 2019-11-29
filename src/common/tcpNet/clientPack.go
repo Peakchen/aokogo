@@ -143,8 +143,7 @@ func (this *ClientProtocol) PackMsg(routepoint, mainid, subid uint16, msg proto.
 	}
 
 	this.SetCmd(routepoint, mainid, subid, data)
-	lenpos := 0 //EnMessage_SvrNoDataLen - EnMessage_SvrDataPackLen
-	out = make([]byte, len(data)+EnMessage_SvrNoDataLen+lenpos)
+	out = make([]byte, len(data)+EnMessage_SvrNoDataLen)
 	err = this.PackAction(out)
 	return
 }

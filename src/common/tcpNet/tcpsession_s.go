@@ -87,8 +87,6 @@ type SvrTcpSession struct {
 	off chan *SvrTcpSession
 	//message pack
 	pack IMessagePack
-	//tcp session manager
-	Engine ITcpEngine
 	// session id
 	SessionID uint64
 	//Dest point
@@ -105,8 +103,7 @@ func NewSvrSession(addr string,
 	SvrType Define.ERouteId,
 	newcb MessageCb,
 	off chan *SvrTcpSession,
-	pack IMessagePack,
-	Engine ITcpEngine) *SvrTcpSession {
+	pack IMessagePack) *SvrTcpSession {
 	return &SvrTcpSession{
 		RemoteAddr: addr,
 		conn:       conn,
@@ -116,9 +113,7 @@ func NewSvrSession(addr string,
 		recvCb:     newcb,
 		pack:       pack,
 		off:        make(chan *SvrTcpSession, maxOfflineSize),
-		Engine:     Engine,
 		SvrType:    SvrType,
-		//StrIdentify: addr,
 	}
 }
 
@@ -310,9 +305,6 @@ func (this *SvrTcpSession) HandleSession(sw *sync.WaitGroup) {
 }
 
 func (this *SvrTcpSession) Push(RegPoint Define.ERouteId) {
-	if this.Engine == nil {
-		return
-	}
 	Log.FmtPrintf("[server] push new sesson, reg point: %v.", RegPoint)
 	this.RegPoint = RegPoint
 	GServer2ServerSession.AddSession(this.RemoteAddr, this)

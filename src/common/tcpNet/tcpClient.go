@@ -83,7 +83,7 @@ func (this *TcpClient) connect(ctx context.Context, sw *sync.WaitGroup) (err err
 
 	Log.FmtPrintf("[----------client-----------] addr: %v, svrtype: %v.", c.RemoteAddr(), this.SvrType)
 	c.SetNoDelay(true)
-	this.dialsess = NewClientSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.mpobj, this)
+	this.dialsess = NewClientSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.mpobj)
 	this.dialsess.HandleSession(sw)
 	this.afterDial()
 	return nil
@@ -108,12 +108,6 @@ func (this *TcpClient) loopconn(ctx context.Context, sw *sync.WaitGroup) {
 					Log.FmtPrintf("dail to server fail, host: %v.", this.host)
 				}
 			}
-			//default:
-			// if this.dialsess == nil || false == this.dialsess.isAlive {
-			// 	if err := this.connect(sw); err != nil {
-			// 		Log.FmtPrintf("dail to server fail, host: %v.", this.host)
-			// 	}
-			// }
 		}
 	}
 }
@@ -150,18 +144,6 @@ func (this *TcpClient) SendMessage() {
 
 }
 
-func (this *TcpClient) PushCmdSession(session *ClientTcpSession, cmds []uint32) {
-	Log.FmtPrintf("[client] push session, SvrType: %v, RegPoint: %v.", session.SvrType, session.RegPoint)
-	// if session.RegPoint == Define.ERouteId_ER_ESG {
-	// 	GClient2ServerSession.AddSession(session.StrIdentify, session)
-	// } else {
-	// 	if this.SessionMgr == nil {
-	// 		return
-	// 	}
-	// 	this.SessionMgr.AddSession(session.StrIdentify, session)
-	// }
-}
-
 func (this *TcpClient) Exit(sw *sync.WaitGroup) {
 	this.dialsess = nil
 	this.cancel()
@@ -195,13 +177,6 @@ func (this *TcpClient) afterDial() {
 
 func (this *TcpClient) SessionType() (st ESessionType) {
 	return ESessionType_Client
-}
-
-func (this *TcpClient) GetSession(key interface{}) (session TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	return this.SessionMgr.GetSession(key)
 }
 
 func (this *TcpClient) RemoveSession(session *ClientTcpSession) {

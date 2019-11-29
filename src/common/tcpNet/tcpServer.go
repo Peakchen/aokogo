@@ -92,7 +92,7 @@ func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, cb Mess
 	}
 }
 
-func (this *TcpServer) Run( /*sw *sync.WaitGroup, ctx context.Context, cancle context.CancelFunc*/ ) {
+func (this *TcpServer) Run() {
 	os.Setenv("GOTRACEBACK", "crash")
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", this.host)
 	checkError(err)
@@ -139,7 +139,7 @@ func (this *TcpServer) loop(ctx context.Context, sw *sync.WaitGroup) {
 			c.SetKeepAlive(true)
 			atomic.AddUint64(&this.SessionID, 1)
 			Log.FmtPrintf("[server] accept connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
-			this.session = NewSvrSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.pack, this)
+			this.session = NewSvrSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.pack)
 			this.session.HandleSession(sw)
 			this.online()
 		}
@@ -177,21 +177,6 @@ func (this *TcpServer) SendMessage() {
 
 }
 
-func (this *TcpServer) PushCmdSession(session *SvrTcpSession, cmds []uint32) {
-	Log.FmtPrintf("[server] push session, SvrType: %v, RegPoint: %v, addr: %v.", session.SvrType, session.RegPoint, session.RemoteAddr)
-	//GServer2ServerSession.AddSession(session.StrIdentify, session)
-	// if session.SvrType == Define.ERouteId_ER_ISG {
-	// 	//GClient2ServerSession.AddSession(session.RegPoint, session)
-	// 	GClient2ServerSession.AddSessionSvr(session.StrIdentify, session)
-	// } else {
-	// 	if this.SessionMgr == nil {
-	// 		return
-	// 	}
-	// 	//this.SessionMgr.AddSession(session.RegPoint, session)
-	// 	this.SessionMgr.AddSessionSvr(session.StrIdentify, session)
-	// }
-}
-
 func (this *TcpServer) Exit(sw *sync.WaitGroup) {
 	this.listener.Close()
 	this.cancel()
@@ -201,13 +186,6 @@ func (this *TcpServer) Exit(sw *sync.WaitGroup) {
 
 func (this *TcpServer) SessionType() (st ESessionType) {
 	return ESessionType_Server
-}
-
-func (this *TcpServer) GetSession(key interface{}) (session TcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-	return this.SessionMgr.GetSession(key)
 }
 
 func (this *TcpServer) RemoveSession(session *SvrTcpSession) {

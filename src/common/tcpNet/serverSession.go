@@ -69,17 +69,6 @@ func (this *TSvr2SvrSession) GetSessionByIdentify(key interface{}) (session TcpS
 	return
 }
 
-func (this *TSvr2SvrSession) GetSessionByModuleID(moduleID uint16) (session TcpSession) {
-	this.Lock()
-	defer this.Unlock()
-
-	val, exist := this.s2sSession.Load(moduleID)
-	if exist {
-		session = val.(TcpSession)
-	}
-	return
-}
-
 func init() {
 	GServer2ServerSession = &TSvr2SvrSession{}
 }

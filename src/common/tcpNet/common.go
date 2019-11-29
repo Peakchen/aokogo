@@ -155,14 +155,6 @@ type IProcessConnSession interface {
 	AddSession(key interface{}, session TcpSession)
 	GetSession(key interface{}) (session TcpSession)
 	GetSessionByIdentify(key interface{}) (session TcpSession)
-	GetSessionByModuleID(moduleID uint16) (session TcpSession)
-}
-
-type ITcpEngine interface {
-	//PushCmdSession(session TcpSession, cmds []uint32)
-	SessionType() (st ESessionType)
-	GetSession(key interface{}) (session TcpSession)
-	//RemoveSession(session TcpSession)
 }
 
 type ESessionType int8

@@ -57,16 +57,6 @@ func (this *TClient2ServerSession) GetSessionByIdentify(key interface{}) (sessio
 	return this.GetSession(key)
 }
 
-func (this *TClient2ServerSession) GetSessionByModuleID(moduleID uint16) (session TcpSession) {
-	this.Lock()
-	defer this.Unlock()
-	val, exist := this.c2sSession.Load(moduleID)
-	if exist {
-		session = val.(TcpSession)
-	}
-	return
-}
-
 func init() {
 	GClient2ServerSession = &TClient2ServerSession{}
 }
