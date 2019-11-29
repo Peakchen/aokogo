@@ -7,13 +7,18 @@
 
 ## cpu analysis result:
 
+ExternalGateWayServer
+
 ![ExternalGW_cpu](https://github.com/Peakchen/aoko/blob/master/src/ExternalGateway/analysis/ExternalGW_cpu_201911291749.png)
 
-
-![gameSvr_cpu](https://github.com/Peakchen/aoko/blob/master/src/GameServer/analysis/gameSvr_cpu_201911291746.png)
-
+InnerGateWayServer
 
 ![InnerGW_cpu](https://github.com/Peakchen/aoko/blob/master/src/InnerGateway/analysis/InnerGW_cpu_201911291750.png)
 
+GameServer
+
+![gameSvr_cpu](https://github.com/Peakchen/aoko/blob/master/src/GameServer/analysis/gameSvr_cpu_201911291746.png)
+
+LoginServer
 
 ![loginSvr_cpu](https://github.com/Peakchen/aoko/blob/master/src/LoginServer/analysis/loginSvr_cpu_201911291740.png)
