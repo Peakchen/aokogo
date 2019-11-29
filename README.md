@@ -21,3 +21,6 @@
 
 
 ### focus: come on, welcome everybody,qq group: 855618176
+
+![](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
+
