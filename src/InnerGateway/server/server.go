@@ -10,8 +10,9 @@ import (
 
 func StartServer() {
 	Log.FmtPrintf("start InnerGateway server.")
-	newInnerServer := tcpNet.NewTcpServer(serverConfig.GInnerGWConfig.ListenAddr,
-		serverConfig.GInnerGWConfig.PProfAddr,
+	Innergw := serverConfig.GInnergwconfigConfig.Get()
+	newInnerServer := tcpNet.NewTcpServer(Innergw.Listenaddr,
+		Innergw.Pprofaddr,
 		Define.ERouteId_ER_ISG,
 		LogicMsg.InnerGatewayMessageCallBack,
 		tcpNet.GServer2ServerSession)

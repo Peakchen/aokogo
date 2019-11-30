@@ -50,13 +50,12 @@ package main
 
 import (
 	"DBServer/server"
-	"common/Config/serverConfig"
 	"common/Log"
 )
 
 func main() {
 	Log.FmtPrintln("run db server.")
-	server.StartDBServer(serverConfig.GServerBaseConfig)
+	server.StartDBServer()
 }
 
 func init() {

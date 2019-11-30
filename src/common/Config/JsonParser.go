@@ -60,7 +60,7 @@ func ParseJson2Cache(obj ICommonConfig, data interface{}, filename string) {
 	}
 
 	errlist := cfg.Before()
-	if errlist != nil {
+	if errlist != nil && len(errlist) > 0 {
 		for _, err := range errlist {
 			Log.Error("[config Before] err: ", err)
 		}
@@ -68,7 +68,7 @@ func ParseJson2Cache(obj ICommonConfig, data interface{}, filename string) {
 	}
 
 	errlist = cfg.After()
-	if errlist != nil {
+	if errlist != nil && len(errlist) > 0 {
 		for _, err := range errlist {
 			Log.Error("[config After] err: ", err)
 		}

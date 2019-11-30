@@ -1,7 +1,6 @@
 package dbo
 
 import (
-	"common/Config/serverConfig"
 	"common/ado"
 	"common/ado/service"
 	"common/public"
@@ -35,8 +34,8 @@ func A_DBInsert(Identify string, In public.IDBCache) (err error) {
 	return
 }
 
-func StartDBSerice(server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	GDBProvider.StartDBService(server, RedisCfg, MgoCfg)
+func StartDBSerice(server string) {
+	GDBProvider.StartDBService(server)
 }
 
 func init() {

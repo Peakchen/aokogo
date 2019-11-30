@@ -17,12 +17,11 @@ type TDBProvider struct {
 	wg     sync.WaitGroup
 }
 
-func (this *TDBProvider) init(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+func (this *TDBProvider) StartDBService(Server string) {
 	this.Server = Server
-	this.rconn = RedisConn.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
-	this.mconn = MgoConn.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
-}
+	rediscfg := serverConfig.GRedisconfigConfig.Get()
+	this.rconn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd)
 
-func (this *TDBProvider) StartDBService(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	this.init(Server, RedisCfg, MgoCfg)
+	mgocfg := serverConfig.GMgoconfigConfig.Get()
+	this.mconn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
 }

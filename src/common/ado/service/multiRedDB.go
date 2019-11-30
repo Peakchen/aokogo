@@ -33,17 +33,14 @@ type TClusterDBProvider struct {
 	wg          sync.WaitGroup
 }
 
-func (this *TClusterDBProvider) init(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
+func (this *TClusterDBProvider) init(Server string) {
 	this.Server = Server
 	this.mgoSessions = make([]*mgo.Session, ado.EMgo_Thread_Cnt)
 }
 
-func (this *TClusterDBProvider) Start(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	defer func() {
-		http.ListenAndServe(RedisCfg.ConnAddr, nil)
-	}()
-	this.init(Server, RedisCfg, MgoCfg)
-	this.runDBloop(Server, RedisCfg, MgoCfg)
+func (this *TClusterDBProvider) Start(Server string) {
+	this.init(Server)
+	this.runDBloop(Server)
 }
 
 func (this *TClusterDBProvider) Exit() {
@@ -56,11 +53,14 @@ func (this *TClusterDBProvider) Exit() {
 	}
 }
 
-func (this *TClusterDBProvider) runDBloop(Server string, RedisCfg *serverConfig.TRedisConfig, MgoCfg *serverConfig.TMgoConfig) {
-	this.redConn = RedisConn.NewRedisConn(RedisCfg.ConnAddr, RedisCfg.DBIndex, RedisCfg.Passwd)
-	this.ctx, this.cancle = context.WithCancel(context.Background())
+func (this *TClusterDBProvider) runDBloop(Server string) {
+	rediscfg := serverConfig.GRedisconfigConfig.Get()
+	this.redConn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd)
 
-	this.mgoConn = MgoConn.NewMgoConn(Server, MgoCfg.UserName, MgoCfg.Passwd, MgoCfg.Host)
+	mgocfg := serverConfig.GMgoconfigConfig.Get()
+	this.mgoConn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
+
+	this.ctx, this.cancle = context.WithCancel(context.Background())
 	session, err := this.mgoConn.GetMgoSession()
 	if err != nil {
 		Log.Error(err)
@@ -71,8 +71,11 @@ func (this *TClusterDBProvider) runDBloop(Server string, RedisCfg *serverConfig.
 		this.mgoSessions[midx] = session.Copy()
 	}
 
-	this.wg.Add(1)
+	this.wg.Add(2)
 	go this.LoopDBUpdate(&this.wg)
+	defer func() {
+		http.ListenAndServe(rediscfg.Pprofaddr, nil)
+	}()
 	this.wg.Wait()
 }
 

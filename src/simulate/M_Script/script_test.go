@@ -31,9 +31,8 @@ func ExampleScript() {
 }
 
 func TestScript(t *testing.T) {
-	redisconn := RedisConn.NewRedisConn(serverConfig.GRedisCfgProvider.ConnAddr,
-		serverConfig.GRedisCfgProvider.DBIndex,
-		serverConfig.GRedisCfgProvider.Passwd)
+	rediscfg := serverConfig.GRedisconfigConfig.Get()
+	redisconn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd)
 
 	c := redisconn.RedPool.Get()
 	// To test fall back in Do, we make script unique by adding comment with current time.
@@ -66,9 +65,8 @@ func TestScript(t *testing.T) {
 }
 
 func TestScript1(t *testing.T) {
-	redisconn := RedisConn.NewRedisConn(serverConfig.GRedisCfgProvider.ConnAddr,
-		serverConfig.GRedisCfgProvider.DBIndex,
-		serverConfig.GRedisCfgProvider.Passwd)
+	rediscfg := serverConfig.GRedisconfigConfig.Get()
+	redisconn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd)
 
 	c := redisconn.RedPool.Get()
 

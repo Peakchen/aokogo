@@ -8,11 +8,12 @@ import (
 	"common/tcpNet"
 )
 
-func StartServer(servercfg *serverConfig.TServerBaseConfig) {
-	server := servercfg.LoginConfig.Zone + servercfg.LoginConfig.No
-	dbo.StartDBSerice(server, servercfg.RedisConfig, servercfg.MgoConfig)
-	gameSvr := tcpNet.NewClient(servercfg.LoginConfig.ListenAddr,
-		servercfg.LoginConfig.PProfAddr,
+func StartServer() {
+	logincfg := serverConfig.GLoginconfigConfig.Get()
+	server := logincfg.Zone + logincfg.No
+	dbo.StartDBSerice(server)
+	gameSvr := tcpNet.NewClient(logincfg.Listenaddr,
+		logincfg.Pprofaddr,
 		Define.ERouteId_ER_Login,
 		LogicMsg.LoginMessageCallBack,
 		nil,

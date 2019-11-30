@@ -9,8 +9,9 @@ import (
 
 func StartClient() {
 	Log.FmtPrintf("start InnerGateway client.")
-	gameSvr := tcpNet.NewClient(serverConfig.GInnerGWConfig.ConnectAddr,
-		serverConfig.GInnerGWConfig.PProfAddr,
+	Innergw := serverConfig.GInnergwconfigConfig.Get()
+	gameSvr := tcpNet.NewClient(Innergw.Connectaddr,
+		Innergw.Pprofaddr,
 		Define.ERouteId_ER_ISG,
 		nil,
 		nil,

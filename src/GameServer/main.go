@@ -51,7 +51,6 @@ package main
 
 import (
 	"GameServer/server"
-	"common/Config/serverConfig"
 	"common/Log"
 	//"log"
 )
@@ -63,6 +62,6 @@ func init() {
 func main() {
 	Log.FmtPrintf("start gameServer.")
 
-	server.StartServer(serverConfig.GServerBaseConfig)
+	server.StartServer()
 	return
 }
