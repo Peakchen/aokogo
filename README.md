@@ -18,9 +18,13 @@
  - go mod 外部依赖
  - win 批处理可直接make编译以及run执行编译程序
  - tech group：tcp + redis+mongodb
+ 
+微服务架构图（Microservice architecture diagram）:
 
+ ![微服务架构图](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)
 
 ### focus: come on, welcome everybody,qq group: 855618176
 
 ![](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
+
 
