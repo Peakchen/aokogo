@@ -2,7 +2,6 @@ package serverConfig
 
 import (
 	"common/Config"
-	"common/Log"
 	"fmt"
 )
 
@@ -32,7 +31,6 @@ func init() {
 }
 
 func (this *TGameconfigConfig) ComfireAct(data interface{}) (errlist []string) {
-	Log.FmtPrintln("gameConfig ComfireAct.")
 	cfg := data.(*tArrGameconfig)
 	errlist = []string{}
 	for _, item := range *cfg {
@@ -52,7 +50,6 @@ func (this *TGameconfigConfig) ComfireAct(data interface{}) (errlist []string) {
 }
 
 func (this *TGameconfigConfig) DataRWAct(data interface{}) (errlist []string) {
-	Log.FmtPrintln("gameConfig DataRWAct.")
 	cfg := data.(*tArrGameconfig)
 	this.data = &TGameconfigBase{}
 	for _, item := range *cfg {
