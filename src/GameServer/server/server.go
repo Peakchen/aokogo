@@ -3,10 +3,16 @@ package server
 import (
 	"GameServer/LogicMsg"
 	"GameServer/dbo"
+	"GameServer/rpc"
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/tcpNet"
 )
+
+func init() {
+	LogicMsg.Init()
+	rpc.Init()
+}
 
 func StartServer() {
 	Gamecfg := serverConfig.GGameconfigConfig.Get()
@@ -15,8 +21,8 @@ func StartServer() {
 	gameSvr := tcpNet.NewClient(Gamecfg.Listenaddr,
 		Gamecfg.Pprofaddr,
 		Define.ERouteId_ER_Game,
-		LogicMsg.GameMessageCallBack,
-		LogicMsg.AfterDialCallBack,
+		nil,
+		nil,
 		nil)
 
 	gameSvr.Run()

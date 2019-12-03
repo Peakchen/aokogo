@@ -89,6 +89,9 @@ func GetPlayer(Identify string) (player *TPlayer) {
 
 	if !exist {
 		// ... data init, then insert cache and db.
+		player.StrIdentify = Identify
+		player.BaseInfo = map[MSG_Player.EmBaseInfo]interface{}{}
+		player.BaseMoney = map[MSG_Player.EmBaseMoney]interface{}{}
 		player.initdata()
 		err = dbo.A_DBInsert(Identify, player)
 		if err != nil {

@@ -199,11 +199,40 @@ func UnPackInnerMsg(c *net.TCPConn, pack IMessagePack) (succ bool) {
 /*
 	内网关路由
 */
-func innerMsgRouteAct(route uint16, data []byte) (succ bool) {
-	succ = true
-	//内网转发路由请求
-	if Define.ERouteId(route) != Define.ERouteId_ER_ESG &&
-		Define.ERouteId(route) != Define.ERouteId_ER_ISG {
+func innerMsgRouteAct(route, mainID uint16, data []byte) (succ bool) {
+	switch Define.ERouteId(route) {
+	case Define.ERouteId_ER_ESG,
+		Define.ERouteId_ER_ISG:
+		if mainID == uint16(MSG_MainModule.MAINMSG_RPC) {
+			//内网game rpc 调用
+			Log.FmtPrintln("inner game rpc route.")
+			session := GServer2ServerSession.GetSession(Define.ERouteId_ER_Game)
+			if session != nil {
+				if !session.Alive() {
+					GServer2ServerSession.RemoveSession(session.GetIdentify())
+				} else {
+					succ = session.WriteMessage(data)
+				}
+			} else {
+				Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
+			}
+		} else {
+			// 内网转发回复
+			Log.FmtPrintln("inner respnse.")
+			session := GServer2ServerSession.GetSession(Define.ERouteId_ER_ESG)
+			if session != nil {
+				if !session.Alive() {
+					GServer2ServerSession.RemoveSession(session.GetRemoteAddr())
+				} else {
+					succ = session.WriteMessage(data)
+				}
+			} else {
+				Log.FmtPrintf("can not find session route from external gateway.")
+			}
+		}
+	default:
+
+		//内网转发路由请求
 		Log.FmtPrintf("inner route requst message, route: %v.", route)
 		session := GServer2ServerSession.GetSession(Define.ERouteId(route))
 		if session != nil {
@@ -215,23 +244,9 @@ func innerMsgRouteAct(route uint16, data []byte) (succ bool) {
 		} else {
 			Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
 		}
-
-		return
 	}
 
-	// 内网转发回复
-	Log.FmtPrintln("inner respnse.")
-	session := GServer2ServerSession.GetSession(Define.ERouteId_ER_ESG)
-	if session != nil {
-		if !session.Alive() {
-			GServer2ServerSession.RemoveSession(session.GetRemoteAddr())
-		} else {
-			succ = session.WriteMessage(data)
-		}
-	} else {
-		Log.FmtPrintf("can not find session route from external gateway.")
-	}
-
+	succ = true
 	return
 }
 

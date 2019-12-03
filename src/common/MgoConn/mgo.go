@@ -207,9 +207,17 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 		return err
 	}
 
+	s := session.Clone()
+	defer s.Close()
+
 	Log.FmtPrintf("[Insert] main: %v, sub: %v, key: %v.", InParam.MainModel(), InParam.SubModel(), InParam.Identify())
-	redkey := MakeMgoModel(InParam.Identify(), InParam.MainModel(), InParam.SubModel())
-	err = Save(session, this.server, redkey, InParam)
+	collection := s.DB(this.server).C(InParam.MainModel())
+	operAction := bson.M{"_id": InParam.Identify(), InParam.SubModel(): InParam}
+	err = collection.Insert(operAction)
+	if err != nil {
+		err = fmt.Errorf("main: %v, sub: %v, key: %v, err: %v.\n", InParam.MainModel(), InParam.SubModel(), InParam.Identify(), err)
+		Log.Error("[Insert] err: %v.\n", err)
+	}
 	return
 }
 

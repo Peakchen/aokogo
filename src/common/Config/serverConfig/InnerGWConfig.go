@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"strconv"
 )
 
 /*
@@ -13,12 +14,21 @@ type TInnergwconfigBase struct {
 	Connectaddr string `json:"ConnectAddr"`
 	Listenaddr  string `json:"ListenAddr"`
 	Zone        string `json:"Zone"`
-	No          string `json:"No"`
+	No          int32  `json:"No"`
 	Pprofaddr   string `json:"PProfAddr"`
 }
 
+type TInnergwconfig struct {
+	Id          int32
+	Connectaddr string
+	Listenaddr  string
+	Zone        string
+	No          string
+	Pprofaddr   string
+}
+
 type TInnergwconfigConfig struct {
-	data *TInnergwconfigBase
+	data *TInnergwconfig
 }
 
 type tArrInnergwconfig []*TInnergwconfigBase
@@ -56,14 +66,22 @@ func (this *TInnergwconfigConfig) ComfireAct(data interface{}) (errlist []string
 
 func (this *TInnergwconfigConfig) DataRWAct(data interface{}) (errlist []string) {
 	cfg := data.(*tArrInnergwconfig)
-	this.data = &TInnergwconfigBase{}
+	this.data = &TInnergwconfig{}
 	for _, item := range *cfg {
-		this.data = item
+		num := strconv.Itoa(int(item.No))
+		this.data = &TInnergwconfig{
+			Id:          item.Id,
+			No:          num,
+			Connectaddr: item.Connectaddr,
+			Listenaddr:  item.Listenaddr,
+			Zone:        item.Zone,
+			Pprofaddr:   item.Pprofaddr,
+		}
 		break
 	}
 	return
 }
 
-func (this *TInnergwconfigConfig) Get() *TInnergwconfigBase {
+func (this *TInnergwconfigConfig) Get() *TInnergwconfig {
 	return this.data
 }

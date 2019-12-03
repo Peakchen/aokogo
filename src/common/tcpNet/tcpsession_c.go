@@ -230,7 +230,7 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 
 	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) && (this.SvrType == Define.ERouteId_ER_ISG) {
 		Log.FmtPrintf("[client] Route (%v), StrIdentify: %v.", route, this.StrIdentify)
-		succ = innerMsgRouteAct(route, this.pack.GetSrcMsg())
+		succ = innerMsgRouteAct(route, mainID, this.pack.GetSrcMsg())
 	} else {
 		succ = this.msgCallBack(route) //路由消息回调处理
 	}

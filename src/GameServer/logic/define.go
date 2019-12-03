@@ -1,13 +1,15 @@
 package logic
 
+import "common/tcpNet"
+
 /*
 	by stefan
 	date: 20191111 16:08
 */
 type ILogicReady interface {
-	EnterReady(identify string)
-	LeaveReady(identify string)
-	ReconnectReady(identify string)
+	EnterReady(session tcpNet.TcpSession)
+	LeaveReady(session tcpNet.TcpSession)
+	ReconnectReady(session tcpNet.TcpSession)
 }
 
 var (

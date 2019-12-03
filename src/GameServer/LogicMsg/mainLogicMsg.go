@@ -6,22 +6,15 @@ import (
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Player"
 	"common/tcpNet"
-	"net"
-
-	"github.com/golang/protobuf/proto"
 )
 
-func GameMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg proto.Message) {
-	Log.FmtPrintf("Exec game server message call back.", c.RemoteAddr(), c.LocalAddr())
-}
+func Init() {
 
-func AfterDialCallBack(s tcpNet.TcpSession) {
-	Log.FmtPrintf("After dial call back.")
 }
 
 func onServer(session tcpNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (succ bool, err error) {
 	Log.FmtPrintf("onServer player(%v) enter game server.", session.GetIdentify())
-	logic.EnterGameReady(session.GetIdentify())
+	logic.EnterGameReady(session)
 	rsp := &MSG_Player.SC_EnterServer_Rsp{}
 	rsp.Ret = MSG_Player.ErrorCode_Success
 	return session.SendInnerMsg(session.GetIdentify(),

@@ -244,7 +244,7 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 		if this.SvrType == Define.ERouteId_ER_ESG {
 			succ = externalRouteAct(route, this)
 		} else {
-			succ = innerMsgRouteAct(route, this.pack.GetSrcMsg())
+			succ = innerMsgRouteAct(route, mainID, this.pack.GetSrcMsg())
 		}
 	} else {
 		succ = this.msgCallBack(route) //路由消息回调处理
