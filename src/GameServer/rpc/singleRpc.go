@@ -1,5 +1,12 @@
 package rpc
 
+/*
+	single func rpc process
+	date: 20191203
+	author: stefan
+	version: 1.0
+*/
+
 import (
 	"common/Log"
 	"common/msgProto/MSG_MainModule"
@@ -18,13 +25,11 @@ var (
 	_rpcMap = map[string]*TRpcInfo{}
 )
 
-func Init() {
-
-}
-
 /*
-
- */
+	@func: RegisterRpc
+	@param1: name 函数名
+	@param2: funcName 函数处理方法
+*/
 func RegisterRpc(name string, funcName interface{}) {
 	f := reflect.ValueOf(funcName)
 	if f.Kind() != reflect.Func {
@@ -65,23 +70,10 @@ func SendRpcMsg(session tcpNet.TcpSession, module, funcName string, data interfa
 }
 
 /*
-	@func: onRpcProcess 处理rpc消息
-	@param1: session obj
-	@param2: req content (module, func, data)
+	@func: onSingleRpc 处理单一函数rpc消息
+	@param1: Rpcfunc 方法名
+	@param2: data 数据
 */
-func onRpcProcess(session tcpNet.TcpSession, req *MSG_Rpc.CS_Rpc_Req) (succ bool, err error) {
-	Log.FmtPrintf("rpc process, rpc module: %v, func: %v.", req.Rpcmodule, req.Rpcfunc)
-	if len(req.Rpcmodule) == 0 {
-		succ, err = onSingleRpc(req.Rpcfunc, req.Data)
-	} else {
-		succ, err = onModuleRpcProcess(req.Rpcmodule, req.Rpcfunc, req.Data)
-	}
-	return
-}
-
-/*
-
- */
 func onSingleRpc(Rpcfunc string, data []byte) (succ bool, err error) {
 	module := _rpcMap[Rpcfunc]
 	if module == nil {
@@ -104,8 +96,4 @@ func onSingleRpc(Rpcfunc string, data []byte) (succ bool, err error) {
 	succ = true
 	err = nil
 	return
-}
-
-func init() {
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_RPC), uint16(MSG_Rpc.SUBMSG_CS_Rpc), onRpcProcess)
 }

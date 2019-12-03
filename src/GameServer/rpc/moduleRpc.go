@@ -1,5 +1,12 @@
 package rpc
 
+/*
+	module rpc process
+	date: 20191203
+	author: stefan
+	version: 1.0
+*/
+
 import (
 	"common/Log"
 	"encoding/json"
@@ -16,8 +23,10 @@ var (
 )
 
 /*
-
- */
+	@func: RegisterModuleRpc 注册模块rpc消息
+	@param1: name 模块名
+	@param2: moduleName 模块对象
+*/
 func RegisterModuleRpc(name string, moduleName interface{}) {
 	module := reflect.ValueOf(moduleName)
 	if module.Kind() != reflect.Ptr {
@@ -45,9 +54,10 @@ func RegisterModuleRpc(name string, moduleName interface{}) {
 }
 
 /*
-	@func: onRpcProcess 处理rpc消息
-	@param1: session obj
-	@param2: req content (module, func, data)
+	@func: onModuleRpcProcess 处理模块rpc消息
+	@param1: moduleName 模块名
+	@param2: Rpcfunc rpc方法名
+	@param3: data 数据
 */
 func onModuleRpcProcess(moduleName, Rpcfunc string, data []byte) (succ bool, err error) {
 	Log.FmtPrintf("rpc process, rpc module: %v, func: %v.", moduleName, Rpcfunc)
