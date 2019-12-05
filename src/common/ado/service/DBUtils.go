@@ -55,16 +55,28 @@ import (
 )
 
 /*
-
- */
+	@func: Update
+	@param1: Identify string     player only one
+	@param2: data public.IDBCache  module need save
+	@param3: Oper ado.EDBOperType  db operation
+	purpose: first db save data then update cache.
+*/
 func (this *TDBProvider) Update(Identify string, data public.IDBCache, Oper ado.EDBOperType) (err error) {
-	err = this.rconn.Update(Identify, data, Oper)
-	if Oper == ado.EDBOper_DB {
-		err = this.mconn.SaveOne(Identify, data)
+	err = this.mconn.SaveOne(Identify, data)
+	if err != nil {
+		return
 	}
+
+	err = this.rconn.Update(Identify, data, Oper)
 	return
 }
 
+/*
+	@func: Insert
+	@param1: Identify string     player only one
+	@param2: data public.IDBCache  module need save
+	purpose: first insert data to cache then update db.
+*/
 func (this *TDBProvider) Insert(Identify string, data public.IDBCache) (err error) {
 	err = this.rconn.Insert(Identify, data)
 	if err == nil {
@@ -74,8 +86,11 @@ func (this *TDBProvider) Insert(Identify string, data public.IDBCache) (err erro
 }
 
 /*
-
- */
+	@func: Get
+	@param1: Identify string     player only one
+	@param2: Output public.IDBCache  module need query
+	purpose: first query from cache if not exist, then find from db.
+*/
 func (this *TDBProvider) Get(Identify string, Output public.IDBCache) (err error, exist bool) {
 	err = this.rconn.Query(Identify, Output)
 	if err != nil {
@@ -88,14 +103,23 @@ func (this *TDBProvider) Get(Identify string, Output public.IDBCache) (err error
 	return
 }
 
+/*
+	@func: GetAcc
+	@param1: Identify string     player only one
+	@param2: Output public.IDBCache  module need query
+	purpose: first query use accout from db.
+*/
 func (this *TDBProvider) GetAcc(usrName string, Output public.IDBCache) (err error, exist bool) {
 	err, exist = this.mconn.QueryAcc(usrName, Output)
 	return
 }
 
 /*
-
- */
+	@func: DBGetSome
+	@param1: Identify string     player only one
+	@param2: Output public.IDBCache  module need query
+	purpose: first query from cache if not then db.
+*/
 func (this *TDBProvider) DBGetSome(Output public.IDBCache) (err error) {
 	// has no func need.
 	return nil
