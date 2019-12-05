@@ -1,4 +1,4 @@
-package M_Common
+package TestCommon
 
 import (
 	"common/Log"

@@ -1,4 +1,4 @@
-package M_Script
+package U_Script
 
 import (
 	"common/Config/serverConfig"

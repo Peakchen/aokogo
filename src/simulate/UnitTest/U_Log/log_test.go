@@ -1,4 +1,4 @@
-package M_Log
+package U_Log
 
 import (
 	"common/Log"

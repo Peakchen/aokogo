@@ -1,11 +1,14 @@
 package utls
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/golang/protobuf/proto"
 )
 
 func GetCurrentDirectory() string {
@@ -163,5 +166,19 @@ func GetExeFilePath() (execpath string) {
 	execpath = strings.Replace(execpath, "\\", "/", -1)
 	idx := strings.LastIndex(execpath, "/")
 	execpath = execpath[:idx]
+	return
+}
+
+func Json2Pb(strjson string, pb proto.Message) error {
+	return json.Unmarshal([]byte(strjson), &pb)
+}
+
+func Pb2Json(pb proto.Message, strjson string) (err error) {
+	data, err := json.Marshal(pb)
+	if err != nil {
+		return
+	}
+
+	strjson = string(data)
 	return
 }

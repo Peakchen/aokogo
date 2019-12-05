@@ -1,4 +1,4 @@
-package M_config
+package U_config
 
 import (
 	"common/Config"

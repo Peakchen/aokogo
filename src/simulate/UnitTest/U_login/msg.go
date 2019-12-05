@@ -1,4 +1,4 @@
-package M_login
+package U_login
 
 import (
 	"common/Define"
@@ -6,8 +6,8 @@ import (
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Player"
-	"simulate/M_Common"
-	"simulate/M_config"
+	"simulate/TestCommon"
+	"simulate/UnitTest/U_config"
 	"strconv"
 	"sync"
 	"time"
@@ -35,9 +35,9 @@ func MessageRegister() {
 
 func UserRegister() {
 	Log.FmtPrintf("user register.")
-	loginM := M_Common.NewModule("127.0.0.1:51001", "login")
-	for _, item := range M_config.GloginConfig.Get() {
-		if item.Register != M_config.CstRegister_No {
+	loginM := TestCommon.NewModule("127.0.0.1:51001", "login")
+	for _, item := range U_config.GloginConfig.Get() {
+		if item.Register != U_config.CstRegister_No {
 			req := &MSG_Login.CS_UserRegister_Req{}
 			req.Account = item.Username
 			req.Passwd = item.Passwd
@@ -57,9 +57,9 @@ func UserRegister() {
 
 }
 
-func UserLogin(pack *M_Common.TModuleCommon, item *M_config.TSimulateLoginBase) {
+func UserLogin(pack *TestCommon.TModuleCommon, item *U_config.TSimulateLoginBase) {
 	Log.FmtPrintf("user login.")
-	if item.Login == M_config.CstLogin_No {
+	if item.Login == U_config.CstLogin_No {
 		return
 	}
 
@@ -88,7 +88,7 @@ func AlostOfPeopleLogin() {
 		req.Passwd = "abc"
 		req.DeviceSerial = "456"
 		req.DeviceName = "iso"
-		loginM := M_Common.NewModule("127.0.0.1:51001", "login")
+		loginM := TestCommon.NewModule("127.0.0.1:51001", "login")
 		loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
 			uint16(MSG_MainModule.MAINMSG_LOGIN),
 			uint16(MSG_Login.SUBMSG_CS_Login),
@@ -97,7 +97,7 @@ func AlostOfPeopleLogin() {
 	}
 }
 
-func UserEnter(pack *M_Common.TModuleCommon) {
+func UserEnter(pack *TestCommon.TModuleCommon) {
 	req := &MSG_Player.CS_EnterServer_Req{}
 	pack.PushMsg(uint16(Define.ERouteId_ER_Game),
 		uint16(MSG_MainModule.MAINMSG_PLAYER),
