@@ -14,7 +14,7 @@
  - cpu、内存日志分析（pprof附相关servers性能分析）
  - protobuf 网络协议，以及go和lua 协议生成工具
  - 外部已开发完成的支持配置文件工具（[xExcel2x](https://github.com/Peakchen/xExcel2x "xExcel2x")）,系统配置文件代码生成工具（[xExport4Go](https://github.com/Peakchen/xExport4Go "xExport4Go")）
- - 单元测试模块simulate
+ - simulate（单元测试模块 + 自动化测试）
  - go mod 外部依赖
  - win 批处理可直接make编译以及run执行编译程序
  - tech group：tcp + redis+mongodb
