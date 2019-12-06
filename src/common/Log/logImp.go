@@ -148,7 +148,8 @@ func ErrorModule(data public.IDBCache, args ...interface{}) {
 }
 
 func Info(format string, args ...interface{}) {
-	WriteLog(EnLogType_Info, "[Info]\t\t\t", format, args)
+	timeFormat := time.Now().Local().Format(timeFmt)
+	WriteLog(EnLogType_Info, "[Info]\t\t\t", timeFormat+format, args)
 }
 
 func Fail(args ...interface{}) {
@@ -182,7 +183,10 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 		logStr string
 	)
 
-	if len(format) >= 0 && len(args) > 0 {
+	/*
+		print(a,b,c...)
+	*/
+	if len(format) == 0 && len(args) > 0 {
 		logStr += fmt.Sprintf(title + format)
 		for i, data := range args {
 			if i+1 <= len(args) {
@@ -190,12 +194,12 @@ func WriteLog(logtype, title, format string, args ...interface{}) {
 			}
 		}
 		logStr += "\n"
-	} else if len(args) == 0 && len(format) > 0 {
+	} else if len(args) == 0 && len(format) > 0 { //print("aaa,bbb,ccc.")
 		logStr = fmt.Sprintf(title + format)
-	} /*else if len(format) > 0 && len(args) > 0 {
+	} else if len(format) > 0 && len(args) > 0 { //print("a: %v, b: %v.",a,b)
 		logStr = fmt.Sprintf(title+format, args...)
 		logStr += "\n"
-	}*/
+	}
 
 	if len(logStr) == 0 {
 		return
@@ -234,32 +238,42 @@ func (this *TAokoLog) exit() {
 }
 
 func (this *TAokoLog) loop() {
-	defer this.sw.Done()
-
-	if s, ok := <-exitchan; ok {
+	defer func() {
 		this.exit()
+		this.sw.Done()
 		time.Sleep(time.Duration(3) * time.Second)
-		fmt.Println("Got signal:", s)
-		return
-	}
+	}()
 
-	tick := time.NewTicker(time.Duration(30 * time.Second))
+	tick := time.NewTicker(time.Duration(10 * time.Second))
 	for {
 		select {
 		case <-this.ctx.Done():
 			tick.Stop()
 			return
+		case log, ok := <-this.data:
+			if !ok {
+				continue
+			}
+			this.writelog(log)
+		case s, ok := <-exitchan:
+			if !ok {
+				continue
+			}
+			fmt.Println("Got signal:", s)
+			return
 		case <-tick.C:
 			this.flush()
-		default:
-
 		}
 	}
 }
 
-func (this *TAokoLog) flush() {
-	_, err := this.filehandle.WriteString(<-this.data)
+func (this *TAokoLog) writelog(src string) {
+	_, err := this.filehandle.WriteString(src)
 	if err != nil {
 		return
 	}
+}
+
+func (this *TAokoLog) flush() {
+	this.writelog(<-this.data)
 }
