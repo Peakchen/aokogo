@@ -10,6 +10,7 @@ import (
 	"simulate/AutoTest/msgImp"
 	"simulate/AutoTest/testconfig"
 	"simulate/TestCommon"
+	"simulate/UnitTest/U_config"
 	"simulate/UnitTest/U_login"
 	"strings"
 	"sync"
@@ -48,11 +49,24 @@ func Start() {
 
 func (this *TAokoTest) loadAndRun() {
 	this.loadTestCheck()
-	var sw sync.WaitGroup
-	sw.Add(2)
-	go U_login.UserRegister(this.ConnConf.ConnAddr, "login")
+	U_login.Init(this.ConnConf.ConnAddr, "login")
+	var (
+		sw sync.WaitGroup
+	)
+	sw.Add(1)
 	go this.loopRun()
 	sw.Wait()
+}
+
+func (this *TAokoTest) loopRun() {
+	for idx, _ := range U_config.GloginConfig.Get() {
+		this.runItem(idx)
+	}
+}
+
+func (this *TAokoTest) runItem(idx int) {
+	U_login.Run(idx)
+	this.gameEnter()
 }
 
 func (this *TAokoTest) loadConnCheck(dir, fileName string) {
@@ -122,7 +136,7 @@ func (this *TAokoTest) loadTestCheck() {
 	}
 }
 
-func (this *TAokoTest) loopRun() {
+func (this *TAokoTest) gameEnter() {
 	for _, data := range this.testConf {
 		this.Run(data)
 	}
