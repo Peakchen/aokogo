@@ -52,12 +52,12 @@ package tcpNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
 
 	"fmt"
 	"net"
-	"reflect"
 	"sync/atomic"
 	"time"
 
@@ -141,6 +141,27 @@ func (this *ClientTcpSession) exit(sw *sync.WaitGroup) {
 
 func (this *ClientTcpSession) SetSendCache(data []byte) {
 	this.send <- data
+}
+
+func (this *ClientTcpSession) heartbeatloop(sw *sync.WaitGroup) {
+	defer func() {
+		sw.Done()
+		this.exit(sw)
+	}()
+
+	ticker := time.NewTicker(time.Duration(cstKeepLiveHeartBeatSec) * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-this.ctx.Done():
+			return
+		case <-ticker.C:
+			if this.RegPoint == 0 || len(this.StrIdentify) == 0 {
+				continue
+			}
+			sendHeartBeat(this, uint16(this.SvrType))
+		}
+	}
 }
 
 func (this *ClientTcpSession) sendloop(sw *sync.WaitGroup) {
@@ -228,11 +249,13 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 		this.pack.SetIdentify(this.StrIdentify)
 	}
 
-	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) && (this.SvrType == Define.ERouteId_ER_ISG) {
+	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) &&
+		mainID != uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
+		(this.SvrType == Define.ERouteId_ER_ISG) {
 		Log.FmtPrintf("[client] Route (%v), StrIdentify: %v.", route, this.StrIdentify)
 		succ = innerMsgRouteAct(route, mainID, this.pack.GetSrcMsg())
 	} else {
-		succ = this.msgCallBack(route) //路由消息回调处理
+		succ = this.checkmsgProc(route) //路由消息回调处理
 	}
 	return
 }
@@ -253,41 +276,40 @@ func (this *ClientTcpSession) checkRegisterRet(route uint16) (exist bool) {
 	return
 }
 
-func (this *ClientTcpSession) msgCallBack(route uint16) (succ bool) {
+func (this *ClientTcpSession) checkHeartBeatRet() (exist bool) {
+	mainID, subID := this.pack.GetMessageID()
+	if mainID == uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
+		uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat) == subID {
+		exist = true
+	}
+	return
+}
+
+func (this *ClientTcpSession) checkmsgProc(route uint16) (succ bool) {
 	Log.FmtPrintf("recv response, route: %v.", route)
-	exist := this.checkRegisterRet(route)
-	if exist {
+	bRegister := this.checkRegisterRet(route)
+	bHeartBeat := checkHeartBeatRet(this.pack)
+	if bRegister || bHeartBeat {
 		succ = true
 		return
 	}
 
-	msg, cb, unpackerr, exist := this.pack.UnPackData()
-	if unpackerr != nil || !exist {
-		Log.FmtPrintln("[client] unpack data err: ", unpackerr)
-		return
-	}
-
-	params := []reflect.Value{
-		reflect.ValueOf(this),
-		reflect.ValueOf(msg),
-	}
-
-	ret := cb.Call(params)
-	succ = ret[0].Interface().(bool)
-	reterr := ret[1].Interface()
-	if reterr != nil || !succ {
-		Log.FmtPrintln("[client] message return err: ", reterr.(error).Error())
-	}
+	succ = msgCallBack(this)
 	return
+}
+
+func (this *ClientTcpSession) GetPack() (obj IMessagePack) {
+	return this.pack
 }
 
 func (this *ClientTcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.isAlive = true
 	atomic.AddUint64(&this.SessionID, 1)
 	Log.FmtPrintln("[client] handle new session: ", this.SessionID)
-	sw.Add(2)
+	sw.Add(3)
 	go this.recvloop(sw)
 	go this.sendloop(sw)
+	go this.heartbeatloop(sw)
 }
 
 func (this *ClientTcpSession) Push(RegPoint Define.ERouteId) {
@@ -320,6 +342,25 @@ func (this *ClientTcpSession) SendMsg(route, mainid, subid uint16, msg proto.Mes
 		mainid,
 		subid,
 		msg)
+	if err != nil {
+		return succ, err
+	}
+	this.SetSendCache(data)
+	return true, nil
+}
+
+func (this *ClientTcpSession) SendSvrMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+	if !this.isAlive {
+		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		Log.FmtPrintln("send msg err: ", err)
+		return false, err
+	}
+
+	data, err := this.pack.PackMsg(route,
+		mainid,
+		subid,
+		msg)
+
 	if err != nil {
 		return succ, err
 	}

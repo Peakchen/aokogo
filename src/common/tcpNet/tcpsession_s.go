@@ -53,11 +53,9 @@ import (
 	"common/Define"
 	"common/Log"
 	"common/msgProto/MSG_MainModule"
-	"common/msgProto/MSG_Server"
 
 	"fmt"
 	"net"
-	"reflect"
 	"sync/atomic"
 	"time"
 
@@ -238,7 +236,7 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 		this.pack.SetIdentify(this.StrIdentify)
 	}
 
-	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) &&
+	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) && mainID != uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
 		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
 		Log.FmtPrintf("[server] Route (%v), StrIdentify: %v.", route, this.StrIdentify)
 		if this.SvrType == Define.ERouteId_ER_ESG {
@@ -247,52 +245,13 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 			succ = innerMsgRouteAct(route, mainID, this.pack.GetSrcMsg())
 		}
 	} else {
-		succ = this.msgCallBack(route) //路由消息回调处理
+		succ = msgCallBack(this) //路由消息回调处理
 	}
 	return
 }
 
-func (this *SvrTcpSession) checkRegisterRet(route uint16) (exist bool) {
-	mainID, subID := this.pack.GetMessageID()
-	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) &&
-		uint16(MSG_Server.SUBMSG_SC_ServerRegister) == subID {
-		this.StrIdentify = this.RemoteAddr
-		if this.SvrType == Define.ERouteId_ER_ISG {
-			this.Push(Define.ERouteId_ER_ESG)
-		} else {
-			this.Push(Define.ERouteId(route))
-		}
-
-		exist = true
-	}
-	return
-}
-
-func (this *SvrTcpSession) msgCallBack(route uint16) (succ bool) {
-	exist := this.checkRegisterRet(route)
-	if exist {
-		succ = true
-		return
-	}
-
-	msg, cb, unpackerr, exist := this.pack.UnPackData()
-	if unpackerr != nil || !exist {
-		Log.FmtPrintln("[server] unpack data err: ", unpackerr)
-		return
-	}
-
-	params := []reflect.Value{
-		reflect.ValueOf(this),
-		reflect.ValueOf(msg),
-	}
-
-	ret := cb.Call(params)
-	succ = ret[0].Interface().(bool)
-	reterr := ret[1].Interface()
-	if reterr != nil || !succ {
-		Log.FmtPrintln("[server] message return err: ", reterr.(error).Error())
-	}
-	return
+func (this *SvrTcpSession) GetPack() (obj IMessagePack) {
+	return this.pack
 }
 
 func (this *SvrTcpSession) HandleSession(sw *sync.WaitGroup) {
@@ -334,6 +293,25 @@ func (this *SvrTcpSession) SendMsg(route, mainid, subid uint16, msg proto.Messag
 		mainid,
 		subid,
 		msg)
+	if err != nil {
+		return succ, err
+	}
+	this.SetSendCache(data)
+	return true, nil
+}
+
+func (this *SvrTcpSession) SendSvrMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+	if !this.isAlive {
+		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		Log.FmtPrintln("send msg err: ", err)
+		return false, err
+	}
+
+	data, err := this.pack.PackMsg(route,
+		mainid,
+		subid,
+		msg)
+
 	if err != nil {
 		return succ, err
 	}

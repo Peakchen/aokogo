@@ -5,11 +5,13 @@ package MSG_MainModule;
 // 主模块消息结构
 enum MAINMSG
 {
-    Begin = 0; //起点消息
-    SERVER = 1; //服务器间消息 for each server
-    LOGIN = 2;  //登陆模块消息 for login server
+    Begin = 0; //起点消息 begin msg
+    SERVER = 1; //服务器间消息 s2s for each server
+    LOGIN = 2;  //登陆模块消息 c2s for login server
     RPC = 3;    // rpc call 
+    HEARTBEAT = 4; // heart beat
+
     // for game server
-    PLAYER = 4; //玩家消息
+    PLAYER = 11; //玩家消息
 }
 

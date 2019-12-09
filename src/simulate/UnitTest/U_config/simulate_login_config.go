@@ -3,8 +3,8 @@ package U_config
 import (
 	"common/Config"
 	"common/Define"
-	"common/Log"
 	"common/utls"
+	"fmt"
 )
 
 /*
@@ -32,7 +32,7 @@ const (
 )
 
 type TSimulateLoginConfig struct {
-	data map[string]*TSimulateLoginBase
+	data []*TSimulateLoginBase
 }
 
 type tArrSimulateLogin []*TSimulateLoginBase
@@ -53,29 +53,34 @@ func init() {
 
 func (this *TSimulateLoginConfig) ComfireAct(data interface{}) (errlist []string) {
 	cfg := data.(*tArrSimulateLogin)
-	this.data = map[string]*TSimulateLoginBase{}
-	for _, item := range *cfg {
-		Log.FmtPrintln("ComfireAct act: ", item.Username, item.Passwd)
-		this.data[item.Username] = item
+	errlist = []string{}
+	for idx, item := range *cfg {
+		if len(item.Username) == 0 {
+			errlist = append(errlist, fmt.Sprintf("user name invalid, idx: %v.", idx))
+		}
+
+		if len(item.Passwd) == 0 {
+			errlist = append(errlist, fmt.Sprintf("user Passwd invalid, idx: %v.", idx))
+		}
 	}
 	return
 }
 
 func (this *TSimulateLoginConfig) DataRWAct(data interface{}) (errlist []string) {
 	cfg := data.(*tArrSimulateLogin)
+	this.data = []*TSimulateLoginBase{}
 	for _, item := range *cfg {
-		Log.FmtPrintln("DataRWAct act: ", item.Username, item.Passwd)
-		this.data[item.Username] = item
+		this.data = append(this.data, item)
 	}
 	return
 }
 
-func (this *TSimulateLoginConfig) Get() (data map[string]*TSimulateLoginBase) {
+func (this *TSimulateLoginConfig) Get() (data []*TSimulateLoginBase) {
 	data = this.data
 	return
 }
 
-func (this *TSimulateLoginConfig) GetItem(name string) (data *TSimulateLoginBase, exist bool) {
-	data, exist = this.data[name]
+func (this *TSimulateLoginConfig) GetItem(idx int32) (data *TSimulateLoginBase) {
+	data = this.data[idx]
 	return
 }

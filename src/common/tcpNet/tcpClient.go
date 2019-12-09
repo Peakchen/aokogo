@@ -95,7 +95,7 @@ func (this *TcpClient) loopconn(ctx context.Context, sw *sync.WaitGroup) {
 		this.Exit(sw)
 	}()
 
-	ticker := time.NewTicker(time.Duration(EClientSessionCheckInterval) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(cstClientSessionCheckMs) * time.Millisecond)
 	defer ticker.Stop()
 
 	for {

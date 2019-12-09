@@ -129,10 +129,12 @@ type TcpSession interface {
 	SetSendCache(data []byte)
 	Push(RegPoint Define.ERouteId)
 	SetIdentify(StrIdentify string)
+	SendSvrMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	SendMsg(route, mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	SendInnerMsg(identify string, mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	WriteMessage(data []byte) (succ bool)
 	Alive() bool
+	GetPack() (obj IMessagePack)
 }
 
 // after dial connect todo action.
@@ -171,7 +173,11 @@ const (
 
 //client reconnect check interval (ms)
 const (
-	EClientSessionCheckInterval = 5000
+	cstClientSessionCheckMs = 5000
+)
+
+const (
+	cstKeepLiveHeartBeatSec = 10
 )
 
 const (

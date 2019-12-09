@@ -3,6 +3,7 @@ package tcpNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
@@ -108,6 +109,53 @@ func SpecialLoginMsgFilter(main, sub uint16) (ok bool) {
 		ok = true
 	}
 
+	return
+}
+
+func sendHeartBeat(session TcpSession, ServerType uint16) (succ bool, err error) {
+	rsp := &MSG_HeartBeat.CS_HeartBeat_Req{}
+	return session.SendSvrMsg(ServerType,
+		uint16(MSG_MainModule.MAINMSG_HEARTBEAT),
+		uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat),
+		rsp)
+}
+
+func ResponseHeartBeat(session TcpSession, ServerType uint16) (succ bool, err error) {
+	rsp := &MSG_HeartBeat.SC_HeartBeat_Rsp{}
+	return session.SendSvrMsg(ServerType,
+		uint16(MSG_MainModule.MAINMSG_HEARTBEAT),
+		uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat),
+		rsp)
+}
+
+func checkHeartBeatRet(pack IMessagePack) (exist bool) {
+	mainID, subID := pack.GetMessageID()
+	if mainID == uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
+		uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat) == subID {
+		Log.FmtPrintf("<heart beat> RemoteAddr: %v.", pack.GetRemoteAddr())
+		exist = true
+	}
+	return
+}
+
+func msgCallBack(sessionobj TcpSession) (succ bool) {
+	msg, cb, unpackerr, exist := sessionobj.GetPack().UnPackData()
+	if unpackerr != nil || !exist {
+		Log.FmtPrintln("[client] unpack data err: ", unpackerr)
+		return
+	}
+
+	params := []reflect.Value{
+		reflect.ValueOf(sessionobj),
+		reflect.ValueOf(msg),
+	}
+
+	ret := cb.Call(params)
+	succ = ret[0].Interface().(bool)
+	reterr := ret[1].Interface()
+	if reterr != nil || !succ {
+		Log.FmtPrintln("[client] message return err: ", reterr.(error).Error())
+	}
 	return
 }
 
