@@ -8,15 +8,25 @@
             {
                 "request":{
                     "subId": 1, 
-                    "name": "CS_EnterServer_Req", 
+                    "name": "CS_xxxx_Req", 
                     "params":{
-                      
+                       "A": 1,
+                       "B":{
+                           "B1":1,
+                           "B2":"2"
+                       },
+                       "C":{
+                            "C1":{
+                                "C11":1,
+                                "C12":"12"
+                            }
+                       }
                     }
                 }, 
 
                 "response":{
                     "subId": 2, 
-                    "name": "SC_EnterServer_Rsp", 
+                    "name": "SC_xxxx_Rsp", 
                     "params":{
 
                     }
@@ -25,7 +35,7 @@
             {
                 "request":{
                     "subId": 3, 
-                    "name": "CS_PlayerInfo_Req", 
+                    "name": "CS_x_Req", 
                     "params":{
                         
                     }
@@ -33,7 +43,7 @@
 
                 "response":{
                     "subId": 4, 
-                    "name": "SC_PlayerInfo_Rsp", 
+                    "name": "SC_x_Rsp", 
                     "params":{
                         
                     }

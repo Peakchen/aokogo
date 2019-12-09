@@ -200,53 +200,37 @@ func UnPackInnerMsg(c *net.TCPConn, pack IMessagePack) (succ bool) {
 	内网关路由
 */
 func innerMsgRouteAct(route, mainID uint16, data []byte) (succ bool) {
+	var (
+		session TcpSession
+	)
 	switch Define.ERouteId(route) {
 	case Define.ERouteId_ER_ESG,
 		Define.ERouteId_ER_ISG:
 		if mainID == uint16(MSG_MainModule.MAINMSG_RPC) {
 			//内网game rpc 调用
 			Log.FmtPrintln("inner game rpc route.")
-			session := GServer2ServerSession.GetSession(Define.ERouteId_ER_Game)
-			if session != nil {
-				if !session.Alive() {
-					GServer2ServerSession.RemoveSession(session.GetIdentify())
-				} else {
-					succ = session.WriteMessage(data)
-				}
-			} else {
-				Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
-			}
+			session = GServer2ServerSession.GetSession(Define.ERouteId_ER_Game)
 		} else {
 			// 内网转发回复
 			Log.FmtPrintln("inner respnse.")
-			session := GServer2ServerSession.GetSession(Define.ERouteId_ER_ESG)
-			if session != nil {
-				if !session.Alive() {
-					GServer2ServerSession.RemoveSession(session.GetRemoteAddr())
-				} else {
-					succ = session.WriteMessage(data)
-				}
-			} else {
-				Log.FmtPrintf("can not find session route from external gateway.")
-			}
+			session = GServer2ServerSession.GetSession(Define.ERouteId_ER_ESG)
 		}
 	default:
-
 		//内网转发路由请求
 		Log.FmtPrintf("inner route requst message, route: %v.", route)
-		session := GServer2ServerSession.GetSession(Define.ERouteId(route))
-		if session != nil {
-			if !session.Alive() {
-				GServer2ServerSession.RemoveSession(session.GetIdentify())
-			} else {
-				succ = session.WriteMessage(data)
-			}
-		} else {
-			Log.FmtPrintf("can not find session from inner gateway, route: %v.", route)
-		}
+		session = GServer2ServerSession.GetSession(Define.ERouteId(route))
 	}
 
-	succ = true
+	if session == nil {
+		Log.FmtPrintf("can not find session from inner gateway, route: %v, mainID: %v.", route, mainID)
+		return
+	}
+
+	if !session.Alive() {
+		GServer2ServerSession.RemoveSession(session.GetIdentify())
+	} else {
+		succ = session.WriteMessage(data)
+	}
 	return
 }
 
@@ -260,43 +244,43 @@ func externalRouteAct(route uint16, obj *SvrTcpSession) (succ bool) {
 		Log.FmtPrintf("external request, route: %v, StrIdentify: %v.", route, obj.StrIdentify)
 		GClient2ServerSession.AddSession(obj.RemoteAddr, obj)
 		session := GServer2ServerSession.GetSession(Define.ERouteId_ER_ISG)
-		if session != nil {
-			if !session.Alive() {
-				GServer2ServerSession.RemoveSession(session.GetRemoteAddr())
-			} else {
-				out := make([]byte, EnMessage_SvrNoDataLen+int(obj.pack.GetDataLen()))
-				err := obj.pack.PackAction(out)
-				if err != nil {
-					Log.FmtPrintln("[server] unpack action err: ", err)
-					return
-				}
-				succ = session.WriteMessage(out)
-			}
-		} else {
+		if session == nil {
 			Log.FmtPrintf("[request] can not find session route from external gateway, route: %v.", route)
+			return
 		}
 
-		return
-	}
-
-	//外网回复客户端消息
-	Log.FmtPrintln("external response, StrIdentify: ", obj.pack.GetRemoteAddr(), len(obj.pack.GetRemoteAddr()))
-	session := GClient2ServerSession.GetSessionByIdentify(obj.pack.GetRemoteAddr())
-	if session != nil {
 		if !session.Alive() {
-			GClient2ServerSession.RemoveSession(session.GetRemoteAddr())
+			GServer2ServerSession.RemoveSession(session.GetRemoteAddr())
 		} else {
-			out := make([]byte, EnMessage_NoDataLen+int(obj.pack.GetDataLen()))
-			err := obj.pack.PackAction4Client(out)
+			out := make([]byte, EnMessage_SvrNoDataLen+int(obj.pack.GetDataLen()))
+			err := obj.pack.PackAction(out)
 			if err != nil {
 				Log.FmtPrintln("[server] unpack action err: ", err)
 				return
 			}
 			succ = session.WriteMessage(out)
 		}
-	} else {
-		Log.FmtPrintf("[response] can not find session route from external gateway, route: %v.", route)
+		return
 	}
 
+	//外网回复客户端消息
+	Log.FmtPrintln("external response, StrIdentify: ", obj.pack.GetRemoteAddr(), len(obj.pack.GetRemoteAddr()))
+	session := GClient2ServerSession.GetSessionByIdentify(obj.pack.GetRemoteAddr())
+	if session == nil {
+		Log.FmtPrintf("[response] can not find session route from external gateway, route: %v.", route)
+		return
+	}
+
+	if !session.Alive() {
+		GClient2ServerSession.RemoveSession(session.GetRemoteAddr())
+	} else {
+		out := make([]byte, EnMessage_NoDataLen+int(obj.pack.GetDataLen()))
+		err := obj.pack.PackAction4Client(out)
+		if err != nil {
+			Log.FmtPrintln("[server] unpack action err: ", err)
+			return
+		}
+		succ = session.WriteMessage(out)
+	}
 	return
 }
