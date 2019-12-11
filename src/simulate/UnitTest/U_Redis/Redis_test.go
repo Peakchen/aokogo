@@ -1,4 +1,4 @@
-package main
+package U_Redis
 
 import (
 	//"fmt"
@@ -42,8 +42,8 @@ func Test1(t *testing.T) {
 	}
 
 	defer c.Close()
-	c.Do("SET", "Key", "cqf001", "EX", "100")
-	_, err = c.Do("HSET", "myh", "cqfval", "cqf004")
+	c.Do("SET", "Key", "test001", "EX", "100")
+	_, err = c.Do("HSET", "myh", "testval", "test004")
 	if err != nil {
 		t.Errorf("Expected err for HSET on string key.")
 		return
@@ -54,16 +54,16 @@ func Test1(t *testing.T) {
 		return
 	}
 
-	_, err = c.Do("SET", "key", "cqf003")
+	_, err = c.Do("SET", "key", "test003")
 	if err != nil {
-		t.Errorf("Do(SET, key, cqf003) returned errror %v, expected nil.", err)
+		t.Errorf("Do(SET, key, test003) returned errror %v, expected nil.", err)
 		return
 	}
 
 	outdata1, err := redis.String(c.Do("GET", "key"))
 	t.Log("Do(GET, key) data: ", outdata1)
 
-	outdata2, err := redis.String(c.Do("HGET", "myh", "cqfval"))
+	outdata2, err := redis.String(c.Do("HGET", "myh", "testval"))
 	t.Log("Do(HGET, key) data: ", outdata2)
 	return
 }
