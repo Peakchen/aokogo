@@ -4,7 +4,7 @@ import (
 	"LoginServer/logindefine"
 	"common/httpExService"
 	"common/httpsExServiceTLS"
-	"common/websockNet"
+	"common/tcpWebNet"
 	"flag"
 	"log"
 )
@@ -29,6 +29,6 @@ func start() {
 	}
 
 	// start websock server thread.
-	go websockNet.StartWebSockService(*addr)
+	tcpWebNet.StartWebSockSvr(*addr)
 
 }

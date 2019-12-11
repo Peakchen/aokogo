@@ -18,7 +18,7 @@ for /r %%i in (*.proto) do (
 )
 
 xcopy *pb client /D /I /F /Y
-xcopy *pb ..\..\..\clientpb /D /I /F /Y
+xcopy *pb ..\pb /D /I /F /Y
 
 dir client
 del *.pb

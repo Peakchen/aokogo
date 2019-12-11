@@ -1,30 +1,27 @@
 /*
 * CopyRight(C) StefanChen e-mail:2572915286@qq.com
-*/
+ */
 
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
+
 	//"log"
-	"pro/common/websockNet"
+	"common/tcpWebNet"
 )
 
-
-func init(){
+func init() {
 
 }
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
 
-func main()  {
+func main() {
 	fmt.Println("start game.")
 	flag.Parse()
-	
+
 	// start websock server.
-	var wservice = &websockNet.WebService{}
-	go wservice.StartWebSockService(*addr)
-
-
+	tcpWebNet.StartWebSockSvr(*addr)
 }

@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -47,26 +47,76 @@ OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
-package websockNet
+package tcpWebNet
 
-
-var(
-	mapSession map[int64]* Session
+import (
+	"context"
 )
 
-func register(sessionid int64, s* Session){
-	mapSession[sessionid] = s
+// TWebSockHub maintains the set of active clients and broadcasts messages to the
+// clients.
+type TWebSockHub struct {
+	// Registered clients.
+	wsocketSession map[*TWebsocketSession]bool
+
+	// Inbound messages from the clients.
+	broadcast chan []byte
+
+	// Register requests from the clients.
+	register chan *TWebsocketSession
+
+	// Unregister requests from clients.
+	unregister chan *TWebsocketSession
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
-func deleteSession(sessionid int64){
-	delete(mapSession, sessionid)
-}
-
-func getSession(sessionid int64) * Session{
-	var s, ok = mapSession[sessionid]
-	if !ok {
-		return nil
+func newHub() *TWebSockHub {
+	return &TWebSockHub{
+		broadcast:      make(chan []byte),
+		register:       make(chan *TWebsocketSession),
+		unregister:     make(chan *TWebsocketSession),
+		wsocketSession: make(map[*TWebsocketSession]bool),
 	}
+}
 
-	return s
+func (this *TWebSockHub) run() {
+	go func() {
+		this.exit()
+	}()
+
+	this.ctx, this.cancel = context.WithCancel(context.Background())
+
+	for {
+		select {
+		case <-this.ctx.Done():
+			return
+		case session := <-this.register:
+			this.wsocketSession[session] = true
+		case session := <-this.unregister:
+			if _, ok := this.wsocketSession[session]; ok {
+				delete(this.wsocketSession, session)
+				close(session.send)
+			}
+		case message := <-this.broadcast:
+			for session := range this.wsocketSession {
+				select {
+				case session.send <- message:
+					continue
+				default:
+					close(session.send)
+					delete(this.wsocketSession, session)
+				}
+			}
+		}
+	}
+}
+
+func (this *TWebSockHub) exit() {
+	for session := range this.wsocketSession {
+		close(session.send)
+		delete(this.wsocketSession, session)
+	}
+	this.cancel()
 }

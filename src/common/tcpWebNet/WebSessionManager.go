@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -47,29 +47,25 @@ OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
-package websockNet
+package tcpWebNet
 
-import(
-	//"fmt"
-	"net/http"
-	"log"
+var (
+	mapSession map[int64]*TWebsocketSession
 )
 
-func StartWebSockService(addr string) bool{
-	//flag.Parse()
+func register(sessionid int64, s *TWebsocketSession) {
+	mapSession[sessionid] = s
+}
 
-	hub := newHub()
-	go hub.run()
+func deleteSession(sessionid int64) {
+	delete(mapSession, sessionid)
+}
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
-	})
-
-	err := http.ListenAndServe(addr, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-		return false
+func getSession(sessionid int64) *TWebsocketSession {
+	var s, ok = mapSession[sessionid]
+	if !ok {
+		return nil
 	}
 
-	return true
+	return s
 }

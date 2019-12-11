@@ -8,11 +8,11 @@ obtaining a copy of this licensed work (including the source code,
 documentation and/or related items, hereinafter collectively referred
 to as the "licensed work"), free of charge, to deal with the licensed
 work for any purpose, including without limitation, the rights to use,
-reproduce, modify, prepare derivative works of, distribute, publish 
+reproduce, modify, prepare derivative works of, distribute, publish
 and sublicense the licensed work, subject to the following conditions:
 
 1. The individual or the legal entity must conspicuously display,
-without modification, this License and the notice on each redistributed 
+without modification, this License and the notice on each redistributed
 or derivative copy of the Licensed Work.
 
 2. The individual or the legal entity must strictly comply with all
@@ -47,52 +47,46 @@ OTHERWISE, ARISING FROM, OUT OF OR IN ANY WAY CONNECTION WITH THE
 LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.
 */
 
-package websockNet
+package tcpWebNet
 
-// Hub maintains the set of active clients and broadcasts messages to the
-// clients.
-type Hub struct {
-	// Registered clients.
-	Session map[*Session]bool
+import (
+	//"fmt"
+	"common/Log"
+	"log"
+	"net/http"
+)
 
-	// Inbound messages from the clients.
-	broadcast chan []byte
+func StartWebSockSvr(addr string) bool {
+	var (
+		hub = newHub()
+	)
 
-	// Register requests from the clients.
-	register chan *Session
+	go hub.run()
+	http.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
 
-	// Unregister requests from clients.
-	unregister chan *Session
+	err := http.ListenAndServe(addr, nil)
+	if err != nil {
+		Log.Error("ListenAndServe websock listen fail, addr: ", addr, "err: ", err)
+		return false
+	}
+	return true
 }
 
-func newHub() *Hub {
-	return &Hub{
-		broadcast:  make(chan []byte),
-		register:   make(chan *Session),
-		unregister: make(chan *Session),
-		Session:    make(map[*Session]bool),
+// serveWs handles websocket requests from the peer.
+func serveWs(hub *TWebSockHub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
 	}
-}
 
-func (h *Hub) run() {
-	for {
-		select {
-		case Session := <-h.register:
-			h.Session[Session] = true
-		case Session := <-h.unregister:
-			if _, ok := h.Session[Session]; ok {
-				delete(h.Session, Session)
-				close(Session.send)
-			}
-		case message := <-h.broadcast:
-			for Session := range h.Session {
-				select {
-				case Session.send <- message:
-				default:
-					close(Session.send)
-					delete(h.Session, Session)
-				}
-			}
-		}
-	}
+	session := &TWebsocketSession{hub: hub, conn: conn, send: make(chan []byte, maxMessageSize)}
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go session.sendloop()
+	go session.recvloop()
+
+	session.hub.register <- session
 }
