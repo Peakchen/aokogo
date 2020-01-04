@@ -9,14 +9,19 @@ go 1.12
 
 require (
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
+	github.com/garyburd/redigo v1.6.0 // indirect
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gonutz/ide v0.0.0-20180502124734-e9fc8c14ed56
 	github.com/gorilla/websocket v1.4.1
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mattn/go-sqlite3 v2.0.2+incompatible
 	github.com/satori/go.uuid v1.2.0
+	github.com/stvp/tempredis v0.0.0-20181119212430-b82af8480203 // indirect
+	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/redsync.v1 v1.0.1
 )
 
 replace (
