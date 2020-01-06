@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 	"unsafe"
+	"strings"
 )
 
 // String2Bytes convert string to []byte
@@ -75,4 +76,11 @@ func SliceByte2String(b []byte) string {
 func SliceBytesLength(data []byte) int {
 	dst := SliceByte2String(data)
 	return len(dst)
+}
+
+/*
+	string array data cover to string.
+*/
+func StrArray2Str(src []string) string{
+	return strings.Replace(strings.Trim(fmt.Sprint(src), "[]"), " ", ",", -1)
 }
