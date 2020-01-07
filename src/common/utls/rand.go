@@ -55,3 +55,21 @@ func RandInt64(n int64) (result int64) {
 	}
 	return
 }
+
+/*
+	create rand unsign 64 bit by single number
+*/
+func RandByUInt64(n int64) (result int64) {
+	s := rand.NewSource(n)
+	result = rand.New(s).Int63()
+	return
+}
+
+/*
+	create rand unsign 32 bit by single number
+*/
+func RandByUInt32(n int64) (result uint32) {
+	s := rand.NewSource(n)
+	result = rand.New(s).Uint32()
+	return
+}
