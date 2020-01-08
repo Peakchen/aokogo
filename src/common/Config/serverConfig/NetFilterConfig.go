@@ -1,0 +1,68 @@
+package serverConfig
+
+import (
+	"common/Config"
+	"fmt"
+	"strconv"
+)
+
+/*
+	export from NetFilter.json by tool.
+*/
+type TNetFilterBase struct {
+	Id          int32  `json:"id"`
+	White 		string `json:"white"`
+	Black       string `json:"black"`
+}
+
+type TNetFilter struct {
+	Id			int32
+	White 		string
+	Black       string
+}
+
+type TNetFilterConfig struct {
+	data []*TNetFilter
+}
+
+type tArrNetFilter []*TNetFilterBase
+
+var (
+	GNetFilterConfig *TNetFilterConfig = &TNetFilterConfig{}
+)
+
+func init() {
+	Config.ParseJson2Cache(GNetFilterConfig, &tArrNetFilter{}, getserverpath()+"NetFilter.json")
+}
+
+func (this *TNetFilterConfig) ComfireAct(data interface{}) (errlist []string) {
+	cfg := data.(*tArrNetFilter)
+	errlist = []string{}
+	for _, item := range *cfg {
+		if len(item.White) == 0 {
+			errlist = append(errlist, fmt.Sprintf("NetFilter White invalid, id: %v.", item.Id))
+		}
+
+		if len(item.Black) == 0 {
+			errlist = append(errlist, fmt.Sprintf("NetFilter Black invalid, id: %v.", item.Id))
+		}
+	}
+	return
+}
+
+func (this *TNetFilterConfig) DataRWAct(data interface{}) (errlist []string) {
+	cfg := data.(*tArrNetFilter)
+	this.data = []*TNetFilter{}
+	for _, item := range *cfg {
+		this.data = append(this.data, &TNetFilter{
+			Id:         item.Id,
+			Listenaddr: item.White,
+			Zone:       item.Black,
+		})
+	}
+	return
+}
+
+func (this *TNetFilterConfig) Get() []*TNetFilter {
+	return this.data
+}
