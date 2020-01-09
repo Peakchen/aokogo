@@ -1,3 +1,4 @@
+set path (for gcc)
 set gcc 
 set cc=xxx-gcc (win32) 
 go mod
@@ -11,3 +12,5 @@ set GO111MODULE
 set CGO_ENABLED (if it about import `C`, then set 1.)
 
 go build ...
+
+focus：do not add " " in last command.
