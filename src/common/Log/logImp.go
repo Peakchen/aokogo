@@ -111,7 +111,7 @@ func initLogFile(logtype string, aokoLog *TAokoLog) {
 		}
 	}
 
-	filehandler, err := os.OpenFile(RealFileName, os.O_WRONLY|os.O_CREATE, 0644)
+	filehandler, err := os.OpenFile(RealFileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return
 	}

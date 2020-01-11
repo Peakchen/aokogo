@@ -2,28 +2,29 @@
 
 ![](https://i.imgur.com/OUFzKJB.jpg)
 
-# aoko 是简易微服务游戏框架
+# aoko is a simple game framework
 
-## 实现部分：
- - DB服务器 （已能正常使用）
- - 外网关 （已能正常使用）
- - 内网关 （已能正常使用）
- - 登录服 （已能正常使用）
- - 游戏服  (已搭建基础雏形，后期可加入游戏逻辑，已加入rpc接口）
- - 可插拔日志系统
- - cpu、内存日志分析（pprof附相关servers性能分析）
- - protobuf 网络协议，以及go和lua 协议生成工具
- - 外部已开发完成的支持配置文件工具（[xExcel2x](https://github.com/Peakchen/xExcel2x "xExcel2x")）,系统配置文件代码生成工具（[xExport4Go](https://github.com/Peakchen/xExport4Go "xExport4Go")）
- - simulate（单元测试模块 + 自动化测试）
- - go mod 外部依赖
- - win 批处理可直接make编译以及run执行编译程序
- - tech group：tcp + redis+mongodb
- 
-微服务架构图（Microservice architecture diagram）:
+*** Implementation part ***
+  - DB server (can be used normally)
+  - Outer gateway (used normally)
+  - Inner gateway (used normally)
+  - Login service (can be used normally)
+  - Game clothes (Basic prototype has been established, game logic can be added later, rpc interface has been added)
+  - Pluggable logging system
+  - CPU and memory log analysis (pprof with related server performance analysis)
+  - protobuf network protocol, and go and lua protocol generation tools
+  - Supported external configuration file tools ([xExcel2x] (https://github.com/Peakchen/xExcel2x "xExcel2x")) developed externally, system configuration file code generation tools ([xExport4Go] (https://github.com / Peakchen / xExport4Go "xExport4Go"))
+  - simulate (unit test module + automated test)
+  - go mod external dependencies
+  - win batch can directly compile and run to compile the program
+  - tech group: tcp + redis + mongodb
+ 
+
+***Microservice architecture diagram***
 
  ![微服务架构图](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)
 
-### focus: come on, welcome everybody,qq group: 855618176
+### focus: come on, welcome everybody, qq group: 855618176
 
 ![](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
 
