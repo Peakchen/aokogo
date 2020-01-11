@@ -1,8 +1,7 @@
-# Welcome to the aoko wiki!  
+# Welcome to the aoko!  
+# aoko is a simple game framework  
 
 ![](https://i.imgur.com/OUFzKJB.jpg)
-
-# aoko is a simple game framework  
 
 ## Implementation part  
   - DB server (can be used normally)  
@@ -25,7 +24,7 @@
 
  ![微服务架构图](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)  
 
-*** focus: come on, welcome everybody, qq group: 855618176 ***   
+***focus: come on, welcome everybody, qq group: 855618176***   
 
 ![](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
 
