@@ -6,6 +6,7 @@ import (
 	"common/RedisConn"
 	"context"
 	"sync"
+	"common/ado/dbCache"
 )
 
 type TDBProvider struct {
@@ -21,7 +22,7 @@ func (this *TDBProvider) StartDBService(Server string) {
 	this.Server = Server
 	rediscfg := serverConfig.GRedisconfigConfig.Get()
 	this.rconn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd)
-
+	dbCache.Init(this.rconn)
 	mgocfg := serverConfig.GMgoconfigConfig.Get()
 	this.mconn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
 }

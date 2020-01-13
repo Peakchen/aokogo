@@ -26,3 +26,6 @@ func (this *TCommonRedisCache) MainModel() string {
 func (this *TCommonRedisCache) SubModel() string {
 	return ""
 }
+
+
+type UpdateDBCache func(identify string, model string, Output IDBCache)  

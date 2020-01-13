@@ -33,7 +33,7 @@ func Init(redisconn *RedisConn.TAokoRedis){
 	}
 }
 
-func getDBCache() *TDBCache{
+func GetDBCache() *TDBCache{
 	return _dbCache
 }
 
@@ -113,21 +113,18 @@ func (this *TDBCache) updateCache(identify string, model string, Output public.I
 		return
 	}
 
+	m, ok := modeldata[model]
+	if !ok {
+		return
+	}
+
 	data, err := bson.Marshal(Output)
 	if err != nil {
 		return
 	}
 
-	m, ok := modeldata[model]
-	if !ok {
-		modeldata[model] = &TModelOper{
-			buff: data,
-			opers: 1,
-		}
-	}else{
-		m.buff = data
-		m.opers++
-	}
+	m.buff = data
+	m.opers++
 }
 
 func (this *TDBCache) pop(identify string) {

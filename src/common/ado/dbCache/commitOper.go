@@ -7,7 +7,7 @@ package dbCache
 
 // push model for db cache, record flush db times, at next flush db, then judge last flush or not, if yes then get data from cache.
 func PushCommitModels(identify string, models ...string){
-	cache := getDBCache()
+	cache := GetDBCache()
 	for _, m := range models {
 		cache.push(identify, m)
 	}
@@ -15,13 +15,13 @@ func PushCommitModels(identify string, models ...string){
 
 // check model is exist, if not then flush db direct.
 func HasExistCache(identify string, model string)bool{
-	cache := getDBCache()
+	cache := GetDBCache()
 	return cache.hasExist(identify, model)
 }
 
 // first commit all update, then pop all push models.
 func PopCommitModels(identify string) {
-	cache := getDBCache()
+	cache := GetDBCache()
 	cache.updateDB(identify)
 	cache.pop(identify)
 }
