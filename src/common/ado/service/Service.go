@@ -9,8 +9,8 @@ import (
 )
 
 type TDBProvider struct {
-	rconn  *RedisConn.TRedisConn
-	mconn  *MgoConn.AokoMgo
+	rconn  *RedisConn.TAokoRedis
+	mconn  *MgoConn.TAokoMgo
 	Server string
 	ctx    context.Context
 	cancle context.CancelFunc
@@ -24,4 +24,12 @@ func (this *TDBProvider) StartDBService(Server string) {
 
 	mgocfg := serverConfig.GMgoconfigConfig.Get()
 	this.mconn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
+}
+
+func (this *TDBProvider) GetRedisConn()*RedisConn.TAokoRedis{
+	return this.rconn
+}
+
+func (this *TDBProvider) GetMogoConn()*MgoConn.TAokoMgo{
+	return this.mconn
 }

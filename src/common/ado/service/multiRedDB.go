@@ -23,9 +23,9 @@ import (
 */
 
 type TClusterDBProvider struct {
-	//redConn []*RedisConn.TRedisConn
-	redConn     *RedisConn.TRedisConn
-	mgoConn     *MgoConn.AokoMgo
+	//redConn []*RedisConn.TAokoRedis
+	redConn     *RedisConn.TAokoRedis
+	mgoConn     *MgoConn.TAokoMgo
 	mgoSessions []*mgo.Session
 	Server      string
 	ctx         context.Context

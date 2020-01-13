@@ -6,21 +6,21 @@ package RedisConn
 */
 
 type TRedisCtrl struct {
-	redisCns    []*TRedisConn
+	redisCns    []*TAokoRedis
 	curRedisIdx int
 }
 
 func LazyInit() (redctl *TRedisCtrl) {
 	redctl = &TRedisCtrl{}
-	redctl.redisCns = []*TRedisConn{}
+	redctl.redisCns = []*TAokoRedis{}
 	return
 }
 
-func (this *TRedisCtrl) AddRedisConn(c *TRedisConn) {
+func (this *TRedisCtrl) AddRedisConn(c *TAokoRedis) {
 	this.redisCns = append(this.redisCns, c)
 }
 
-func (this *TRedisCtrl) ChangeNextChannl() (c *TRedisConn) {
+func (this *TRedisCtrl) ChangeNextChannl() (c *TAokoRedis) {
 	c = nil
 	if this.curRedisIdx == len(this.redisCns) {
 		return

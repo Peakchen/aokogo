@@ -28,14 +28,14 @@ type TDataPack struct {
 
 type TAokoQueueRpc struct {
 	tmo  []string //
-	conn *TRedisConn.Conn
+	conn *TAokoRedis.Conn
 }
 
 var (
 	GAokoQueueRpc = &TAokoQueueRpc{}
 )
 
-func NewQueueRpc(ctx context.Context, wg *sync.WaitGroup, c *TRedisConn) {
+func NewQueueRpc(ctx context.Context, wg *sync.WaitGroup, c *TAokoRedis) {
 	GAokoQueueRpc.conn = c.Conn
 	GAokoQueueRpc.tmo = []string{}
 	wg.Add(1)

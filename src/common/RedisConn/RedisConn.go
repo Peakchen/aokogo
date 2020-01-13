@@ -61,7 +61,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-type TRedisConn struct {
+type TAokoRedis struct {
 	ConnAddr string
 	DBIndex  int32
 	Passwd   string
@@ -69,8 +69,8 @@ type TRedisConn struct {
 	us       *TRedisScript
 }
 
-func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *TRedisConn {
-	Rs := &TRedisConn{
+func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *TAokoRedis {
+	Rs := &TAokoRedis{
 		ConnAddr: ConnAddr,
 		DBIndex:  DBIndex,
 		Passwd:   Passwd,
@@ -84,7 +84,7 @@ func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *TRedisConn {
 	return Rs
 }
 
-func (this *TRedisConn) NewDial() error {
+func (this *TAokoRedis) NewDial() error {
 	this.RedPool = &redis.Pool{
 		MaxIdle:     IDle_three,
 		IdleTimeout: IDleTimeOut_four_min,
@@ -101,7 +101,7 @@ func (this *TRedisConn) NewDial() error {
 	return nil
 }
 
-func (this *TRedisConn) Exit() {
+func (this *TAokoRedis) Exit() {
 	this.RedPool.Close()
 }
 
@@ -110,7 +110,7 @@ func (this *TRedisConn) Exit() {
 	SaveType: EDBOper_Insert
 	purpose: in order to Insert data type EDBOperType to Redis Cache.
 */
-func (this *TRedisConn) Insert(Identify string, Input public.IDBCache) (err error) {
+func (this *TAokoRedis) Insert(Identify string, Input public.IDBCache) (err error) {
 	RedisKey := MakeRedisModel(Identify, Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
@@ -128,7 +128,7 @@ func (this *TRedisConn) Insert(Identify string, Input public.IDBCache) (err erro
 	SaveType: EDBOper_Update
 	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
-func (this *TRedisConn) Update(Identify string, Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
+func (this *TAokoRedis) Update(Identify string, Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
 	RedisKey := MakeRedisModel(Identify, Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
@@ -145,7 +145,7 @@ func (this *TRedisConn) Update(Identify string, Input public.IDBCache, SaveType 
 	Redis Oper func: Query
 	purpose: in order to Get data from Redis Cache.
 */
-func (this *TRedisConn) Query(Identify string, Output public.IDBCache) (ret error) {
+func (this *TAokoRedis) Query(Identify string, Output public.IDBCache) (ret error) {
 	ret = nil
 	RedisKey := MakeRedisModel(Identify, Output.MainModel(), Output.SubModel())
 	data, err := this.RedPool.Get().Do("GET", RedisKey)
@@ -171,7 +171,7 @@ func (this *TRedisConn) Query(Identify string, Output public.IDBCache) (ret erro
 	return
 }
 
-func (this *TRedisConn) Save(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
+func (this *TAokoRedis) Save(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
 	ret = nil
 	switch SaveType {
 	case ado.EDBOper_Insert:
@@ -217,7 +217,7 @@ func (this *TRedisConn) Save(rolekey, RedisKey string, data interface{}, SaveTyp
 	return
 }
 
-func (this *TRedisConn) SaveEx(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
+func (this *TAokoRedis) SaveEx(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
 	var (
 		extime int32
 		bsetEx bool
@@ -230,7 +230,7 @@ func (this *TRedisConn) SaveEx(rolekey, RedisKey string, data interface{}, SaveT
 	return
 }
 
-func (this *TRedisConn) redSetAct(key string, fieldkey string, data interface{}, bsetEx bool, extime int32) (err error) {
+func (this *TAokoRedis) redSetAct(key string, fieldkey string, data interface{}, bsetEx bool, extime int32) (err error) {
 	nhashk := RoleKey2Haskey(key)
 	strkey := ERedScript_Update + strconv.Itoa(nhashk)
 	Log.FmtPrintf("redis act, hashKey: %v, fieldkey: %v.", strkey, fieldkey)

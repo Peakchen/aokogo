@@ -11,13 +11,13 @@ import (
 )
 
 type TAorpcV2 struct {
-	c *TRedisConn
+	c *TAokoRedis
 	callfuns map[string]reflect.Value 
 	acts []*TModelActV2
 }
 
 var GAorpcV2obj *TAorpcV2 
-func CreateAorpcV2(ctx context.Context, wg *sync.WaitGroup, c *TRedisConn) {
+func CreateAorpcV2(ctx context.Context, wg *sync.WaitGroup, c *TAokoRedis) {
 	GAorpcV2obj = &TAorpcV2{
 		c: c,
 	}

@@ -3,7 +3,6 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
-	"strconv"
 )
 
 /*
@@ -56,8 +55,8 @@ func (this *TNetFilterConfig) DataRWAct(data interface{}) (errlist []string) {
 	for _, item := range *cfg {
 		this.data = append(this.data, &TNetFilter{
 			Id:         item.Id,
-			Listenaddr: item.White,
-			Zone:       item.Black,
+			White: 		item.White,
+			Black:      item.Black,
 		})
 	}
 	return

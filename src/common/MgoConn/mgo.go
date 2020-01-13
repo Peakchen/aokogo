@@ -14,7 +14,7 @@ import (
 	"github.com/globalsign/mgo/bson"
 )
 
-type AokoMgo struct {
+type TAokoMgo struct {
 	sync.Mutex
 
 	session     *mgo.Session
@@ -26,8 +26,8 @@ type AokoMgo struct {
 	server      string
 }
 
-func NewMgoConn(server, Username, Passwd, Host string) *AokoMgo {
-	aokomogo := &AokoMgo{}
+func NewMgoConn(server, Username, Passwd, Host string) *TAokoMgo {
+	aokomogo := &TAokoMgo{}
 	aokomogo.UserName = Username
 	aokomogo.Passwd = Passwd
 	aokomogo.ServiceHost = Host
@@ -39,7 +39,7 @@ func NewMgoConn(server, Username, Passwd, Host string) *AokoMgo {
 	return aokomogo
 }
 
-func (this *AokoMgo) NewDial() {
+func (this *TAokoMgo) NewDial() {
 	session, err := this.NewMgoSession()
 	if err != nil {
 		Log.FmtPrintln(err)
@@ -53,7 +53,7 @@ func (this *AokoMgo) NewDial() {
 	return
 }
 
-func (this *AokoMgo) NewMgoSession() (session *mgo.Session, err error) {
+func (this *TAokoMgo) NewMgoSession() (session *mgo.Session, err error) {
 	MdialInfo := &mgo.DialInfo{
 		Addrs:     []string{this.ServiceHost},
 		Username:  this.UserName,
@@ -94,13 +94,13 @@ func (this *AokoMgo) NewMgoSession() (session *mgo.Session, err error) {
 	return
 }
 
-func (this *AokoMgo) Exit() {
+func (this *TAokoMgo) Exit() {
 	if this.chSessions != nil {
 		close(this.chSessions)
 	}
 }
 
-func (this *AokoMgo) GetMgoSession() (sess *mgo.Session, err error) {
+func (this *TAokoMgo) GetMgoSession() (sess *mgo.Session, err error) {
 	this.Lock()
 	defer this.Unlock()
 
@@ -114,7 +114,7 @@ func (this *AokoMgo) GetMgoSession() (sess *mgo.Session, err error) {
 	return
 }
 
-func (this *AokoMgo) getMgoSessionByChan() (sess *mgo.Session, err error) {
+func (this *TAokoMgo) getMgoSessionByChan() (sess *mgo.Session, err error) {
 	this.Lock()
 	defer this.Unlock()
 
@@ -131,17 +131,17 @@ func MakeMgoModel(Identify, MainModel, SubModel string) string {
 	return MainModel + "." + SubModel + "." + Identify
 }
 
-func (this *AokoMgo) QueryAcc(usrName string, OutParam IDBCache) (err error, exist bool) {
+func (this *TAokoMgo) QueryAcc(usrName string, OutParam IDBCache) (err error, exist bool) {
 	condition := bson.M{OutParam.SubModel() + "." + "username": usrName}
 	return this.QueryByCondition(condition, OutParam)
 }
 
-func (this *AokoMgo) QueryOne(Identify string, OutParam IDBCache) (err error, exist bool) {
+func (this *TAokoMgo) QueryOne(Identify string, OutParam IDBCache) (err error, exist bool) {
 	condition := bson.M{"_id": Identify}
 	return this.QueryByCondition(condition, OutParam)
 }
 
-func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err error, exist bool) {
+func (this *TAokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err error, exist bool) {
 	session, err := this.GetMgoSession()
 	if err != nil {
 		err = Log.RetError("get sesson err: %v.", err)
@@ -183,7 +183,7 @@ func (this *AokoMgo) QueryByCondition(condition bson.M, OutParam IDBCache) (err 
 	return
 }
 
-func (this *AokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
+func (this *TAokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
 	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
@@ -201,7 +201,7 @@ func (this *AokoMgo) QuerySome(Identify string, OutParam IDBCache) (err error) {
 	return
 }
 
-func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
+func (this *TAokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
@@ -221,7 +221,7 @@ func (this *AokoMgo) InsertOne(Identify string, InParam IDBCache) (err error) {
 	return
 }
 
-func (this *AokoMgo) SaveOne(Identify string, InParam IDBCache) (err error) {
+func (this *TAokoMgo) SaveOne(Identify string, InParam IDBCache) (err error) {
 	session, err := this.GetMgoSession()
 	if err != nil {
 		return err
@@ -248,7 +248,7 @@ func Save(mgosession *mgo.Session, dbserver, redkey string, data interface{}) (e
 	return
 }
 
-func (this *AokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
+func (this *TAokoMgo) EnsureIndex(InParam IDBCache, idxs []string) (err error) {
 	session, err := this.GetMgoSession()
 	if err != nil {
 		return err

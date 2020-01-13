@@ -1,7 +1,7 @@
 package tcpNet
 
 import (
-	"Config/serverConfig"
+	"common/Config/serverConfig"
 )
 
 var (
@@ -10,7 +10,7 @@ var (
 )
 
 func InitTrusted(){
-	for _, item := range serverConfig.GNetFilterConfig {
+	for _, item := range serverConfig.GNetFilterConfig.Get() {
 		GTrustedList[item.White] = true
 		GUnTrustedList[item.Black] = true
 	}
@@ -22,7 +22,7 @@ func IsTrusted(ip string) bool{
 	}
 
 	//...
-	return
+	return false
 }
 
 func IsUnTrusted(ip string) bool {
