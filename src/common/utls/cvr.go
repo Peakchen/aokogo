@@ -9,6 +9,8 @@ import (
 	"unsafe"
 	"strings"
 	"fmt"
+	"bytes"
+	"encoding/gob"
 )
 
 // String2Bytes convert string to []byte
@@ -84,4 +86,12 @@ func SliceBytesLength(data []byte) int {
 */
 func StrArray2Str(src []string) string{
 	return strings.Replace(strings.Trim(fmt.Sprint(src), "[]"), " ", ",", -1)
+}
+
+func DeepCopy(dst, src interface{}) error {
+    var buf bytes.Buffer
+    if err := gob.NewEncoder(&buf).Encode(src); err != nil {
+        return err
+    }
+    return gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(dst)
 }

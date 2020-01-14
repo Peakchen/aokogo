@@ -13,7 +13,9 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/gonutz/binpacker v0.0.0-20170423181552-aa2d50f5ae3a // indirect
 	github.com/gonutz/ide v0.0.0-20180502124734-e9fc8c14ed56
+	github.com/gonutz/truetype v0.0.0-20170213141940-8a63cd5e8201 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-sqlite3 v2.0.2+incompatible
@@ -22,6 +24,7 @@ require (
 	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/redsync.v1 v1.0.1
+	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect
 )
 
 replace (
