@@ -13,9 +13,9 @@ import (
 /*
 	white code log print for normal log.
 */
-func NormalStackLog()(buf string){
-	buf = string(debug.Stack())
-	Log.FmtPrintln("stack trace: ", buf)
+func NormalStackLog()(stacklog string){
+	stacklog = string(debug.Stack())
+	Log.FmtPrintln("stack trace: ", stacklog)
 	return
 }
 
