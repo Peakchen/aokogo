@@ -4,6 +4,7 @@ import (
 	"common/ado"
 	"common/ado/service"
 	"common/public"
+	"common/ado/dbCache"
 )
 
 var (
@@ -29,7 +30,8 @@ func A_DBUpdate(Identify string, In public.IDBCache) (err error) {
 }
 
 func StartDBSerice(server string) {
-	GDBProvider.StartDBService(server)
+	GDBProvider.StartDBService(server, dbCache.UpdateDBCache)
+	dbCache.InitDBCache(GDBProvider)
 }
 
 func init() {

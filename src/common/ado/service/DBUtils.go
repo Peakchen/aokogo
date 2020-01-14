@@ -62,12 +62,17 @@ import (
 	purpose: first db save data then update cache.
 */
 func (this *TDBProvider) Update(Identify string, data public.IDBCache, Oper ado.EDBOperType) (err error) {
+	var cacheOper bool
+	err, cacheOper = this.rconn.Update(Identify, data, Oper)
+	if err != nil || cacheOper {
+		return
+	}
+
 	err = this.mconn.SaveOne(Identify, data)
 	if err != nil {
 		return
 	}
 
-	err = this.rconn.Update(Identify, data, Oper)
 	return
 }
 
@@ -96,7 +101,7 @@ func (this *TDBProvider) Get(Identify string, Output public.IDBCache) (err error
 	if err != nil {
 		err, exist = this.mconn.QueryOne(Identify, Output)
 		//redis not exist, then update
-		err = this.rconn.Update(Identify, Output, ado.EDBOper_Update)
+		err, _ = this.rconn.Update(Identify, Output, ado.EDBOper_Update)
 	} else {
 		exist = true
 	}

@@ -28,4 +28,4 @@ func (this *TCommonRedisCache) SubModel() string {
 }
 
 
-type UpdateDBCache func(identify string, model string, Output IDBCache)  
+type UpdateDBCacheCallBack func(string, string, []byte) bool  

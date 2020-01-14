@@ -67,13 +67,15 @@ type TAokoRedis struct {
 	Passwd   string
 	RedPool  *redis.Pool
 	us       *TRedisScript
+	upcachecb	public.UpdateDBCacheCallBack
 }
 
-func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string) *TAokoRedis {
+func NewRedisConn(ConnAddr string, DBIndex int32, Passwd string, upcb public.UpdateDBCacheCallBack) *TAokoRedis {
 	Rs := &TAokoRedis{
 		ConnAddr: ConnAddr,
 		DBIndex:  DBIndex,
 		Passwd:   Passwd,
+		upcachecb: upcb,
 	}
 
 	Rs.us = &TRedisScript{
@@ -128,16 +130,16 @@ func (this *TAokoRedis) Insert(Identify string, Input public.IDBCache) (err erro
 	SaveType: EDBOper_Update
 	purpose: in order to Update data type EDBOperType to Redis Cache.
 */
-func (this *TAokoRedis) Update(Identify string, Input public.IDBCache, SaveType ado.EDBOperType) (err error) {
+func (this *TAokoRedis) Update(Identify string, Input public.IDBCache, SaveType ado.EDBOperType) (err error, cacheOper bool) {
 	RedisKey := MakeRedisModel(Identify, Input.MainModel(), Input.SubModel())
 	BMarlData, err := bson.Marshal(Input)
 	if err != nil {
 		err = fmt.Errorf("bson.Marshal err: %v.\n", err)
-		Log.Error("[Update] err: %v", err)
+		Log.Error("%v", err)
 		return
 	}
 
-	this.SaveEx(Identify, RedisKey, BMarlData, SaveType)
+	err, cacheOper = this.SaveEx(Identify, RedisKey, BMarlData, SaveType)
 	return
 }
 
@@ -217,7 +219,7 @@ func (this *TAokoRedis) Save(rolekey, RedisKey string, data interface{}, SaveTyp
 	return
 }
 
-func (this *TAokoRedis) SaveEx(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error) {
+func (this *TAokoRedis) SaveEx(rolekey, RedisKey string, data interface{}, SaveType ado.EDBOperType) (ret error, cacheOper bool) {
 	var (
 		extime int32
 		bsetEx bool
@@ -226,6 +228,15 @@ func (this *TAokoRedis) SaveEx(rolekey, RedisKey string, data interface{}, SaveT
 		extime = ado.EDB_DATA_SAVE_INTERVAL
 		bsetEx = true
 	}
+
+	// if can cache data, then not save redis.
+	if this.upcachecb != nil {
+		if this.upcachecb(rolekey, RedisKey, data.([]byte)) {
+			cacheOper = true
+			return
+		}
+	}
+	
 	ret = this.redSetAct(rolekey, RedisKey, data, bsetEx, extime)
 	return
 }

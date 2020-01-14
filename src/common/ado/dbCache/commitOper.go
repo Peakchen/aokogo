@@ -30,3 +30,7 @@ func PopCommitModels(identify string) {
 func ProtectCommit(identify string){
 	PopCommitModels(identify)
 }
+
+func UpdateDBCache(identify string, model string, data []byte)bool{
+	return GetDBCache().updateCache(identify, model, data)
+}

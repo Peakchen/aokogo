@@ -2,11 +2,11 @@ package dbCache
 
 import (
 	"common/Log"
-	"common/RedisConn"
 	"sync"
 	"common/public"
 	"github.com/globalsign/mgo/bson"
 	"common/ado"
+	"common/ado/service"
 )
 
 /*
@@ -20,16 +20,16 @@ type TModelOper struct {
 
 type TDBCache struct {
 	users sync.Map // key: identify, value: map[string]*TModelOper
-	rconn  *RedisConn.TAokoRedis
+	dbprovider  *service.TDBProvider
 }
 
 var (
 	_dbCache *TDBCache
 )
 
-func Init(redisconn *RedisConn.TAokoRedis){
+func InitDBCache(dbProvider *service.TDBProvider){
 	_dbCache = &TDBCache{
-		rconn: redisconn,
+		dbprovider: dbProvider,
 	}
 }
 
@@ -107,7 +107,7 @@ func (this *TDBCache) getCache(identify string, model string, Output public.IDBC
 	}
 }
 
-func (this *TDBCache) updateCache(identify string, model string, Output public.IDBCache) {
+func (this *TDBCache) updateCache(identify string, model string, data []byte) (succ bool){
 	modeldata := this.loadOrAddUser(identify)
 	if modeldata == nil {
 		return
@@ -118,13 +118,10 @@ func (this *TDBCache) updateCache(identify string, model string, Output public.I
 		return
 	}
 
-	data, err := bson.Marshal(Output)
-	if err != nil {
-		return
-	}
-
 	m.buff = data
 	m.opers++
+	succ = true
+	return
 }
 
 func (this *TDBCache) pop(identify string) {
@@ -148,7 +145,7 @@ func (this *TDBCache) updateDB(identify string){
 
 	for smodel, Operdata := range modeldata {
 		RedisKey := smodel + "." + identify
-		err := this.rconn.SaveEx(identify, RedisKey, Operdata.buff, ado.EDBOper_Update)
+		err := this.dbprovider.RediSave(identify, RedisKey, Operdata.buff, ado.EDBOper_Update)
 		if err != nil {
 			Log.ErrorIDCard(identify, "update redis fail, model: ", smodel, ", err: ", err)
 		}

@@ -55,7 +55,7 @@ func (this *TClusterDBProvider) Exit() {
 
 func (this *TClusterDBProvider) runDBloop(Server string) {
 	rediscfg := serverConfig.GRedisconfigConfig.Get()
-	this.redConn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd)
+	this.redConn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd, nil)
 
 	mgocfg := serverConfig.GMgoconfigConfig.Get()
 	this.mgoConn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
