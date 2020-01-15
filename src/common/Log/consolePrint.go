@@ -3,19 +3,16 @@ package Log
 import (
 	"fmt"
 	"time"
+	"common/public"
 )
 
-const (
-	timeFmt  string = "2006-01-02 15:04:05.000000 Z0700"
-	timeDate string = "2006-01-02"
-)
 
 func FmtPrintf(src string, params ...interface{}) {
 	var dst string
 	if len(params) == 0 {
-		dst = fmt.Sprintf(time.Now().Local().Format(timeFmt)+" "+src) + "\n"
+		dst = fmt.Sprintf(time.Now().Local().Format(public.CstTimeFmt)+" "+src) + "\n"
 	} else {
-		dst = fmt.Sprintf(time.Now().Local().Format(timeFmt)+" "+src, params...) + "\n"
+		dst = fmt.Sprintf(time.Now().Local().Format(public.CstTimeFmt)+" "+src, params...) + "\n"
 	}
 
 	fmt.Println(dst)
@@ -24,7 +21,7 @@ func FmtPrintf(src string, params ...interface{}) {
 
 func FmtPrintln(params ...interface{}) {
 	content := make([]interface{}, 0, len(params)+1)
-	content = append(content, time.Now().Format(timeFmt)+" ")
+	content = append(content, time.Now().Format(public.CstTimeFmt)+" ")
 	if len(params) > 0 {
 		content = append(content, params...)
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 func GBKToUTF8(src string) string {
-	return mahonia.NewDecoder("gbk").ConvertString(src)
+	return mahonia.NewDecoder("utf8").ConvertString(src)
 }
 
 func UTF8ToGBK(src string) string {
