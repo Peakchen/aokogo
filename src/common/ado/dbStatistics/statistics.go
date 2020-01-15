@@ -15,17 +15,19 @@ import (
 	"common/Log"
 	"time"
 	"common/public"
+	"sync"
+	"strconv"
 )
 
-type TModel struct {
-	model 	string
-	cnt 	int
+type TModelStatistics struct {
+	strTime 		string
+	stacklog 		bytes.Buffer
 }
 
 type TDBStatistics struct {
-	filehandle 	*os.File
-	chbuff 		chan bytes.Buffer
-
+	filehandle 			*os.File
+	chbuff 				chan bytes.Buffer
+	userOperModels    	sync.Map //key: identify, value: map[string][]*TModelStatistics     
 }
 
 const (
@@ -96,15 +98,79 @@ func (this *TDBStatistics) Update(content string) {
 	this.chbuff <- buff
 }
 
-func DBStatistics(identify, model string){
-	content := "identify: " + identify + "\r\n"
-	content += "model: " + model + "\r\n"
-	content += "time: " + time.Now().Local().Format(public.CstTimeFmt) + "\r\n"
-	content += "stack log: \r\n" + stacktrace.NormalStackLog() + "\r\n"
-	dst := utls.GBKToUTF8(content)
-	_dbStatistics.Update(dst)
+func (this *TDBStatistics) loadOrInitUser(identify string) (modeldata map[string][]*TModelStatistics){
+	modeldata = nil
+	value, _ := this.userOperModels.LoadOrStore(identify, map[string][]*TModelStatistics{})
+	if value == nil {
+		Log.Error("cache model invalid.")
+		return
+	}
+
+	var ok bool
+	modeldata, ok = value.(map[string][]*TModelStatistics)
+	if !ok {
+		Log.Error("cache model invalid data type.")
+		return
+	}
+	return
 }
 
+func (this *TDBStatistics) deleteUser(identify string){
+	this.userOperModels.Delete(identify)
+}
+
+/*
+	statistics msg logic runs with db operations.
+*/
+func DBOperStatistics(identify, model string){
+	modeldata := _dbStatistics.loadOrInitUser(identify)
+	if modeldata == nil {
+		return
+	}
+
+	var buff bytes.Buffer
+	buff.WriteString(stacktrace.NormalStackLog())
+	modelStatistics,ok := modeldata[model]
+	if !ok {
+		modelStatistics = []*TModelStatistics{}
+	}
+
+	modelStatistics = append(modelStatistics, &TModelStatistics{
+		strTime 		: time.Now().Local().Format(public.CstTimeFmt),
+		stacklog 		: buff,
+	})
+	modeldata[model] = modelStatistics
+}
+
+/*
+	statistics msg logic ends msg mainid and subid. 
+*/
+func DBMsgStatistics(identify string, mainid, subid uint16){
+	modeldata := _dbStatistics.loadOrInitUser(identify)
+	if modeldata == nil {
+		return
+	}
+
+	var buff bytes.Buffer
+	buff.WriteString("identify: " + identify + "\r\n")
+	buff.WriteString("mainid: " + strconv.Itoa(int(mainid)) + "\r\n")
+	buff.WriteString("subid: " + strconv.Itoa(int(subid)) + "\r\n")
+	for model, statistics := range modeldata{
+		buff.WriteString("model oper cnt: " + strconv.Itoa(len(statistics)) + "\r\n")
+		buff.WriteString("model name: " + model + "\r\n")
+		for _, log := range statistics {
+			buff.WriteString("time: " + log.strTime + "\r\n")
+			buff.WriteString("stack log: \r\n" + log.stacklog.String() + "\r\n")
+		}
+	}
+
+	_dbStatistics.Update(buff.String())
+	_dbStatistics.deleteUser(identify)
+}
+
+/*
+	stop msg log statistics.
+*/
 func DBStatisticsStop(){
 	_dbStatistics.exit()
 }

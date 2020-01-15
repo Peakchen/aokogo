@@ -8,6 +8,7 @@ import (
 
 func stack_1(){
 	stack_2()
+	stack_3()
 }
 
 func stack_2(){
@@ -15,7 +16,8 @@ func stack_2(){
 }
 
 func stack_3() {
-	dbStatistics.DBStatistics("1", "hello")
+	dbStatistics.DBOperStatistics("1", "hello")
+	dbStatistics.DBMsgStatistics("1",1,2)
 }
 
 func TestStatistics(t *testing.T){
