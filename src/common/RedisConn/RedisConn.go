@@ -52,6 +52,7 @@ package RedisConn
 import (
 	"common/Log"
 	"common/ado"
+	"common/ado/dbStatistics"
 	"common/public"
 	"fmt"
 	"strconv"
@@ -237,6 +238,7 @@ func (this *TAokoRedis) SaveEx(rolekey, RedisKey string, data interface{}, SaveT
 		}
 	}
 	
+	dbStatistics.DBOperStatistics(rolekey, RedisKey)
 	ret = this.redSetAct(rolekey, RedisKey, data, bsetEx, extime)
 	return
 }

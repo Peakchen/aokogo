@@ -1,5 +1,5 @@
-# Welcome to the aoko!  
-# aoko is a simple game framework  
+# Welcome to the aokogo!  
+# aokogo is a simple game framework  
 
 ![](https://i.imgur.com/OUFzKJB.jpg)
 
@@ -16,15 +16,16 @@
   - simulate (unit test module + automated test)  
   - go mod external dependencies  
   - win batch can directly compile and run to compile the program  
-  - tech group: tcp + redis + mongodb  
- 
+  - Support stack record statistics of database operations after message reception   
+  - Continually updated...
 ***
 
-***Microservice architecture diagram***  
+***Tech group: tcp + redis + mongodb***  
+***Architecture diagram***  
 
  ![微服务架构图](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)  
 
-***focus: come on, welcome everybody, qq group: 855618176***   
+***Focus: come on, welcome everybody, qq group: 855618176***   
 
 ![](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
 

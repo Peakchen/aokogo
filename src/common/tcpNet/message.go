@@ -13,6 +13,7 @@ import (
 	"io"
 	"net"
 	"reflect"
+	"common/ado/dbStatistics"
 )
 
 type TMessageProc struct {
@@ -139,7 +140,8 @@ func checkHeartBeatRet(pack IMessagePack) (exist bool) {
 }
 
 func msgCallBack(sessionobj TcpSession) (succ bool) {
-	msg, cb, unpackerr, exist := sessionobj.GetPack().UnPackData()
+	protocolPack := sessionobj.GetPack()
+	msg, cb, unpackerr, exist := protocolPack.UnPackData()
 	if unpackerr != nil || !exist {
 		Log.FmtPrintln("[client] unpack data err: ", unpackerr)
 		return
@@ -156,6 +158,11 @@ func msgCallBack(sessionobj TcpSession) (succ bool) {
 	if reterr != nil || !succ {
 		Log.FmtPrintln("[client] message return err: ", reterr.(error).Error())
 	}
+
+	// record db operation stack log.
+	mainid, subid := protocolPack.GetMessageID()
+	identify := protocolPack.GetIdentify()
+	dbStatistics.DBMsgStatistics(identify, mainid, subid)
 	return
 }
 
