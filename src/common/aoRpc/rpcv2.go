@@ -57,7 +57,7 @@ func CallV2(cn string, in []interface{})(err error){
 		GAorpcV2obj.acts = []*TModelActV2{}
 	}
 	if len(GAorpcV2obj.acts) >= ActChanMaxSize {
-		return return fmt.Errorf("rpc acts queue has arive max.")
+		return fmt.Errorf("rpc acts queue has arive max.")
 	}
 	var params []reflect.Value = []reflect.Value{}
 	for _, param := range in {

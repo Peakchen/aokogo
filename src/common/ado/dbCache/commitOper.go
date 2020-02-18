@@ -1,12 +1,12 @@
 package dbCache
 
 /*
-	purpose: db commit from logic opertion. 
+	purpose: db commit from logic opertion.
 	date: 20200113 14:45
 */
 
 // push model for db cache, record flush db times, at next flush db, then judge last flush or not, if yes then get data from cache.
-func PushCommitModels(identify string, models ...string){
+func PushCommitModels(identify string, models ...string) {
 	cache := GetDBCache()
 	for _, m := range models {
 		cache.push(identify, m)
@@ -14,7 +14,7 @@ func PushCommitModels(identify string, models ...string){
 }
 
 // check model is exist, if not then flush db direct.
-func HasExistCache(identify string, model string)bool{
+func HasExistCache(identify string, model string) bool {
 	cache := GetDBCache()
 	return cache.hasExist(identify, model)
 }
@@ -27,10 +27,10 @@ func PopCommitModels(identify string) {
 }
 
 // offline or other operate to force commit.
-func ProtectCommit(identify string){
+func ProtectCommit(identify string) {
 	PopCommitModels(identify)
 }
 
-func UpdateDBCache(identify string, model string, data []byte)bool{
+func UpdateDBCache(identify string, model string, data []byte) bool {
 	return GetDBCache().updateCache(identify, model, data)
 }

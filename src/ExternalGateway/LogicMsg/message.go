@@ -1,5 +1,7 @@
 package LogicMsg
 
+// add by stefan
+
 import (
 	"common/Define"
 	"common/Log"

@@ -1,12 +1,14 @@
 package tool
 
+// add by stefan
+
 import (
-	"os"
-	"strings"
-	"github.com/gonutz/ide/w32"
-	"os/exec"
 	"bytes"
+	"github.com/gonutz/ide/w32"
+	"os"
+	"os/exec"
 	"strconv"
+	"strings"
 	//"runtime"
 	//"syscall"
 )
@@ -23,23 +25,23 @@ func GetExeFilePath() (execpath string) {
 }
 
 //隐藏console
-func HideConsole(){
-    ShowConsoleAsync(w32.SW_HIDE)
+func HideConsole() {
+	ShowConsoleAsync(w32.SW_HIDE)
 }
 
 //显示console
-func ShowConsole(){
-    ShowConsoleAsync(w32.SW_SHOW)
+func ShowConsole() {
+	ShowConsoleAsync(w32.SW_SHOW)
 }
 
-func ShowConsoleAsync(commandShow uintptr){
-    console := w32.GetConsoleWindow()
-    if console != 0 {
-        _, consoleProcID := w32.GetWindowThreadProcessId(console)
-        if w32.GetCurrentProcessId() == consoleProcID {
-            w32.ShowWindowAsync(console, commandShow)
-        }
-    }
+func ShowConsoleAsync(commandShow uintptr) {
+	console := w32.GetConsoleWindow()
+	if console != 0 {
+		_, consoleProcID := w32.GetWindowThreadProcessId(console)
+		if w32.GetCurrentProcessId() == consoleProcID {
+			w32.ShowWindowAsync(console, commandShow)
+		}
+	}
 }
 
 func CheckPortUsed(port int) bool {
@@ -59,7 +61,7 @@ func CheckPortUsed(port int) bool {
 	return true
 }
 
-func CmdHide(){
+func CmdHide() {
 	handler, err := os.OpenFile("hide.vbs", os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return
@@ -67,7 +69,7 @@ func CmdHide(){
 
 	vbscontext := `Set ws = CreateObject("Wscript.Shell") 
 				ws.run "cmd /c zxcad.exe",vbhide`
-	
+
 	handler.WriteString(vbscontext)
 	handler.Close()
 
@@ -91,22 +93,22 @@ func CmdHide(){
 	MyFmtPrint_Info("Result: " + out.String())
 }
 
-func BatHide(param []string){
+func BatHide(param []string) {
 	handler, err := os.OpenFile("hide.bat", os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return
 	}
 
 	batpath := "\"%~nx0 h\""
-	batContext := "@echo off \r\n" + 
-					"if %1 == h goto begin \r\n" + 
-					//"start " + param[0] + " \r\n" +
-					"mshta vbscriptcreateobject(wscript.shell).run("+ batpath + ",0) \r\n" +
-					//"mshta vbscriptcreateobject(wscript.shell).run(%~nx0 h,0)(window.close)&&exit \r\n" +
-					param[0] + " \r\n" +
-					":begin \r\n" + 
-					"REM"
-	
+	batContext := "@echo off \r\n" +
+		"if %1 == h goto begin \r\n" +
+		//"start " + param[0] + " \r\n" +
+		"mshta vbscriptcreateobject(wscript.shell).run(" + batpath + ",0) \r\n" +
+		//"mshta vbscriptcreateobject(wscript.shell).run(%~nx0 h,0)(window.close)&&exit \r\n" +
+		param[0] + " \r\n" +
+		":begin \r\n" +
+		"REM"
+
 	handler.WriteString(batContext)
 	handler.Close()
 

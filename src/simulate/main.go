@@ -1,5 +1,7 @@
 package main
 
+// add by stefan
+
 import (
 	"common/Log"
 	"simulate/AutoTest"

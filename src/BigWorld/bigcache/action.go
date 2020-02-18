@@ -7,8 +7,9 @@ import (
 )
 
 type CacheOperCB func(key string, c *CacheOperation, out interface{})
+
 var CacheOperCall map[ECacheOper]CacheOperCB = map[ECacheOper]CacheOperCB{
-	ECacheOper_Add: AddBigC,
+	ECacheOper_Add:    AddBigC,
 	ECacheOper_Delete: DeleteBigC,
 	ECacheOper_Update: UpdateBigC,
 	ECacheOper_Select: SelectBigC,
@@ -28,8 +29,8 @@ func AddBigC(key string, c *CacheOperation, out interface{}) {
 }
 
 func DeleteBigC(key string, c *CacheOperation, out interface{}) {
-	for _, cache := range c.Caches{
-		cname,ok := GCacheTab[cache.NameId]
+	for _, cache := range c.Caches {
+		cname, ok := GCacheTab[cache.NameId]
 		if !ok {
 			log.Fatal("can not find cache name, NameId: ", cache.NameId)
 			return
@@ -39,8 +40,8 @@ func DeleteBigC(key string, c *CacheOperation, out interface{}) {
 }
 
 func UpdateBigC(key string, c *CacheOperation, out interface{}) {
-	for _, cache := range c.Caches{
-		cname,ok := GCacheTab[cache.NameId]
+	for _, cache := range c.Caches {
+		cname, ok := GCacheTab[cache.NameId]
 		if !ok {
 			log.Fatal("can not find cache name, NameId: ", cache.NameId)
 		}
@@ -50,14 +51,14 @@ func UpdateBigC(key string, c *CacheOperation, out interface{}) {
 
 func SelectBigC(key string, c *CacheOperation, out interface{}) {
 	querycolls := []interface{}{}
-	for _, cache := range c.Caches{
-		cname,ok := GCacheTab[cache.NameId]
+	for _, cache := range c.Caches {
+		cname, ok := GCacheTab[cache.NameId]
 		if !ok {
 			log.Fatal("can not find cache name, NameId: ", cache.NameId)
 			return
 		}
 		outc := &ArrayCache_Repeat{}
-		outc.NameId = cache.NameId 
+		outc.NameId = cache.NameId
 		outc.Data = BigCacheGet(key, cname).(string)
 		querycolls = append(querycolls, outc)
 	}

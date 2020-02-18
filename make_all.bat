@@ -2,6 +2,8 @@
 
 echo "welcome use aoko!"
 
+go fmt ./src/...
+
 call make_Externalgws.bat
 
 call make_GameServer.bat

@@ -1,5 +1,7 @@
 package tcpNet
 
+// add by stefan
+
 import (
 	"common/Log"
 	"common/utls"

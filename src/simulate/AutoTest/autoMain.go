@@ -1,5 +1,7 @@
 package AutoTest
 
+// add by stefan
+
 import (
 	"common/Log"
 	"common/tcpNet"

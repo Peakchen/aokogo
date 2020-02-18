@@ -14,22 +14,20 @@ package svrbalance
 		client	select	---------s2	 	sy				select second max person server to client.
 						---------s3	 	sz
 		if s1 person sx has beyond max person limit, then begin loop find s2, which sy has not arive person limit,
-		server will distribute s2 for client connection. firstly, full server persons , then find next server. 
+		server will distribute s2 for client connection. firstly, full server persons , then find next server.
 	}
 */
-import (
-	
-)
+import ()
 
 type TSvrBalanceV1 struct {
-	sb  map[string]*TExternal
+	sb map[string]*TExternal
 }
 
-func (this *TSvrBalanceV1) NewBalance(){
+func (this *TSvrBalanceV1) NewBalance() {
 
 }
 
-func (this *TSvrBalanceV1) AddSvr(svr string){
+func (this *TSvrBalanceV1) AddSvr(svr string) {
 	_, ok := this.sb[svr]
 	if ok {
 		return
@@ -39,6 +37,7 @@ func (this *TSvrBalanceV1) AddSvr(svr string){
 		Persons: 0,
 	}
 }
+
 // some one connect gateway to balance route push one server.
 func (this *TSvrBalanceV1) Push(svr string) {
 	ex, ok := this.sb[svr]
@@ -53,9 +52,9 @@ func (this *TSvrBalanceV1) Push(svr string) {
 func (this *TSvrBalanceV1) GetSvr() (s string) {
 	var (
 		secmin int32 = 0
-		max int32 = 0
-		loop int = 0
-		sblen int = len(this.sb)
+		max    int32 = 0
+		loop   int   = 0
+		sblen  int   = len(this.sb)
 	)
 	for svr, ex := range this.sb {
 		loop++
@@ -64,10 +63,10 @@ func (this *TSvrBalanceV1) GetSvr() (s string) {
 		}
 		if secmin == 0 {
 			secmin = ex.Persons
-		}else if secmin < max && secmin < ex.Persons{
+		} else if secmin < max && secmin < ex.Persons {
 			secmin = ex.Persons
 		}
-		if secmin > 0 && (loop+1 == sblen){
+		if secmin > 0 && (loop+1 == sblen) {
 			s = svr
 			break
 		}

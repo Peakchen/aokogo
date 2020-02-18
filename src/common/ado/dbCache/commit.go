@@ -2,11 +2,11 @@ package dbCache
 
 import (
 	"common/Log"
-	"sync"
-	"common/public"
-	"github.com/globalsign/mgo/bson"
 	"common/ado"
 	"common/ado/service"
+	"common/public"
+	"github.com/globalsign/mgo/bson"
+	"sync"
 )
 
 /*
@@ -14,36 +14,36 @@ import (
 */
 
 type TModelOper struct {
-	buff []byte
+	buff  []byte
 	opers int
 }
 
 type TDBCache struct {
-	users sync.Map // key: identify, value: map[string]*TModelOper
-	dbprovider  *service.TDBProvider
+	users      sync.Map // key: identify, value: map[string]*TModelOper
+	dbprovider *service.TDBProvider
 }
 
 var (
 	_dbCache *TDBCache
 )
 
-func InitDBCache(dbProvider *service.TDBProvider){
+func InitDBCache(dbProvider *service.TDBProvider) {
 	_dbCache = &TDBCache{
 		dbprovider: dbProvider,
 	}
 }
 
-func GetDBCache() *TDBCache{
+func GetDBCache() *TDBCache {
 	return _dbCache
 }
 
-func (this *TDBCache) loadOrAddUser(identify string) (modeldata map[string]*TModelOper){
+func (this *TDBCache) loadOrAddUser(identify string) (modeldata map[string]*TModelOper) {
 	modeldata = nil
 	value, loaded := this.users.LoadOrStore(identify, map[string]*TModelOper{})
 	if !loaded {
 		Log.Error("can not load cache model.")
 		return
-	} 
+	}
 
 	if value == nil {
 		Log.Error("cache model invalid.")
@@ -59,7 +59,7 @@ func (this *TDBCache) loadOrAddUser(identify string) (modeldata map[string]*TMod
 	return
 }
 
-func (this *TDBCache) push(identify string, model string){
+func (this *TDBCache) push(identify string, model string) {
 	modeldata := this.loadOrAddUser(identify)
 	if modeldata == nil {
 		return
@@ -70,12 +70,12 @@ func (this *TDBCache) push(identify string, model string){
 		modeldata[model] = &TModelOper{
 			opers: 1,
 		}
-	}else{
+	} else {
 		Moper.opers++
 	}
 }
 
-func (this *TDBCache) hasExist(identify string, model string) (exist bool ) {
+func (this *TDBCache) hasExist(identify string, model string) (exist bool) {
 	modeldata := this.loadOrAddUser(identify)
 	if modeldata == nil {
 		return
@@ -107,7 +107,7 @@ func (this *TDBCache) getCache(identify string, model string, Output public.IDBC
 	}
 }
 
-func (this *TDBCache) updateCache(identify string, model string, data []byte) (succ bool){
+func (this *TDBCache) updateCache(identify string, model string, data []byte) (succ bool) {
 	modeldata := this.loadOrAddUser(identify)
 	if modeldata == nil {
 		return
@@ -133,7 +133,7 @@ func (this *TDBCache) pop(identify string) {
 	modeldata = map[string]*TModelOper{}
 }
 
-func (this *TDBCache) updateDB(identify string){
+func (this *TDBCache) updateDB(identify string) {
 	modeldata := this.loadOrAddUser(identify)
 	if modeldata == nil {
 		return

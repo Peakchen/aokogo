@@ -1,5 +1,7 @@
 package MgoConn
 
+// add by stefan
+
 import (
 	"common/Log"
 	"common/RedisConn"

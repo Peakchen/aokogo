@@ -9,15 +9,15 @@ import (
 	export from NetFilter.json by tool.
 */
 type TNetFilterBase struct {
-	Id          int32  `json:"id"`
-	White 		string `json:"white"`
-	Black       string `json:"black"`
+	Id    int32  `json:"id"`
+	White string `json:"white"`
+	Black string `json:"black"`
 }
 
 type TNetFilter struct {
-	Id			int32
-	White 		string
-	Black       string
+	Id    int32
+	White string
+	Black string
 }
 
 type TNetFilterConfig struct {
@@ -54,9 +54,9 @@ func (this *TNetFilterConfig) DataRWAct(data interface{}) (errlist []string) {
 	this.data = []*TNetFilter{}
 	for _, item := range *cfg {
 		this.data = append(this.data, &TNetFilter{
-			Id:         item.Id,
-			White: 		item.White,
-			Black:      item.Black,
+			Id:    item.Id,
+			White: item.White,
+			Black: item.Black,
 		})
 	}
 	return

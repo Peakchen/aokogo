@@ -1,5 +1,3 @@
 package Equip
 
-const (
-
-)
+const ()

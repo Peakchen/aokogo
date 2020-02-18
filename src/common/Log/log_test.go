@@ -1,12 +1,12 @@
 package Log
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
-func TestLog(t *testing.T){
+func TestLog(t *testing.T) {
 	fmt.Println("test log start.")
-	
+
 	return
 }

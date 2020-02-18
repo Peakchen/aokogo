@@ -1,40 +1,41 @@
 package aoRpc
 
 // add by stefan 20190614 19:49
-// add aorpc for between server and server conmunication. 
+// add aorpc for between server and server conmunication.
 // server block rpc.
 import (
-	"sync"
+	"container/list"
 	"context"
-	"time"
 	"fmt"
 	"reflect"
-	"container/list"
+	"sync"
+	"time"
 )
 
 type TAorpcV1 struct {
-	models      map[string]interface{}
-	wg     		sync.WaitGroup
-	ctx 		context.Context
-	cancel		context.CancelFunc
-	acts 		*list.List
-	actchan		chan *TModelActV1
-	mutex		sync.Mutex
-	retchan     chan *TActRet
+	models  map[string]interface{}
+	wg      sync.WaitGroup
+	ctx     context.Context
+	cancel  context.CancelFunc
+	acts    *list.List
+	actchan chan *TModelActV1
+	mutex   sync.Mutex
+	retchan chan *TActRet
 }
 
 var Aorpc *TAorpcV1 = nil
-func init(){
+
+func init() {
 	Aorpc = &TAorpcV1{}
 	Aorpc.Init()
 }
 
-func (this *TAorpcV1) Init(){
+func (this *TAorpcV1) Init() {
 	this.models = map[string]interface{}{}
 	this.acts = list.New()
 }
 
-func (this *TAorpcV1) Run(){
+func (this *TAorpcV1) Run() {
 	this.ctx, this.cancel = context.WithCancel(context.Background())
 	this.wg.Add(2)
 	go this.loop()
@@ -42,27 +43,27 @@ func (this *TAorpcV1) Run(){
 }
 
 /*
-	take model and func witch func in params,   
+	take model and func witch func in params,
 */
-func (this *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, outs []interface{})(error){
+func (this *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, outs []interface{}) error {
 	m, ok := this.models[modelname]
 	if !ok {
 		return fmt.Errorf("can not find model, input model name: %v.", modelname)
 	}
 	v := reflect.ValueOf(m)
-	t := fmt.Sprintf("%s", reflect.TypeOf(m)) 
+	t := fmt.Sprintf("%s", reflect.TypeOf(m))
 	f := v.MethodByName(funcName)
 	rv := []reflect.Value{}
 	for _, in := range ins {
 		rv = append(rv, reflect.ValueOf(in))
 	}
 	//f.Call(rv)
-	actkey := key+":"+modelname+":"+funcName
+	actkey := key + ":" + modelname + ":" + funcName
 	this.actchan <- &TModelActV1{
-		actid:	actkey,
-		modf: 	f,
+		actid:  actkey,
+		modf:   f,
 		params: rv,
-		mod:	m,
+		mod:    m,
 		modt:   t,
 	}
 	var twg sync.WaitGroup
@@ -72,7 +73,7 @@ func (this *TAorpcV1) Call(key, modelname, funcName string, ins []interface{}, o
 	return nil
 }
 
-func (this *TAorpcV1) loopRet(actkey string, outs []interface{}, twg *sync.WaitGroup){
+func (this *TAorpcV1) loopRet(actkey string, outs []interface{}, twg *sync.WaitGroup) {
 	t := time.NewTicker(time.Duration(rpcdealline))
 	for {
 		select {
@@ -91,7 +92,7 @@ func (this *TAorpcV1) loopRet(actkey string, outs []interface{}, twg *sync.WaitG
 	}
 }
 
-func (this *TAorpcV1) loop(){
+func (this *TAorpcV1) loop() {
 	defer this.wg.Done()
 	//t := time.NewTicker(time.Duration(rpcdealline))
 	for {
@@ -100,7 +101,7 @@ func (this *TAorpcV1) loop(){
 			this.Exit()
 			return
 		//case <-t.C:
-		
+
 		case act := <-this.actchan:
 			if act == nil {
 				return
@@ -108,13 +109,13 @@ func (this *TAorpcV1) loop(){
 			if this.acts.Len() >= ActChanMaxSize {
 				fmt.Println("has enough acts in chan.")
 				return
-			} 
+			}
 			this.acts.PushBack(act)
 		}
 	}
 }
 
-func (this *TAorpcV1) loopAct(){
+func (this *TAorpcV1) loopAct() {
 	defer this.wg.Done()
 	for {
 		if this.acts.Len() == 0 {
@@ -129,15 +130,15 @@ func (this *TAorpcV1) loopAct(){
 		}
 		mrts := act.modf.Call(act.params)
 		this.retchan <- &TActRet{
-			actid:	act.actid,
-			rets:	mrts,
+			actid: act.actid,
+			rets:  mrts,
 		}
 		this.acts.Remove(e)
 		this.mutex.Unlock()
 	}
 }
 
-func (this *TAorpcV1) Exit(){
+func (this *TAorpcV1) Exit() {
 	this.cancel()
 	this.wg.Wait()
 }
@@ -149,4 +150,3 @@ func Register(name string, model interface{}) {
 	}
 	Aorpc.models[name] = model
 }
-

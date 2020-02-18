@@ -1,5 +1,7 @@
 package tool
 
+// add by stefan
+
 import (
 	"regexp"
 )

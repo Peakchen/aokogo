@@ -1,11 +1,12 @@
 package Log
 
+// add by stefan
+
 import (
+	"common/public"
 	"fmt"
 	"time"
-	"common/public"
 )
-
 
 func FmtPrintf(src string, params ...interface{}) {
 	var dst string

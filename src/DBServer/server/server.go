@@ -1,5 +1,7 @@
 package server
 
+// add by stefan
+
 import (
 	"common/ado/service"
 )

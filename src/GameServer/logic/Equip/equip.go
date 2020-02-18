@@ -1,6 +1,3 @@
 package Equip
 
-import (
-	
-)
-
+import ()

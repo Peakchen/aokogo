@@ -86,9 +86,9 @@ var ErrorCode_name = map[int32]string{
 	3: "UserNotExistOrPasswdErr",
 }
 var ErrorCode_value = map[string]int32{
-	"Invalid": 0,
-	"Success": 1,
-	"Fail":    2,
+	"Invalid":                 0,
+	"Success":                 1,
+	"Fail":                    2,
 	"UserNotExistOrPasswdErr": 3,
 }
 

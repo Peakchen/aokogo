@@ -9,14 +9,15 @@ import (
 
 var GAsynclock map[string]*redsync.Mutex = map[string]*redsync.Mutex{}
 var GRedsyncObj *redsync.Redsync
-func NewAsyncLock(pools []redsync.Pool){
+
+func NewAsyncLock(pools []redsync.Pool) {
 	GRedsyncObj = redsync.New(pools)
 }
 
-func AddAsyncLock(key, Name string){
+func AddAsyncLock(key, Name string) {
 	lockid := key + ":" + Name
 	if _, ok := GAsynclock[lockid]; !ok {
-		GAsynclock[lockid] = GRedsyncObj.NewMutex(lockid, 
+		GAsynclock[lockid] = GRedsyncObj.NewMutex(lockid,
 			redsync.SetExpiry(time.Duration(10*time.Second)),
 			redsync.SetRetryDelay(time.Duration(1*time.Second)))
 	}
@@ -32,7 +33,3 @@ func ReleaseAsyncLock(key, Name string) {
 	GAsynclock[lockid].Unlock()
 	return
 }
-
-
-
-

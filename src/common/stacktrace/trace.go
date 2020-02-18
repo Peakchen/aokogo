@@ -6,23 +6,22 @@ package stacktrace
 */
 
 import (
-	"runtime/debug"
 	"common/Log"
+	"runtime/debug"
 )
 
 /*
 	white code log print for normal log.
 */
-func NormalStackLog()(stacklog string){
+func NormalStackLog() (stacklog string) {
 	stacklog = string(debug.Stack())
 	Log.FmtPrintln("stack trace: ", stacklog)
 	return
 }
 
 /*
-	red code log print for panic question log. 
+	red code log print for panic question log.
 */
-func RedStackLog(){
+func RedStackLog() {
 	debug.PrintStack()
 }
-

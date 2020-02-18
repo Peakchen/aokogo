@@ -2,6 +2,8 @@ package tcpNet
 
 import "sync"
 
+// add by stefan
+
 // client session pool
 
 var (
@@ -26,7 +28,6 @@ func init() {
 		},
 	}
 }
-
 
 type TClientSession struct {
 	sessionpool *sync.Pool

@@ -1,6 +1,5 @@
 package ServerConfig
 
+func init() {
 
-func init(){
-	
 }

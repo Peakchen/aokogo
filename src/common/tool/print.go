@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	cstinfoprint bool = true
-	cstErrprint bool = true
+	cstinfoprint   bool = true
+	cstErrprint    bool = true
 	CstHideConsole bool = false
 )
 

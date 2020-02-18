@@ -1,25 +1,27 @@
 package utls
 
+// add by stefan
+
 import (
 	"github.com/gonutz/ide/w32"
 )
 
 //隐藏console
-func HideConsole(){
-    ShowConsoleAsync(w32.SW_HIDE)
+func HideConsole() {
+	ShowConsoleAsync(w32.SW_HIDE)
 }
 
 //显示console
-func ShowConsole(){
-    ShowConsoleAsync(w32.SW_SHOW)
+func ShowConsole() {
+	ShowConsoleAsync(w32.SW_SHOW)
 }
 
-func ShowConsoleAsync(commandShow uintptr){
-    console := w32.GetConsoleWindow()
-    if console != 0 {
-        _, consoleProcID := w32.GetWindowThreadProcessId(console)
-        if w32.GetCurrentProcessId() == consoleProcID {
-            w32.ShowWindowAsync(console, commandShow)
-        }
-    }
+func ShowConsoleAsync(commandShow uintptr) {
+	console := w32.GetConsoleWindow()
+	if console != 0 {
+		_, consoleProcID := w32.GetWindowThreadProcessId(console)
+		if w32.GetCurrentProcessId() == consoleProcID {
+			w32.ShowWindowAsync(console, commandShow)
+		}
+	}
 }

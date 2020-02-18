@@ -6,9 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
-	"reflect"
 )
 
 // add by stefan 20190715 19:39
@@ -17,8 +17,8 @@ import (
 // note: fix 20200108 11:23
 
 type TAokoCallBackParam struct {
-	cb       reflect.Value //call back func
-	params   []reflect.Value //func params
+	cb     reflect.Value   //call back func
+	params []reflect.Value //func params
 }
 
 type TDataPack struct {
@@ -43,7 +43,7 @@ func NewQueueRpc(ctx context.Context, wg *sync.WaitGroup, c *TAokoRedis) {
 
 }
 
-func (this *TAokoQueueRpc) Call(Identify, name string, model interface{}, args...interface{}) {
+func (this *TAokoQueueRpc) Call(Identify, name string, model interface{}, args ...interface{}) {
 
 	refVals := []reflect.Value{}
 	refVals = append(refVals, args)
@@ -52,7 +52,7 @@ func (this *TAokoQueueRpc) Call(Identify, name string, model interface{}, args..
 	}
 
 	cbdata := &TAokoCallBackParam{
-		cb: reflect.ValueOf(model),
+		cb:     reflect.ValueOf(model),
 		params: refVals,
 	}
 
@@ -82,7 +82,7 @@ func (this *TAokoQueueRpc) Call(Identify, name string, model interface{}, args..
 func (this *TAokoQueueRpc) loop(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	tick := time.NewTicker(time.Duration(1)*time.Second)
+	tick := time.NewTicker(time.Duration(1) * time.Second)
 	for {
 		select {
 		case <-tick.C:
@@ -108,7 +108,7 @@ func (this *TAokoQueueRpc) handler() {
 			Log.Error("unmarshal pack fail, model name: ", name)
 			continue
 		}
-		
+
 		cbdata := &TAokoCallBackParam{}
 		if err := json.Unmarshal(info.Data, cbdata); err != nil {
 			Log.Error("unmarshal callback fail, model name: ", name)

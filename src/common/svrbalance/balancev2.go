@@ -23,14 +23,14 @@ import (
 )
 
 type TSvrBalanceV2 struct {
-	sb  map[string]*TExternal
+	sb map[string]*TExternal
 }
 
-func (this *TSvrBalanceV2) NewBalance(){
+func (this *TSvrBalanceV2) NewBalance() {
 
 }
 
-func (this *TSvrBalanceV2) AddSvr(svr string){
+func (this *TSvrBalanceV2) AddSvr(svr string) {
 	_, ok := this.sb[svr]
 	if ok {
 		return
@@ -40,6 +40,7 @@ func (this *TSvrBalanceV2) AddSvr(svr string){
 		Persons: 0,
 	}
 }
+
 // some one connect gateway to balance route push one server.
 func (this *TSvrBalanceV2) Push(svr string) {
 	ex, ok := this.sb[svr]
@@ -50,7 +51,7 @@ func (this *TSvrBalanceV2) Push(svr string) {
 	ex.Persons++
 }
 
-func (this *TSvrBalanceV2) getsvr()(svrs []string){
+func (this *TSvrBalanceV2) getsvr() (svrs []string) {
 	svrs = []string{}
 	for svr, _ := range this.sb {
 		svrs = append(svrs, svr)
@@ -61,8 +62,8 @@ func (this *TSvrBalanceV2) getsvr()(svrs []string){
 // get second max server persons
 func (this *TSvrBalanceV2) GetSvr() (s string) {
 	var (
-		svrs []string = this.getsvr()
-		svrslen int = len(svrs)
+		svrs    []string = this.getsvr()
+		svrslen int      = len(svrs)
 	)
 
 	randidx := rand.Intn(svrslen)

@@ -6,49 +6,49 @@ package dbStatistics
 */
 
 import (
+	"bytes"
+	"common/Log"
+	"common/public"
 	"common/stacktrace"
-	"os"
 	"common/utls"
 	"encoding/gob"
-	"bytes"
 	"fmt"
-	"common/Log"
-	"time"
-	"common/public"
-	"sync"
+	"os"
 	"strconv"
+	"sync"
+	"time"
 )
 
 type TModelStatistics struct {
-	strTime 		string
-	stacklog 		bytes.Buffer
+	strTime  string
+	stacklog bytes.Buffer
 }
 
 type TDBStatistics struct {
-	filehandle 			*os.File
-	chbuff 				chan bytes.Buffer
-	userOperModels    	sync.Map //key: identify, value: map[string][]*TModelStatistics     
+	filehandle     *os.File
+	chbuff         chan bytes.Buffer
+	userOperModels sync.Map //key: identify, value: map[string][]*TModelStatistics
 }
 
 const (
 	cstSaveLogTickers = 60 //s
-	cstStatisticsLog = "DBStatisticsLog"
+	cstStatisticsLog  = "DBStatisticsLog"
 )
 
 var (
 	_dbStatistics *TDBStatistics
 )
 
-func InitDBStatistics(){
+func InitDBStatistics() {
 	_dbStatistics = &TDBStatistics{
 		filehandle: nil,
-		chbuff: make(chan bytes.Buffer),
+		chbuff:     make(chan bytes.Buffer),
 	}
 	_dbStatistics.Init()
 	go _dbStatistics.loop()
 }
 
-func (this *TDBStatistics) Init(){
+func (this *TDBStatistics) Init() {
 	exename := utls.GetExeFileName()
 	_, err := os.Stat(cstStatisticsLog)
 	if err != nil {
@@ -56,7 +56,7 @@ func (this *TDBStatistics) Init(){
 		return
 	}
 
-	if os.IsNotExist(err){
+	if os.IsNotExist(err) {
 		err := os.Mkdir("DBStatisticsLog", 0644)
 		if err != nil {
 			Log.Error("err: ", err)
@@ -74,7 +74,7 @@ func (this *TDBStatistics) Init(){
 	this.filehandle = filehandle
 }
 
-func (this *TDBStatistics) loop(){
+func (this *TDBStatistics) loop() {
 	for {
 		select {
 		case data := <-this.chbuff:
@@ -83,7 +83,7 @@ func (this *TDBStatistics) loop(){
 	}
 }
 
-func (this *TDBStatistics) exit(){
+func (this *TDBStatistics) exit() {
 	this.filehandle.Sync()
 	this.filehandle.Close()
 }
@@ -94,11 +94,11 @@ func (this *TDBStatistics) Update(content string) {
 		Log.Error("cover to buffer fail, err: ", err)
 		return
 	}
-	
+
 	this.chbuff <- buff
 }
 
-func (this *TDBStatistics) loadOrInitUser(identify string) (modeldata map[string][]*TModelStatistics){
+func (this *TDBStatistics) loadOrInitUser(identify string) (modeldata map[string][]*TModelStatistics) {
 	modeldata = nil
 	value, _ := this.userOperModels.LoadOrStore(identify, map[string][]*TModelStatistics{})
 	if value == nil {
@@ -115,14 +115,14 @@ func (this *TDBStatistics) loadOrInitUser(identify string) (modeldata map[string
 	return
 }
 
-func (this *TDBStatistics) deleteUser(identify string){
+func (this *TDBStatistics) deleteUser(identify string) {
 	this.userOperModels.Delete(identify)
 }
 
 /*
 	statistics msg logic runs with db operations.
 */
-func DBOperStatistics(identify, model string){
+func DBOperStatistics(identify, model string) {
 	modeldata := _dbStatistics.loadOrInitUser(identify)
 	if modeldata == nil {
 		return
@@ -130,22 +130,22 @@ func DBOperStatistics(identify, model string){
 
 	var buff bytes.Buffer
 	buff.WriteString(stacktrace.NormalStackLog())
-	modelStatistics,ok := modeldata[model]
+	modelStatistics, ok := modeldata[model]
 	if !ok {
 		modelStatistics = []*TModelStatistics{}
 	}
 
 	modelStatistics = append(modelStatistics, &TModelStatistics{
-		strTime 		: time.Now().Local().Format(public.CstTimeFmt),
-		stacklog 		: buff,
+		strTime:  time.Now().Local().Format(public.CstTimeFmt),
+		stacklog: buff,
 	})
 	modeldata[model] = modelStatistics
 }
 
 /*
-	statistics msg logic ends msg mainid and subid. 
+	statistics msg logic ends msg mainid and subid.
 */
-func DBMsgStatistics(identify string, mainid, subid uint16){
+func DBMsgStatistics(identify string, mainid, subid uint16) {
 	modeldata := _dbStatistics.loadOrInitUser(identify)
 	if modeldata == nil {
 		return
@@ -155,7 +155,7 @@ func DBMsgStatistics(identify string, mainid, subid uint16){
 	buff.WriteString("identify: " + identify + "\r\n")
 	buff.WriteString("mainid: " + strconv.Itoa(int(mainid)) + "\r\n")
 	buff.WriteString("subid: " + strconv.Itoa(int(subid)) + "\r\n")
-	for model, statistics := range modeldata{
+	for model, statistics := range modeldata {
 		buff.WriteString("model oper cnt: " + strconv.Itoa(len(statistics)) + "\r\n")
 		buff.WriteString("model name: " + model + "\r\n")
 		for _, log := range statistics {
@@ -171,6 +171,6 @@ func DBMsgStatistics(identify string, mainid, subid uint16){
 /*
 	stop msg log statistics.
 */
-func DBStatisticsStop(){
+func DBStatisticsStop() {
 	_dbStatistics.exit()
 }

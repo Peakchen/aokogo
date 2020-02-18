@@ -1,6 +1,6 @@
 package timer
 
 const (
-	// timer 
+	// timer
 	cstTimerUpLimit = 1000
 )

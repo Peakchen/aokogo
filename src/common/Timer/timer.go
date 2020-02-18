@@ -6,13 +6,13 @@ package timer
 */
 
 import (
-	"time"
-	"reflect"
 	"common/Log"
+	"reflect"
+	"time"
 )
 
 /*
-timer: 
+timer:
 	func
 	params
 	interval
@@ -20,11 +20,11 @@ timer:
 */
 
 type TAokoTimer struct {
-	Func 		refect.Value
-	Params 		[]reflect.Value
-	Interval 	int
-	Count 		int
-	curSec      int //after call, then reset to 0 
+	Func     refect.Value
+	Params   []reflect.Value
+	Interval int
+	Count    int
+	curSec   int //after call, then reset to 0
 }
 
 type TAokoTimerMgr struct {
@@ -35,32 +35,32 @@ var (
 	_timerMgr *TAokoTimerMgr
 )
 
-func init(){
+func init() {
 	_timerMgr = &TAokoTimerMgr{
 		timers: []*TAokoTimer{},
 	}
 }
 
-func Run(){
+func Run() {
 	var sw sync.WaitGroup
 	sw.Add(1)
 	go timerloop()
 }
 
-func timerloop(){
-	tick := time.NewTicker(time.Duration(1)*time.Second)
+func timerloop() {
+	tick := time.NewTicker(time.Duration(1) * time.Second)
 	var (
 		removeTimers = []int{}
 	)
 	for {
 		select {
 		case <-tick.C:
-			for idx, timercall := range _timerMgr.timers{
-				if timercall.curSec >= timercall.Interval && timercall.Count > 0{
+			for idx, timercall := range _timerMgr.timers {
+				if timercall.curSec >= timercall.Interval && timercall.Count > 0 {
 					timercall.Func.Call(timercall.Params)
 					timercall.Count--
 					timercall.curSec = 0
-				}else{
+				} else {
 					timercall.curSec++
 				}
 
@@ -78,17 +78,17 @@ func timerloop(){
 	}
 }
 
-func (this *TAokoTimerMgr) register(fun interface{}, interval int, count int, args...interface{}){
+func (this *TAokoTimerMgr) register(fun interface{}, interval int, count int, args ...interface{}) {
 	var params = []reflect.Value{}
 	for _, arg := range args {
 		params = append(params, reflect.ValueOf(arg))
 	}
 
 	timer := &TAokoTimer{
-		Func: 		reflect.ValueOf(fun),
-		Params: 	params,
-		Interval: 	interval,
-		Count: 		count,
+		Func:     reflect.ValueOf(fun),
+		Params:   params,
+		Interval: interval,
+		Count:    count,
 	}
 
 	if cstTimerUpLimit <= len(_timerMgr.timers) {

@@ -1,5 +1,7 @@
 package utls
 
+// add by stefan
+
 import (
 	"math/rand"
 	"time"

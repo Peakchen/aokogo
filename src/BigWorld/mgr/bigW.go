@@ -8,22 +8,22 @@ import (
 	"sync"
 	//"time"
 	. "BigWorld/bigcache"
-	"net"
-	"github.com/golang/protobuf/proto"
-	. "common/S2SMessage"
-	"log"
 	. "common/Define"
+	. "common/S2SMessage"
 	"fmt"
+	"github.com/golang/protobuf/proto"
+	"log"
+	"net"
 )
 
 type TBigWordMgr struct {
-	host 	string
-	ctx 	context.Context
-	cancle 	context.CancelFunc
-	wg  	sync.WaitGroup
-	srcSvr  int32
-	dstSvr  int32
-	tcpsvr  *TcpServer
+	host   string
+	ctx    context.Context
+	cancle context.CancelFunc
+	wg     sync.WaitGroup
+	srcSvr int32
+	dstSvr int32
+	tcpsvr *TcpServer
 }
 
 func NewBigWord(host string) *TBigWordMgr {
@@ -38,6 +38,7 @@ func (this *TBigWordMgr) Run() {
 	this.tcpsvr = NewTcpServer(this.host, this.srcSvr, this.dstSvr, this.Recv)
 	this.tcpsvr.Run()
 }
+
 //tcp net message recv call back.
 func (this *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
 	var recv = &SS_BaseMessage_Req{}
@@ -46,7 +47,7 @@ func (this *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
 		log.Fatal("unmarshal message fail.")
 		return
 	}
-	if recv.Dstid != int32(ERouteId_ER_BigWorld){
+	if recv.Dstid != int32(ERouteId_ER_BigWorld) {
 		fmt.Println("recv dst: ", recv.Dstid)
 		return
 	}
@@ -73,7 +74,7 @@ func (this *TBigWordMgr) Recv(conn net.Conn, data []byte, len int) {
 	}
 }
 
-func (this *TBigWordMgr) cacheAction(data []byte, outparams interface{}){
+func (this *TBigWordMgr) cacheAction(data []byte, outparams interface{}) {
 	var secDatas = &CacheOperation{}
 	secpack := proto.Unmarshal(data, secDatas)
 	if secpack != nil {
@@ -83,7 +84,7 @@ func (this *TBigWordMgr) cacheAction(data []byte, outparams interface{}){
 	SelectOper("", secDatas, outparams)
 }
 
-func (this *TBigWordMgr) send(srcSvr int32, outparams interface{}){
+func (this *TBigWordMgr) send(srcSvr int32, outparams interface{}) {
 	if _, ok := ERouteId_name[srcSvr]; !ok {
 		return
 	}
@@ -97,7 +98,7 @@ func (this *TBigWordMgr) send(srcSvr int32, outparams interface{}){
 	}
 }
 
-func (this *TBigWordMgr) loop(){
+func (this *TBigWordMgr) loop() {
 	defer this.wg.Done()
 	for {
 		select {
@@ -110,7 +111,7 @@ func (this *TBigWordMgr) loop(){
 	}
 }
 
-func (this *TBigWordMgr) Exit(){
+func (this *TBigWordMgr) Exit() {
 	this.tcpsvr.Exit()
 	this.cancle()
 	this.wg.Wait()

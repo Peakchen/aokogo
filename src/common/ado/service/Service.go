@@ -2,13 +2,13 @@ package service
 
 import (
 	"common/Config/serverConfig"
+	"common/Log"
 	"common/MgoConn"
 	"common/RedisConn"
+	"common/ado"
+	"common/public"
 	"context"
 	"sync"
-	"common/Log"
-	"common/public"
-	"common/ado"
 )
 
 type TDBProvider struct {
@@ -24,12 +24,12 @@ func (this *TDBProvider) StartDBService(Server string, upcb public.UpdateDBCache
 	this.Server = Server
 	rediscfg := serverConfig.GRedisconfigConfig.Get()
 	this.rconn = RedisConn.NewRedisConn(rediscfg.Connaddr, rediscfg.DBIndex, rediscfg.Passwd, upcb)
-	
+
 	mgocfg := serverConfig.GMgoconfigConfig.Get()
 	this.mconn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
 }
 
-func (this *TDBProvider) GetRedisConn()*RedisConn.TAokoRedis{
+func (this *TDBProvider) GetRedisConn() *RedisConn.TAokoRedis {
 	return this.rconn
 }
 
@@ -41,6 +41,6 @@ func (this *TDBProvider) RediSave(identify string, rediskey string, data []byte,
 	return
 }
 
-func (this *TDBProvider) GetMogoConn()*MgoConn.TAokoMgo{
+func (this *TDBProvider) GetMogoConn() *MgoConn.TAokoMgo {
 	return this.mconn
 }

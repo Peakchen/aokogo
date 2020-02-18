@@ -1,6 +1,8 @@
 package tcpNet
 
 // client connect server.
+// add by stefan
+
 import (
 	"common/Define"
 	"common/Log"
