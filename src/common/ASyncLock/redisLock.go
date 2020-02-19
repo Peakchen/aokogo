@@ -1,5 +1,8 @@
 package AsyncLock
 
+//add by stefan 
+// redis version for high frequency and short duration.
+
 import (
 	"gopkg.in/redsync.v1"
 	//"github.com/garyburd/redigo/redis"
@@ -7,29 +10,31 @@ import (
 	"time"
 )
 
-var GAsynclock map[string]*redsync.Mutex = map[string]*redsync.Mutex{}
-var GRedsyncObj *redsync.Redsync
+var (
+	_redislocks = map[string]*redsync.Mutex{}
+	_redisSyncobj *redsync.Redsync
+)
 
 func NewAsyncLock(pools []redsync.Pool) {
-	GRedsyncObj = redsync.New(pools)
+	_redisSyncobj = redsync.New(pools)
 }
 
 func AddAsyncLock(key, Name string) {
 	lockid := key + ":" + Name
-	if _, ok := GAsynclock[lockid]; !ok {
-		GAsynclock[lockid] = GRedsyncObj.NewMutex(lockid,
+	if _, ok := _redislocks[lockid]; !ok {
+		_redislocks[lockid] = _redisSyncobj.NewMutex(lockid,
 			redsync.SetExpiry(time.Duration(10*time.Second)),
 			redsync.SetRetryDelay(time.Duration(1*time.Second)))
 	}
-	GAsynclock[lockid].Lock()
+	_redislocks[lockid].Lock()
 	return
 }
 
 func ReleaseAsyncLock(key, Name string) {
 	lockid := key + ":" + Name
-	if _, ok := GAsynclock[lockid]; !ok {
+	if _, ok := _redislocks[lockid]; !ok {
 		return
 	}
-	GAsynclock[lockid].Unlock()
+	_redislocks[lockid].Unlock()
 	return
 }
