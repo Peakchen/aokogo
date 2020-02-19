@@ -1,5 +1,13 @@
 # github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 github.com/axgle/mahonia
+# github.com/coreos/etcd v3.3.18+incompatible
+github.com/coreos/etcd/client
+github.com/coreos/etcd/pkg/pathutil
+github.com/coreos/etcd/pkg/srv
+github.com/coreos/etcd/pkg/types
+github.com/coreos/etcd/version
+# github.com/coreos/go-semver v0.3.0
+github.com/coreos/go-semver/semver
 # github.com/garyburd/redigo v1.6.0
 github.com/garyburd/redigo/redis
 github.com/garyburd/redigo/internal
@@ -18,12 +26,17 @@ github.com/gomodule/redigo/internal
 github.com/gonutz/ide/w32
 # github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
-# github.com/mattn/go-sqlite3 v2.0.2+incompatible
-github.com/mattn/go-sqlite3
+# github.com/json-iterator/go v1.1.9
+github.com/json-iterator/go
+# github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.1
+github.com/modern-go/reflect2
+# github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
+github.com/samuel/go-zookeeper/zk
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
-# golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8 => github.com/golang/sys v0.0.0-20190804053845-51ab0e2deafa
-golang.org/x/sys/windows/registry
-golang.org/x/sys/windows
+# github.com/zieckey/etcdsync v0.0.0-20180810020013-cd5b26bc05a1
+github.com/zieckey/etcdsync
 # gopkg.in/redsync.v1 v1.0.1
 gopkg.in/redsync.v1

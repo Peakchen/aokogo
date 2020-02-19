@@ -9,22 +9,23 @@ go 1.12
 
 require (
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
+	github.com/coreos/etcd v3.3.18+incompatible // indirect
+	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/garyburd/redigo v1.6.0 // indirect
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v2.0.0+incompatible
-	github.com/gonutz/binpacker v0.0.0-20170423181552-aa2d50f5ae3a // indirect
 	github.com/gonutz/ide v0.0.0-20180502124734-e9fc8c14ed56
-	github.com/gonutz/truetype v0.0.0-20170213141940-8a63cd5e8201 // indirect
 	github.com/gorilla/websocket v1.4.1
+	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/mattn/go-sqlite3 v2.0.2+incompatible
+	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/satori/go.uuid v1.2.0
 	github.com/stvp/tempredis v0.0.0-20181119212430-b82af8480203 // indirect
-	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8
+	github.com/zieckey/etcdsync v0.0.0-20180810020013-cd5b26bc05a1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/redsync.v1 v1.0.1
-	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect
 )
 
 replace (
