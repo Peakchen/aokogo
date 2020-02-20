@@ -1,5 +1,3 @@
-package hero
+package Hero
 
-const (
-	
-)
+const ()

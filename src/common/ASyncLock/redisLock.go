@@ -1,6 +1,6 @@
 package AsyncLock
 
-//add by stefan 
+//add by stefan
 // redis version for high frequency and short duration.
 
 import (
@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	_redislocks = map[string]*redsync.Mutex{}
+	_redislocks   = map[string]*redsync.Mutex{}
 	_redisSyncobj *redsync.Redsync
 )
 

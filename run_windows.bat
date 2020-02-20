@@ -1,4 +1,7 @@
 @echo off
+
+cd windows
+
 start run_ExternalGateway.bat
 start run_InnerGateway.bat
 start run_LoginServer.bat
