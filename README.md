@@ -12,7 +12,7 @@
   - Pluggable logging system  
   - CPU and memory log analysis (pprof with related server performance analysis)  
   - protobuf network protocol, and go and lua protocol generation tools  
-  - Supported external configuration file tools [xExcel2x](https://github.com/Peakchen/xExcel2x) developed externally, system configuration file code generation tools [xExport4Go](https://github.com/Peakchen/xExport4Go)  
+  - Supported external configuration file tools [xExcel2x](https://github.com/Peakchen/xExcel2x) developed externally, system configuration       file code generation tools [xExport4Go](https://github.com/Peakchen/xExport4Go)  
   - simulate (unit test module + automated test)  
   - go mod external dependencies  
   - win batch can directly compile and run to compile the program  
