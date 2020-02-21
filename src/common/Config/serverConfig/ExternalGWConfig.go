@@ -25,6 +25,10 @@ var (
 )
 
 func init() {
+	loadExternalgwConfig()
+}
+
+func loadExternalgwConfig(){
 	Config.ParseJson2Cache(GExternalgwconfigConfig, &tArrExternalgwconfig{}, getserverpath()+"ExternalGWConfig.json")
 }
 

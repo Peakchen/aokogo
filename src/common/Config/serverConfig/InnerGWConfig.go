@@ -38,6 +38,10 @@ var (
 )
 
 func init() {
+	loadInnergwConfig()
+}
+
+func loadInnergwConfig(){
 	Config.ParseJson2Cache(GInnergwconfigConfig, &tArrInnergwconfig{}, getserverpath()+"InnerGWConfig.json")
 }
 

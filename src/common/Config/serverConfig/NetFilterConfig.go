@@ -31,8 +31,13 @@ var (
 )
 
 func init() {
+	loadNetFilterConfig()
+}
+
+func loadNetFilterConfig(){
 	Config.ParseJson2Cache(GNetFilterConfig, &tArrNetFilter{}, getserverpath()+"NetFilter.json")
 }
+
 
 func (this *TNetFilterConfig) ComfireAct(data interface{}) (errlist []string) {
 	cfg := data.(*tArrNetFilter)

@@ -36,6 +36,10 @@ var (
 )
 
 func init() {
+	loadLoginConfig()
+}
+
+func loadLoginConfig(){
 	Config.ParseJson2Cache(GLoginconfigConfig, &tArrLoginconfig{}, getserverpath()+"LoginConfig.json")
 }
 

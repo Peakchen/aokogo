@@ -1,0 +1,5 @@
+package LogicConfig
+
+func LoadLogicAll(){
+	
+}

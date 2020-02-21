@@ -36,6 +36,10 @@ var (
 )
 
 func init() {
+	loadGameConfig()
+}
+
+func loadGameConfig(){
 	Config.ParseJson2Cache(GGameconfigConfig, &tArrGameconfig{}, getserverpath()+"gameConfig.json")
 }
 

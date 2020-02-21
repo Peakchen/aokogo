@@ -29,6 +29,10 @@ var (
 )
 
 func init() {
+	loadRedisConfig()
+}
+
+func loadRedisConfig(){
 	Config.ParseJson2Cache(GRedisconfigConfig, &tArrRedisconfig{}, getserverpath()+"redisconfig.json")
 }
 

@@ -30,6 +30,10 @@ var (
 )
 
 func init() {
+	loadMgoConfig()
+}
+
+func loadMgoConfig(){
 	Config.ParseJson2Cache(GMgoconfigConfig, &tArrMgoconfig{}, getserverpath()+"mgoconfig.json")
 }
 
