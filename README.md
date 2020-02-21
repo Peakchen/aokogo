@@ -17,6 +17,7 @@
   - go mod external dependencies  
   - win batch can directly compile and run to compile the program  
   - Support stack record statistics of database operations after message reception   
+  - Config Hot Update
   - Continually updated...
 ***
 
