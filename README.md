@@ -26,7 +26,7 @@
  
 ![Architecture](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)
 
-##welcome everybody     
+## welcome everybody     
 ![our_group](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
 
 ## Buy me a coffee  
