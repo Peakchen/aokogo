@@ -23,13 +23,12 @@
 
  
 ## Architecture diagram 
-
-[Architecture](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)  
-
+ 
+![Architecture](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)
 ##welcome everybody  
 
-[our_group](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
+![our_group](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
 
 ## Buy me a coffee
-[Buy me a coffee](https://github.com/Peakchen/aokogo/tree/master/src/note/pic/BuyMeACoffee.jpeg)
+![Buy me a coffee](https://github.com/Peakchen/aokogo/tree/master/src/note/pic/BuyMeACoffee.jpeg)
 
