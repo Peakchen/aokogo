@@ -21,13 +21,15 @@
   - Continually updated...
 ***
 
-***Tech group: tcp + redis + mongodb***  
-***Architecture diagram***  
+ 
+## Architecture diagram 
 
- ![微服务架构图](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)  
+[Architecture](https://github.com/Peakchen/aoko/blob/master/src/note/pic/server_struct.png)  
 
-***Focus: come on, welcome everybody, qq group: 855618176***   
+##welcome everybody  
 
-![](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
+[our_group](https://github.com/Peakchen/aoko/blob/master/src/note/pic/qq_group.png)
 
+## Buy me a coffee
+[Buy me a coffee](https://github.com/Peakchen/aokogo/tree/master/src/note/pic/BuyMeACoffee.jpeg)
 
