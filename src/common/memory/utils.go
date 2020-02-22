@@ -5,9 +5,9 @@ import (
 	"runtime"
 )
 
-func GetMemoryUsage(){
+func GetMemoryUsage() {
 	mem := runtime.MemStats{}
 	runtime.ReadMemStats(&mem)
-	curMem = mem.TotalAlloc/MiB
+	curMem = mem.TotalAlloc / MiB
 	Log.FmtPrintln("memory alloc: ", curMem)
 }

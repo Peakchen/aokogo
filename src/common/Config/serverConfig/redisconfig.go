@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 )
 
 /*
@@ -29,11 +30,15 @@ var (
 )
 
 func init() {
-	loadRedisConfig()
+	//loadRedisConfig()
 }
 
-func loadRedisConfig(){
-	Config.ParseJson2Cache(GRedisconfigConfig, &tArrRedisconfig{}, getserverpath()+"redisconfig.json")
+func loadRedisConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "redisconfig.json")
+	Config.ParseJson2Cache(GRedisconfigConfig, &tArrRedisconfig{}, SvrPath)
 }
 
 func (this *TRedisconfigConfig) ComfireAct(data interface{}) (errlist []string) {

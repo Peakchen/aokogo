@@ -1,6 +1,11 @@
 package serverConfig
 
-func LoadSvrAllConfig(){
+var (
+	SvrPath string
+)
+
+func LoadSvrAllConfig(CfgPath string) {
+	SvrPath = CfgPath
 	loadExternalgwConfig()
 	loadGameConfig()
 	loadInnergwConfig()
@@ -8,5 +13,5 @@ func LoadSvrAllConfig(){
 	loadMgoConfig()
 	loadNetFilterConfig()
 	loadRedisConfig()
-	
+
 }

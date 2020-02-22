@@ -5,6 +5,6 @@ import (
 )
 
 type TServerHotUpdateInfo struct {
-	HUCallback func ()
+	HUCallback func()
 	Recvsignal os.Signal
 }

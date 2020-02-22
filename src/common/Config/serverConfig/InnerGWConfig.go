@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 	"strconv"
 )
 
@@ -38,11 +39,15 @@ var (
 )
 
 func init() {
-	loadInnergwConfig()
+	//loadInnergwConfig()
 }
 
-func loadInnergwConfig(){
-	Config.ParseJson2Cache(GInnergwconfigConfig, &tArrInnergwconfig{}, getserverpath()+"InnerGWConfig.json")
+func loadInnergwConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "InnerGWConfig.json")
+	Config.ParseJson2Cache(GInnergwconfigConfig, &tArrInnergwconfig{}, SvrPath)
 }
 
 func (this *TInnergwconfigConfig) ComfireAct(data interface{}) (errlist []string) {

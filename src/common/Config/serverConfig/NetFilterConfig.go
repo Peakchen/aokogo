@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 )
 
 /*
@@ -31,13 +32,16 @@ var (
 )
 
 func init() {
-	loadNetFilterConfig()
+	//loadNetFilterConfig()
 }
 
-func loadNetFilterConfig(){
-	Config.ParseJson2Cache(GNetFilterConfig, &tArrNetFilter{}, getserverpath()+"NetFilter.json")
+func loadNetFilterConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "NetFilter.json")
+	Config.ParseJson2Cache(GNetFilterConfig, &tArrNetFilter{}, SvrPath)
 }
-
 
 func (this *TNetFilterConfig) ComfireAct(data interface{}) (errlist []string) {
 	cfg := data.(*tArrNetFilter)

@@ -10,7 +10,3 @@ func main() {
 	Log.FmtPrintln("run db server.")
 	server.StartDBServer()
 }
-
-func init() {
-
-}

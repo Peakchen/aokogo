@@ -10,7 +10,7 @@ set GOOS=windows
 set GOARCH=amd64
 
 
-echo start install sever ...
+echo start install simulate ...
 go install -gcflags " -N -l" simulate
 
 echo make ok

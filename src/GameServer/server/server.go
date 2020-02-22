@@ -6,24 +6,31 @@ import (
 	"GameServer/LogicMsg"
 	"GameServer/dbo"
 	"GameServer/rpc"
+	"common/Config/LogicConfig"
 	"common/Config/serverConfig"
 	"common/Define"
-	"common/tcpNet"
 	"common/HotUpdate"
+	"common/tcpNet"
+	"flag"
 	"syscall"
-	"common/Config/LogicConfig"
+)
+
+var (
+	CfgPath string
 )
 
 func init() {
+	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
 	LogicMsg.Init()
 	rpc.Init()
 }
 
-func reloadConfig(){
+func reloadConfig() {
 	LogicConfig.LoadLogicAll()
 }
 
 func StartServer() {
+	serverConfig.LoadSvrAllConfig(CfgPath)
 	Gamecfg := serverConfig.GGameconfigConfig.Get()
 	server := Gamecfg.Zone + Gamecfg.No
 	dbo.StartDBSerice(server)

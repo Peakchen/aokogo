@@ -1,5 +1,5 @@
 // add by stefan
-package memoryMgr
+package memory
 
 import (
 	"log"

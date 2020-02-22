@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 )
 
 /*
@@ -25,11 +26,15 @@ var (
 )
 
 func init() {
-	loadExternalgwConfig()
+	//loadExternalgwConfig()
 }
 
-func loadExternalgwConfig(){
-	Config.ParseJson2Cache(GExternalgwconfigConfig, &tArrExternalgwconfig{}, getserverpath()+"ExternalGWConfig.json")
+func loadExternalgwConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "ExternalGWConfig.json")
+	Config.ParseJson2Cache(GExternalgwconfigConfig, &tArrExternalgwconfig{}, SvrPath)
 }
 
 func (this *TExternalgwconfigConfig) ComfireAct(data interface{}) (errlist []string) {

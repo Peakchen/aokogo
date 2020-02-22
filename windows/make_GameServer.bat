@@ -10,7 +10,7 @@ set GOOS=windows
 set GOARCH=amd64
 
 
-echo start install sever ...
+echo start install GameServer ...
 go install -gcflags " -N -l" GameServer
 
 rem cd %~dp0src\GameServer\
@@ -25,5 +25,3 @@ rem go tool link -o ../../bin/GameServer.exe -L %~dp0\pkg\windows_amd64 main.o
 echo make ok
 
 set GOPATH=%GOPATH_BAK%
-
-pause

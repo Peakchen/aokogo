@@ -10,7 +10,7 @@ set GOOS=windows
 set GOARCH=amd64
 
 
-echo start install sever ...
+echo start install InnerGateway ...
 go install -gcflags " -N -l" InnerGateway
 
 echo make ok

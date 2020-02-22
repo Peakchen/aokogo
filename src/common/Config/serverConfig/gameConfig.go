@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 	"strconv"
 )
 
@@ -36,11 +37,15 @@ var (
 )
 
 func init() {
-	loadGameConfig()
+	//loadGameConfig()
 }
 
-func loadGameConfig(){
-	Config.ParseJson2Cache(GGameconfigConfig, &tArrGameconfig{}, getserverpath()+"gameConfig.json")
+func loadGameConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "gameConfig.json")
+	Config.ParseJson2Cache(GGameconfigConfig, &tArrGameconfig{}, SvrPath)
 }
 
 func (this *TGameconfigConfig) ComfireAct(data interface{}) (errlist []string) {

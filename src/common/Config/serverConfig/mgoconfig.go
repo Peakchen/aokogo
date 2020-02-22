@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 )
 
 /*
@@ -30,11 +31,15 @@ var (
 )
 
 func init() {
-	loadMgoConfig()
+	//loadMgoConfig()
 }
 
-func loadMgoConfig(){
-	Config.ParseJson2Cache(GMgoconfigConfig, &tArrMgoconfig{}, getserverpath()+"mgoconfig.json")
+func loadMgoConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "mgoconfig.json")
+	Config.ParseJson2Cache(GMgoconfigConfig, &tArrMgoconfig{}, SvrPath)
 }
 
 func (this *TMgoconfigConfig) ComfireAct(data interface{}) (errlist []string) {

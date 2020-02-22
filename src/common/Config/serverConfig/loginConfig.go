@@ -3,6 +3,7 @@ package serverConfig
 import (
 	"common/Config"
 	"fmt"
+	"path/filepath"
 	"strconv"
 )
 
@@ -36,11 +37,15 @@ var (
 )
 
 func init() {
-	loadLoginConfig()
+	//loadLoginConfig()
 }
 
-func loadLoginConfig(){
-	Config.ParseJson2Cache(GLoginconfigConfig, &tArrLoginconfig{}, getserverpath()+"LoginConfig.json")
+func loadLoginConfig() {
+	if len(SvrPath) == 0 {
+		SvrPath = getserverpath()
+	}
+	SvrPath = filepath.Join(SvrPath, "LoginConfig.json")
+	Config.ParseJson2Cache(GLoginconfigConfig, &tArrLoginconfig{}, SvrPath)
 }
 
 func (this *TLoginconfigConfig) ComfireAct(data interface{}) (errlist []string) {

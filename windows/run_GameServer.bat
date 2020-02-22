@@ -2,6 +2,6 @@
 call make_GameServer.bat
 cd ..
 cd bin
-start GameServer.exe
+GameServer.exe
 cd ..
 pause
