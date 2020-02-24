@@ -25,3 +25,10 @@ func NormalStackLog() (stacklog string) {
 func RedStackLog() {
 	debug.PrintStack()
 }
+
+func Catchcrash() {
+	if r := recover(); r != nil {
+		stacklog := NormalStackLog()
+		Log.Error("catch recover: ", r, stacklog)
+	}
+}

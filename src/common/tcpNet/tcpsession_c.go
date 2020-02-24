@@ -8,7 +8,7 @@ import (
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
-
+	"common/stacktrace"
 	"fmt"
 	"net"
 	"sync/atomic"
@@ -158,7 +158,7 @@ func (this *ClientTcpSession) WriteMessage(data []byte) (succ bool) {
 		return
 	}
 
-	defer catchRecover()
+	defer stacktrace.Catchcrash()
 
 	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//send...
@@ -173,7 +173,7 @@ func (this *ClientTcpSession) WriteMessage(data []byte) (succ bool) {
 }
 
 func (this *ClientTcpSession) readMessage() (succ bool) {
-	defer catchRecover()
+	defer stacktrace.Catchcrash()
 
 	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	if len(this.StrIdentify) == 0 &&

@@ -36,11 +36,14 @@ func init() {
 }
 
 func loadNetFilterConfig() {
+	var (
+		NetFilterpath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		NetFilterpath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "NetFilter.json")
-	Config.ParseJson2Cache(GNetFilterConfig, &tArrNetFilter{}, SvrPath)
+	NetFilterpath = filepath.Join(SvrPath, "NetFilter.json")
+	Config.ParseJson2Cache(GNetFilterConfig, &tArrNetFilter{}, NetFilterpath)
 }
 
 func (this *TNetFilterConfig) ComfireAct(data interface{}) (errlist []string) {

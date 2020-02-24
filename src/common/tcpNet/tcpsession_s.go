@@ -13,10 +13,10 @@ import (
 	"time"
 
 	//"common/S2SMessage"
+	"common/stacktrace"
 	"context"
-	"sync"
-
 	"github.com/golang/protobuf/proto"
+	"sync"
 	//. "common/Define"
 )
 
@@ -134,7 +134,7 @@ func (this *SvrTcpSession) WriteMessage(data []byte) (succ bool) {
 		return
 	}
 
-	defer catchRecover()
+	defer stacktrace.Catchcrash()
 
 	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//send...
@@ -149,7 +149,7 @@ func (this *SvrTcpSession) WriteMessage(data []byte) (succ bool) {
 }
 
 func (this *SvrTcpSession) readMessage() (succ bool) {
-	defer catchRecover()
+	defer stacktrace.Catchcrash()
 
 	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	if this.RegPoint == 0 {

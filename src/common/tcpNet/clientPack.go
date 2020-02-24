@@ -4,12 +4,12 @@ package tcpNet
 
 import (
 	"common/Log"
+	"common/stacktrace"
 	"common/utls"
 	"encoding/binary"
 	"fmt"
-	"reflect"
-
 	"github.com/golang/protobuf/proto"
+	"reflect"
 )
 
 /*
@@ -189,7 +189,7 @@ func (this *ClientProtocol) GetRemoteAddr() (addr string) {
 }
 
 func (this *ClientProtocol) UnPackMsg4Client(InData []byte) (pos int, err error) {
-	defer catchRecover()
+	defer stacktrace.Catchcrash()
 
 	this.routepoint = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
@@ -214,7 +214,7 @@ func (this *ClientProtocol) UnPackMsg4Client(InData []byte) (pos int, err error)
 }
 
 func (this *ClientProtocol) UnPackMsg4Svr(InData []byte) (pos int, err error) {
-	defer catchRecover()
+	defer stacktrace.Catchcrash()
 
 	this.routepoint = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2

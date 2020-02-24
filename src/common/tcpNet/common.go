@@ -2,7 +2,6 @@ package tcpNet
 
 import (
 	"common/Define"
-	"common/Log"
 	"net"
 	"reflect"
 	"time"
@@ -148,9 +147,3 @@ const (
 	//offline session
 	maxOfflineSize = 1024
 )
-
-func catchRecover() {
-	if r := recover(); r != nil {
-		Log.Error("catch recover: ", r)
-	}
-}

@@ -4,9 +4,19 @@ package main
 import (
 	"InnerGateway/client"
 	"InnerGateway/server"
+	"common/Config/serverConfig"
 	"common/Log"
+	"common/ado/dbStatistics"
+	"flag"
 	"sync"
 )
+
+func init() {
+	var CfgPath string
+	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
+	serverConfig.LoadSvrAllConfig(CfgPath)
+	dbStatistics.InitDBStatistics()
+}
 
 func startInnerGW() {
 	var sw sync.WaitGroup
@@ -19,4 +29,5 @@ func startInnerGW() {
 func main() {
 	Log.FmtPrintf("start InnerGateway.")
 	startInnerGW()
+	dbStatistics.DBStatisticsStop()
 }

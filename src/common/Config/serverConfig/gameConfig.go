@@ -41,11 +41,14 @@ func init() {
 }
 
 func loadGameConfig() {
+	var (
+		gameGWpath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		gameGWpath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "gameConfig.json")
-	Config.ParseJson2Cache(GGameconfigConfig, &tArrGameconfig{}, SvrPath)
+	gameGWpath = filepath.Join(SvrPath, "gameConfig.json")
+	Config.ParseJson2Cache(GGameconfigConfig, &tArrGameconfig{}, gameGWpath)
 }
 
 func (this *TGameconfigConfig) ComfireAct(data interface{}) (errlist []string) {

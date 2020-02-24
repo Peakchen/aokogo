@@ -34,11 +34,14 @@ func init() {
 }
 
 func loadRedisConfig() {
+	var (
+		redispath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		redispath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "redisconfig.json")
-	Config.ParseJson2Cache(GRedisconfigConfig, &tArrRedisconfig{}, SvrPath)
+	redispath = filepath.Join(SvrPath, "redisconfig.json")
+	Config.ParseJson2Cache(GRedisconfigConfig, &tArrRedisconfig{}, redispath)
 }
 
 func (this *TRedisconfigConfig) ComfireAct(data interface{}) (errlist []string) {

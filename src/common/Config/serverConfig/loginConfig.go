@@ -41,11 +41,14 @@ func init() {
 }
 
 func loadLoginConfig() {
+	var (
+		Loginpath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		Loginpath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "LoginConfig.json")
-	Config.ParseJson2Cache(GLoginconfigConfig, &tArrLoginconfig{}, SvrPath)
+	Loginpath = filepath.Join(SvrPath, "LoginConfig.json")
+	Config.ParseJson2Cache(GLoginconfigConfig, &tArrLoginconfig{}, Loginpath)
 }
 
 func (this *TLoginconfigConfig) ComfireAct(data interface{}) (errlist []string) {

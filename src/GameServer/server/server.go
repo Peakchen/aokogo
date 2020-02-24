@@ -15,12 +15,10 @@ import (
 	"syscall"
 )
 
-var (
-	CfgPath string
-)
-
 func init() {
+	var CfgPath string
 	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
+	serverConfig.LoadSvrAllConfig(CfgPath)
 	LogicMsg.Init()
 	rpc.Init()
 }
@@ -30,7 +28,6 @@ func reloadConfig() {
 }
 
 func StartServer() {
-	serverConfig.LoadSvrAllConfig(CfgPath)
 	Gamecfg := serverConfig.GGameconfigConfig.Get()
 	server := Gamecfg.Zone + Gamecfg.No
 	dbo.StartDBSerice(server)

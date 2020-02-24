@@ -43,11 +43,14 @@ func init() {
 }
 
 func loadInnergwConfig() {
+	var (
+		InnerGWpath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		InnerGWpath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "InnerGWConfig.json")
-	Config.ParseJson2Cache(GInnergwconfigConfig, &tArrInnergwconfig{}, SvrPath)
+	InnerGWpath = filepath.Join(SvrPath, "InnerGWConfig.json")
+	Config.ParseJson2Cache(GInnergwconfigConfig, &tArrInnergwconfig{}, InnerGWpath)
 }
 
 func (this *TInnergwconfigConfig) ComfireAct(data interface{}) (errlist []string) {

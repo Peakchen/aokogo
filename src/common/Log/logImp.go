@@ -133,34 +133,35 @@ func run(aokoLog *TAokoLog) {
 }
 
 func Error(args ...interface{}) {
-	format := time.Now().Local().Format(public.CstTimeFmt)
-	WriteLog(EnLogType_Error, "[Error]\t\t\t", format, args)
+	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
+	format := "time: " + timeFormat + ", Info: %v."
+	WriteLog(EnLogType_Error, "[Error]\t", format, args)
 }
 
 func ErrorIDCard(identify string, args ...interface{}) {
 	format := fmt.Sprintf("identify: %v, %v.", identify, args)
 	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
-	WriteLog(EnLogType_Error, "[Error]\t\t\t", timeFormat, format)
+	WriteLog(EnLogType_Error, "[Error]\t", timeFormat, format)
 }
 
 func ErrorModule(data public.IDBCache, args ...interface{}) {
 	format := fmt.Sprintf("main: %v, sub: %v, identify: %v, %v.", data.MainModel(), data.SubModel(), data.Identify(), args)
 	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
-	WriteLog(EnLogType_Error, "[Error]\t\t\t", timeFormat, format)
+	WriteLog(EnLogType_Error, "[Error]\t", timeFormat, format)
 }
 
 func Info(format string, args ...interface{}) {
 	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
-	WriteLog(EnLogType_Info, "[Info]\t\t\t", timeFormat+format, args)
+	WriteLog(EnLogType_Info, "[Info]\t", timeFormat+format, args)
 }
 
 func Fail(args ...interface{}) {
 	format := time.Now().Local().Format(public.CstTimeFmt)
-	WriteLog(EnLogType_Fail, "[Fail]\t\t\t", format, args)
+	WriteLog(EnLogType_Fail, "[Fail]\t", format, args)
 }
 
 func Debug(format string, args ...interface{}) {
-	WriteLog(EnLogType_Debug, "[Debug]\t\t\t", format, args)
+	WriteLog(EnLogType_Debug, "[Debug]\t", format, args)
 }
 
 func Panic() {

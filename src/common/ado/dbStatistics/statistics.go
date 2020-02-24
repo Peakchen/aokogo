@@ -100,7 +100,10 @@ func (this *TDBStatistics) Update(content string) {
 
 func (this *TDBStatistics) loadOrInitUser(identify string) (modeldata map[string][]*TModelStatistics) {
 	modeldata = nil
-	value, _ := this.userOperModels.LoadOrStore(identify, map[string][]*TModelStatistics{})
+	if len(identify) == 0 {
+		return
+	}
+	value, _ := this.userOperModels.LoadOrStore(identify, make(map[string][]*TModelStatistics, 0))
 	if value == nil {
 		Log.Error("cache model invalid.")
 		return
@@ -123,6 +126,9 @@ func (this *TDBStatistics) deleteUser(identify string) {
 	statistics msg logic runs with db operations.
 */
 func DBOperStatistics(identify, model string) {
+	if _dbStatistics == nil {
+		InitDBStatistics()
+	}
 	modeldata := _dbStatistics.loadOrInitUser(identify)
 	if modeldata == nil {
 		return
@@ -146,6 +152,9 @@ func DBOperStatistics(identify, model string) {
 	statistics msg logic ends msg mainid and subid.
 */
 func DBMsgStatistics(identify string, mainid, subid uint16) {
+	if _dbStatistics == nil {
+		InitDBStatistics()
+	}
 	modeldata := _dbStatistics.loadOrInitUser(identify)
 	if modeldata == nil {
 		return

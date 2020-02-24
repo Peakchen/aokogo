@@ -30,11 +30,14 @@ func init() {
 }
 
 func loadExternalgwConfig() {
+	var (
+		ExternalGWpath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		ExternalGWpath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "ExternalGWConfig.json")
-	Config.ParseJson2Cache(GExternalgwconfigConfig, &tArrExternalgwconfig{}, SvrPath)
+	ExternalGWpath = filepath.Join(SvrPath, "ExternalGWConfig.json")
+	Config.ParseJson2Cache(GExternalgwconfigConfig, &tArrExternalgwconfig{}, ExternalGWpath)
 }
 
 func (this *TExternalgwconfigConfig) ComfireAct(data interface{}) (errlist []string) {

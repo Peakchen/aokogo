@@ -35,11 +35,14 @@ func init() {
 }
 
 func loadMgoConfig() {
+	var (
+		mgopath string
+	)
 	if len(SvrPath) == 0 {
-		SvrPath = getserverpath()
+		mgopath = getserverpath()
 	}
-	SvrPath = filepath.Join(SvrPath, "mgoconfig.json")
-	Config.ParseJson2Cache(GMgoconfigConfig, &tArrMgoconfig{}, SvrPath)
+	mgopath = filepath.Join(SvrPath, "mgoconfig.json")
+	Config.ParseJson2Cache(GMgoconfigConfig, &tArrMgoconfig{}, mgopath)
 }
 
 func (this *TMgoconfigConfig) ComfireAct(data interface{}) (errlist []string) {
