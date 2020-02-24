@@ -45,6 +45,7 @@ func NewClient(host, pprofAddr string, SvrType Define.ERouteId, cb MessageCb, Ad
 		SvrType:    SvrType,
 		Adacb:      Ada,
 		SessionMgr: sessionMgr,
+		off: 		make(chan *ClientTcpSession, maxOfflineSize),
 	}
 }
 
@@ -150,7 +151,6 @@ func (this *TcpClient) Exit(sw *sync.WaitGroup) {
 	this.dialsess = nil
 	this.cancel()
 	pprof.Exit()
-	sw.Wait()
 }
 
 func (this *TcpClient) sendRegisterMsg() {

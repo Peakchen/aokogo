@@ -63,7 +63,7 @@ func NewSvrSession(addr string,
 		ctx:        ctx,
 		recvCb:     newcb,
 		pack:       pack,
-		off:        make(chan *SvrTcpSession, maxOfflineSize),
+		off:        off,
 		SvrType:    SvrType,
 	}
 }
@@ -72,17 +72,17 @@ func (this *SvrTcpSession) Alive() bool {
 	return this.isAlive
 }
 
-func (this *SvrTcpSession) exit(sw *sync.WaitGroup) {
+func (this *SvrTcpSession) close(sw *sync.WaitGroup) {
 	if this == nil {
 		return
 	}
 
-	Log.FmtPrintf("session exit, svr: %v, regpoint: %v, cache size: %v.", this.SvrType, this.RegPoint, len(this.send))
+	Log.FmtPrintf("session close, svr: %v, regpoint: %v, cache size: %v.", this.SvrType, this.RegPoint, len(this.send))
+	select {
+		case this.off <- this:
+	}
+
 	GServer2ServerSession.RemoveSession(this.RemoteAddr)
-	this.isAlive = false
-	this.StrIdentify = ""
-	this.off <- this
-	this.send <- []byte{}
 	//close(this.send)
 	this.conn.CloseRead()
 	this.conn.CloseWrite()
@@ -96,7 +96,7 @@ func (this *SvrTcpSession) SetSendCache(data []byte) {
 func (this *SvrTcpSession) sendloop(sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
-		this.exit(sw)
+		this.close(sw)
 	}()
 
 	for {
@@ -114,7 +114,7 @@ func (this *SvrTcpSession) sendloop(sw *sync.WaitGroup) {
 func (this *SvrTcpSession) recvloop(sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
-		this.exit(sw)
+		this.close(sw)
 	}()
 
 	for {

@@ -42,6 +42,7 @@ func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, cb Mess
 		SvrType:    SvrType,
 		SessionMgr: sessionMgr,
 		SessionID:  ESessionBeginNum,
+		off: 		make(chan *SvrTcpSession, maxOfflineSize),
 	}
 }
 
@@ -119,11 +120,14 @@ func (this *TcpServer) loopoff(ctx context.Context, sw *sync.WaitGroup) {
 
 func (this *TcpServer) online() {
 	this.person++
+	// rpc notify person online...
+
 }
 
 func (this *TcpServer) offline(os *SvrTcpSession) {
-	// process
 	this.person--
+	// rpc notify person offline...
+
 }
 
 func (this *TcpServer) SendMessage() {
@@ -131,10 +135,9 @@ func (this *TcpServer) SendMessage() {
 }
 
 func (this *TcpServer) Exit(sw *sync.WaitGroup) {
-	this.listener.Close()
 	this.cancel()
+	this.listener.Close()
 	pprof.Exit()
-	sw.Wait()
 }
 
 func (this *TcpServer) SessionType() (st ESessionType) {

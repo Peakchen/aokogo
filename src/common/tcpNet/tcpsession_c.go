@@ -65,7 +65,7 @@ func NewClientSession(addr string,
 		ctx:        ctx,
 		recvCb:     newcb,
 		pack:       pack,
-		off:        make(chan *ClientTcpSession, maxOfflineSize),
+		off:        off,
 		SvrType:    SvrType,
 		//StrIdentify: addr,
 	}
@@ -75,17 +75,14 @@ func (this *ClientTcpSession) Alive() bool {
 	return this.isAlive
 }
 
-func (this *ClientTcpSession) exit(sw *sync.WaitGroup) {
+func (this *ClientTcpSession) close(sw *sync.WaitGroup) {
 	if this == nil {
 		return
 	}
 
-	Log.FmtPrintf("session exit, svr: %v, regpoint: %v, cache size: %v.", this.SvrType, this.RegPoint, len(this.send))
+	Log.FmtPrintf("session close, svr: %v, regpoint: %v, cache size: %v.", this.SvrType, this.RegPoint, len(this.send))
 	GClient2ServerSession.RemoveSession(this.RemoteAddr)
-	this.isAlive = false
-	this.StrIdentify = ""
 	this.off <- this
-	this.send <- []byte{}
 	//close(this.send)
 	this.conn.CloseRead()
 	this.conn.CloseWrite()
@@ -99,7 +96,7 @@ func (this *ClientTcpSession) SetSendCache(data []byte) {
 func (this *ClientTcpSession) heartbeatloop(sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
-		this.exit(sw)
+		this.close(sw)
 	}()
 
 	ticker := time.NewTicker(time.Duration(cstKeepLiveHeartBeatSec) * time.Second)
@@ -120,7 +117,7 @@ func (this *ClientTcpSession) heartbeatloop(sw *sync.WaitGroup) {
 func (this *ClientTcpSession) sendloop(sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
-		this.exit(sw)
+		this.close(sw)
 	}()
 
 	for {
@@ -138,7 +135,7 @@ func (this *ClientTcpSession) sendloop(sw *sync.WaitGroup) {
 func (this *ClientTcpSession) recvloop(sw *sync.WaitGroup) {
 	defer func() {
 		sw.Done()
-		this.exit(sw)
+		this.close(sw)
 	}()
 
 	for {
