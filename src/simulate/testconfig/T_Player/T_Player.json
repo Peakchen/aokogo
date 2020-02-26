@@ -2,8 +2,7 @@
     {
         "connAddr":"127.0.0.1:51001",
         "module":"game",
-        "route": 8,
-        "mainId": 4, 
+        "mainId": 11, 
         "msg":[
             {
                 "request":{
@@ -24,7 +23,7 @@
             },
             {
                 "request":{
-                    "subId": 3, 
+                    "subId": 5, 
                     "name": "CS_PlayerInfo_Req", 
                     "params":{
                         
@@ -32,7 +31,7 @@
                 }, 
 
                 "response":{
-                    "subId": 4, 
+                    "subId": 6, 
                     "name": "SC_PlayerInfo_Rsp", 
                     "params":{
                         

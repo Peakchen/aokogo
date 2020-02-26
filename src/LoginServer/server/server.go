@@ -7,7 +7,7 @@ import (
 	"common/Define"
 	"common/Log"
 	"common/ado/dbStatistics"
-	"common/tcpNet"
+	"common/akNet"
 	"flag"
 )
 
@@ -23,12 +23,12 @@ func StartServer() {
 	logincfg := serverConfig.GLoginconfigConfig.Get()
 	server := logincfg.Zone + logincfg.No
 	dbo.StartDBSerice(server)
-	gameSvr := tcpNet.NewClient(logincfg.Listenaddr,
+	gameSvr := akNet.NewClient(logincfg.Listenaddr,
 		logincfg.Pprofaddr,
 		Define.ERouteId_ER_Login,
 		LogicMsg.LoginMessageCallBack,
 		nil,
-		tcpNet.GClient2ServerSession)
+		akNet.GClient2ServerSession)
 
 	gameSvr.Run()
 	dbStatistics.DBStatisticsStop()

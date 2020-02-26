@@ -12,7 +12,7 @@ call .\\windows\\make_Innergws.bat
 
 call .\\windows\\make_loginserver.bat
 
-call .\\windows\\make_simulate.bat
+::call .\\windows\\make_simulate.bat
 
 call .\\windows\\make_dbserver.bat
 

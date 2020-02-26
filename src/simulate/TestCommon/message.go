@@ -2,7 +2,7 @@ package TestCommon
 
 import (
 	"common/Log"
-	"common/tcpNet"
+	"common/akNet"
 	"context"
 	"fmt"
 	"net"
@@ -22,7 +22,7 @@ type TModuleCommon struct {
 	cancle     context.CancelFunc
 	data       []byte
 	module     string
-	clientPack tcpNet.IMessagePack
+	clientPack akNet.IMessagePack
 }
 
 var exitchan = make(chan os.Signal, 1)
@@ -31,17 +31,14 @@ func NewModule(host, module string) *TModuleCommon {
 	return &TModuleCommon{
 		host:       host,
 		module:     module,
-		clientPack: &tcpNet.ClientProtocol{},
+		clientPack: &akNet.ClientProtocol{},
 		data:       make([]byte, 1024),
 	}
 }
 
-func (this *TModuleCommon) PushMsg(dstpoint, mainid, subid uint16, msg proto.Message) {
+func (this *TModuleCommon) PushMsg(mainid, subid uint16, msg proto.Message) {
 	this.clientPack.SetIdentify(this.host)
-	buff, err := this.clientPack.PackMsg4Client(dstpoint,
-		mainid,
-		subid,
-		msg)
+	buff, err := this.clientPack.PackMsg4Client(mainid, subid, msg)
 	if err != nil {
 		Log.Error(err)
 		return

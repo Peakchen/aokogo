@@ -1,15 +1,15 @@
 package logic
 
-import "common/tcpNet"
+import "common/akNet"
 
 /*
 	by stefan
 	date: 20191111 16:08
 */
 type ILogicReady interface {
-	EnterReady(session tcpNet.TcpSession)
-	LeaveReady(session tcpNet.TcpSession)
-	ReconnectReady(session tcpNet.TcpSession)
+	EnterReady(session akNet.TcpSession)
+	LeaveReady(session akNet.TcpSession)
+	ReconnectReady(session akNet.TcpSession)
 }
 
 var (

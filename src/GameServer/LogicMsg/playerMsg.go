@@ -3,12 +3,12 @@ package LogicMsg
 import (
 	"GameServer/logic/Player"
 	"common/Log"
+	"common/akNet"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Player"
-	"common/tcpNet"
 )
 
-func onGetPlayerInfo(session tcpNet.TcpSession, req *MSG_Player.CS_PlayerInfo_Req) (succ bool, err error) {
+func onGetPlayerInfo(session akNet.TcpSession, req *MSG_Player.CS_PlayerInfo_Req) (succ bool, err error) {
 	Log.FmtPrintf("[onGetPlayerInfo] SessionID: %v.", session.GetIdentify())
 
 	rsp := &MSG_Player.SC_PlayerInfo_Rsp{}
@@ -25,5 +25,5 @@ func onGetPlayerInfo(session tcpNet.TcpSession, req *MSG_Player.CS_PlayerInfo_Re
 }
 
 func init() {
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_PlayerInfo), onGetPlayerInfo)
+	akNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_PlayerInfo), onGetPlayerInfo)
 }

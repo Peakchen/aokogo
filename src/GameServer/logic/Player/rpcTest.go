@@ -7,7 +7,7 @@ package Player
 import (
 	"GameServer/rpc"
 	"common/Log"
-	"common/tcpNet"
+	"common/akNet"
 )
 
 const (
@@ -29,7 +29,7 @@ func (this *TPlayerUpdateRpc) GetPlayerInfo(info *TPlayerInfoTest) {
 	Log.FmtPrintln("recv module rpc msg, info content: ", info.Content)
 }
 
-func RunModuleRpc4GetPlayerInfoTest(session tcpNet.TcpSession, module, funcName string) {
+func RunModuleRpc4GetPlayerInfoTest(session akNet.TcpSession, module, funcName string) {
 	info := &TPlayerInfoTest{
 		Content: "hi，stefan.",
 	}
@@ -37,7 +37,7 @@ func RunModuleRpc4GetPlayerInfoTest(session tcpNet.TcpSession, module, funcName 
 	rpc.SendRpcMsg(session, module, funcName, info)
 }
 
-func RunRpc4GetPlayerInfoTest(session tcpNet.TcpSession, funcName string) {
+func RunRpc4GetPlayerInfoTest(session akNet.TcpSession, funcName string) {
 	info := &TPlayerInfoTest{
 		Content: "hi，stefan.",
 	}

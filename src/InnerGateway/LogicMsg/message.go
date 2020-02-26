@@ -5,10 +5,10 @@ package LogicMsg
 import (
 	"common/Define"
 	"common/Log"
+	"common/akNet"
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
-	"common/tcpNet"
 	"fmt"
 	"net"
 
@@ -19,7 +19,7 @@ func InnerGatewayMessageCallBack(c net.Conn, mainID uint16, subID uint16, msg pr
 	Log.FmtPrintf("exec [innter gateway] server message call back.", c.RemoteAddr(), c.LocalAddr())
 }
 
-func onSvrRegister(session tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister_Req) (succ bool, err error) {
+func onSvrRegister(session akNet.TcpSession, req *MSG_Server.CS_ServerRegister_Req) (succ bool, err error) {
 	Log.FmtPrintf("onSvrRegister: StrIdentify: %v, recv: %v.", session.GetIdentify(), req.ServerType)
 	var (
 		msgfmt string
@@ -27,7 +27,7 @@ func onSvrRegister(session tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister_
 
 	session.Push(Define.ERouteId(req.ServerType))
 	for _, id := range req.Msgs {
-		mainid, subid := tcpNet.DecodeCmd(uint32(id))
+		mainid, subid := akNet.DecodeCmd(uint32(id))
 		msgfmt += fmt.Sprintf("[mainid: %v, subid: %v]\t", mainid, subid)
 	}
 
@@ -42,11 +42,11 @@ func onSvrRegister(session tcpNet.TcpSession, req *MSG_Server.CS_ServerRegister_
 		rsp)
 }
 
-func onHeartBeat(session tcpNet.TcpSession, req *MSG_HeartBeat.CS_HeartBeat_Req) (succ bool, err error) {
-	return tcpNet.ResponseHeartBeat(session, uint16(req.SvrPoint))
+func onHeartBeat(session akNet.TcpSession, req *MSG_HeartBeat.CS_HeartBeat_Req) (succ bool, err error) {
+	return akNet.ResponseHeartBeat(session, uint16(req.SvrPoint))
 }
 
 func init() {
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_CS_ServerRegister), onSvrRegister)
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat), onHeartBeat)
+	akNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_CS_ServerRegister), onSvrRegister)
+	akNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat), onHeartBeat)
 }

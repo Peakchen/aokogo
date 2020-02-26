@@ -3,13 +3,13 @@ package Player
 import (
 	"GameServer/logic"
 	"common/Log"
-	"common/tcpNet"
+	"common/akNet"
 )
 
 type TPlayerReady struct {
 }
 
-func (this *TPlayerReady) EnterReady(session tcpNet.TcpSession) {
+func (this *TPlayerReady) EnterReady(session akNet.TcpSession) {
 	Log.FmtPrintln("enter ready.")
 	player := GetPlayer(session.GetIdentify())
 	if player == nil {
@@ -22,11 +22,11 @@ func (this *TPlayerReady) EnterReady(session tcpNet.TcpSession) {
 	//RunRpc4GetPlayerInfoTest(session, cstRpcFunc_GetPlayerInfo)
 }
 
-func (this *TPlayerReady) LeaveReady(session tcpNet.TcpSession) {
+func (this *TPlayerReady) LeaveReady(session akNet.TcpSession) {
 
 }
 
-func (this *TPlayerReady) ReconnectReady(session tcpNet.TcpSession) {
+func (this *TPlayerReady) ReconnectReady(session akNet.TcpSession) {
 
 }
 

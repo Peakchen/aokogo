@@ -3,7 +3,7 @@ package mgr
 //add by stefan 20190610 14:27
 
 import (
-	. "common/tcpNet"
+	. "common/akNet"
 	"context"
 	"sync"
 	//"time"

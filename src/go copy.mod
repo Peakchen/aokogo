@@ -60,6 +60,17 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 	stathat.com/c/consistent v1.0.0 // indirect
+
+	github.com/davecgh/go-spew latest
+	github.com/klauspost/compress latest
+	github.com/eapache/queue latest
+	github.com/eapache/go-xerial-snappy latest
+	github.com/eapache/go-resiliency latest
+	github.com/pierrec/lz4 latest
+	github.com/rcrowley/go-metrics latest
+	golang.org/x/net/proxy latest
+	github.com/Shopify/sarama latest
+	gopkg.in/jcmturner/gokrb5.v7 latest
 )
 
 replace (

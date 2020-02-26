@@ -1,7 +1,6 @@
 package U_login
 
 import (
-	"common/Define"
 	"common/Log"
 	"common/msgProto/MSG_Login"
 	"common/msgProto/MSG_MainModule"
@@ -38,8 +37,7 @@ func UserRegister(idx int) {
 		req.DeviceSerial = "123"
 		req.DeviceName = "androd"
 		Log.FmtPrintln("UserRegister: ", item.Username, item.Passwd)
-		loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
-			uint16(MSG_MainModule.MAINMSG_LOGIN),
+		loginM.PushMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
 			uint16(MSG_Login.SUBMSG_CS_UserRegister),
 			req)
 		go loginM.Run()
@@ -61,8 +59,7 @@ func UserLogin(item *U_config.TSimulateLoginBase) {
 	req.DeviceSerial = "456"
 	req.DeviceName = "iso"
 	Log.FmtPrintln("UserLogin: ", item.Username, item.Passwd)
-	loginM.PushMsg(uint16(Define.ERouteId_ER_Login),
-		uint16(MSG_MainModule.MAINMSG_LOGIN),
+	loginM.PushMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_CS_Login),
 		req)
 	go loginM.Run()

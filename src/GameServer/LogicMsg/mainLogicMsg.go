@@ -3,17 +3,17 @@ package LogicMsg
 import (
 	"GameServer/logic"
 	"common/Log"
+	"common/akNet"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Player"
-	"common/tcpNet"
 )
 
 func Init() {
 
 }
 
-func onServer(session tcpNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (succ bool, err error) {
-	Log.FmtPrintf("onServer player(%v) enter game server.", session.GetIdentify())
+func onEnterServer(session akNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (succ bool, err error) {
+	Log.FmtPrintf("enter Server player(%v) enter game server.", session.GetIdentify())
 	logic.EnterGameReady(session)
 	rsp := &MSG_Player.SC_EnterServer_Rsp{}
 	rsp.Ret = MSG_Player.ErrorCode_Success
@@ -23,6 +23,12 @@ func onServer(session tcpNet.TcpSession, req *MSG_Player.CS_EnterServer_Req) (su
 		rsp)
 }
 
+func onLeaveServer(session akNet.TcpSession, req *MSG_Player.CS_LeaveServer_Req) (succ bool, err error) {
+	Log.FmtPrintf("leave Server player(%v).", session.GetIdentify())
+	return true, nil
+}
+
 func init() {
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_EnterServer), onServer)
+	akNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_EnterServer), onEnterServer)
+	akNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_LeaveServer), onLeaveServer)
 }

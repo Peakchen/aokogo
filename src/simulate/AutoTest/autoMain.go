@@ -4,7 +4,7 @@ package AutoTest
 
 import (
 	"common/Log"
-	"common/tcpNet"
+	"common/akNet"
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
@@ -108,6 +108,10 @@ func (this *TAokoTest) loadTestCheck() {
 			return
 		}
 
+		if strings.Contains(file.Name(), "T_Test") {
+			continue
+		}
+
 		fileName := testrd[0].Name()
 		if strings.Contains(fileName, ".json") &&
 			strings.Contains(file.Name(), "gateway") {
@@ -151,7 +155,6 @@ func (this *TAokoTest) Run(data testconfig.TArrConfig4Test) {
 
 	ConnAddr := data[0].ConnAddr
 	module := data[0].Module
-	route := data[0].Route
 	mainId := data[0].MainId
 	src := data[0].Msg
 	pack := TestCommon.NewModule(ConnAddr, module)
@@ -167,7 +170,7 @@ func (this *TAokoTest) Run(data testconfig.TArrConfig4Test) {
 				continue
 			}
 
-			_cmd := tcpNet.EncodeCmd(uint16(mainId), uint16(SubId))
+			_cmd := akNet.EncodeCmd(uint16(mainId), uint16(SubId))
 			PbItem, exist := msgImp.GetMsgPb(_cmd)
 			if !exist {
 				continue
@@ -185,8 +188,7 @@ func (this *TAokoTest) Run(data testconfig.TArrConfig4Test) {
 			}
 
 			dstpb := dst.(proto.Message)
-			pack.PushMsg(uint16(route),
-				uint16(mainId),
+			pack.PushMsg(uint16(mainId),
 				uint16(SubId),
 				dstpb)
 

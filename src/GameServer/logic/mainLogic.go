@@ -2,12 +2,12 @@ package logic
 
 import (
 	"common/Log"
-	"common/tcpNet"
+	"common/akNet"
 	"reflect"
 )
 
 // after player login, need getting ready.
-func EnterGameReady(session tcpNet.TcpSession) {
+func EnterGameReady(session akNet.TcpSession) {
 	params := []reflect.Value{reflect.ValueOf(session)}
 	for module, obj := range GEnterReadyModule {
 		enter := reflect.ValueOf(obj).MethodByName("EnterReady")
@@ -21,7 +21,7 @@ func EnterGameReady(session tcpNet.TcpSession) {
 }
 
 //before leave, get ready.
-func LeaveGameReady(session tcpNet.TcpSession) {
+func LeaveGameReady(session akNet.TcpSession) {
 	params := []reflect.Value{reflect.ValueOf(session)}
 	for module, obj := range GLeaveReadyModule {
 		enter := reflect.ValueOf(obj).MethodByName("LeaveReady")
@@ -35,7 +35,7 @@ func LeaveGameReady(session tcpNet.TcpSession) {
 }
 
 //broken link reconnct enter game ready.
-func ReconnectEnterReady(session tcpNet.TcpSession) {
+func ReconnectEnterReady(session akNet.TcpSession) {
 	params := []reflect.Value{reflect.ValueOf(session)}
 	for module, obj := range GReconnReadyModule {
 		enter := reflect.ValueOf(obj).MethodByName("ReconnectReady")

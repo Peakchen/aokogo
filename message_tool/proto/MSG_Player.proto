@@ -10,8 +10,11 @@ enum SUBMSG
     CS_EnterServer = 1; //进入服务器请求
     SC_EnterServer = 2; //进入服务器回复
 
-    CS_PlayerInfo = 3; //请求获取玩家消息
-    SC_PlayerInfo = 4; //回复获取玩家消息
+    CS_LeaveServer = 3; //离开服务器请求
+    SC_LeaveServer = 4; //离开服务器回复
+
+    CS_PlayerInfo = 5; //请求获取玩家消息
+    SC_PlayerInfo = 6; //回复获取玩家消息
 
 }
 
@@ -69,6 +72,18 @@ message CS_EnterServer_Req
 message SC_EnterServer_Rsp
 {
     ErrorCode Ret = 1; //返回码
+}
+
+//CS_LeaveServer
+message CS_LeaveServer_Req
+{
+    
+}
+
+//SC_LeaveServer
+message SC_LeaveServer_Rsp
+{
+    
 }
 
 //CS_PlayerInfo

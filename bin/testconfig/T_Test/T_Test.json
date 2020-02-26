@@ -2,7 +2,6 @@
     {
         "connAddr":"127.0.0.1:51001",
         "module":"game",
-        "route": 8,
         "mainId": 4, 
         "msg":[
             {

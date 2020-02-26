@@ -10,7 +10,7 @@ import (
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/HotUpdate"
-	"common/tcpNet"
+	"common/akNet"
 	"flag"
 	"syscall"
 )
@@ -36,7 +36,7 @@ func StartServer() {
 		Recvsignal: syscall.SIGTERM,
 		HUCallback: reloadConfig,
 	})
-	gameSvr := tcpNet.NewClient(Gamecfg.Listenaddr,
+	gameSvr := akNet.NewClient(Gamecfg.Listenaddr,
 		Gamecfg.Pprofaddr,
 		Define.ERouteId_ER_Game,
 		nil,

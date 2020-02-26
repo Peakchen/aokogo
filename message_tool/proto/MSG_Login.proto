@@ -7,14 +7,20 @@ enum SUBMSG
 {
     Begin = 0; //起点消息
     
-    CS_UserBind = 1; //用户认证请求
-    SC_UserBind = 2; //用户认证回复
+    CS_UserBind = 1; //用户绑定请求
+    SC_UserBind = 2; //用户绑定回复
 
     CS_UserRegister = 3; //注册请求
     SC_UserRegister = 4; //注册回复
 
     CS_Login = 5; //用户登录请求
     SC_Login = 6; //用户登录回复
+
+    CS_Logout = 7; //用户登出请求
+    SC_Logout = 8; //用户登出回复
+
+    CS_Certificate = 9; //用户认证请求
+    SC_Certificate = 10; //用户认证回复
 }
 
 enum ErrorCode

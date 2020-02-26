@@ -67,7 +67,6 @@ func (this *TMsg) UnmarshalJSON(data []byte) (err error) {
 type TConfig4Test struct {
 	ConnAddr string `json:"connAddr"`
 	Module   string `json:"module"`
-	Route    int32  `json:"route"`
 	MainId   int32  `json:"mainId"`
 	Msg      *TMsg  `json:"msg"`
 }

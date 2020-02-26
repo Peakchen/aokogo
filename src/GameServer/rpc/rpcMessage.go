@@ -9,9 +9,9 @@ package rpc
 
 import (
 	"common/Log"
+	"common/akNet"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Rpc"
-	"common/tcpNet"
 )
 
 func Init() {
@@ -23,7 +23,7 @@ func Init() {
 	@param1: session obj
 	@param2: req content (module, func, data)
 */
-func onRpcProcess(session tcpNet.TcpSession, req *MSG_Rpc.CS_Rpc_Req) (succ bool, err error) {
+func onRpcProcess(session akNet.TcpSession, req *MSG_Rpc.CS_Rpc_Req) (succ bool, err error) {
 	Log.FmtPrintf("rpc process, rpc module: %v, func: %v.", req.Rpcmodule, req.Rpcfunc)
 	if len(req.Rpcmodule) == 0 {
 		succ, err = onSingleRpc(req.Rpcfunc, req.Data)
@@ -34,5 +34,5 @@ func onRpcProcess(session tcpNet.TcpSession, req *MSG_Rpc.CS_Rpc_Req) (succ bool
 }
 
 func init() {
-	tcpNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_RPC), uint16(MSG_Rpc.SUBMSG_CS_Rpc), onRpcProcess)
+	akNet.RegisterMessage(uint16(MSG_MainModule.MAINMSG_RPC), uint16(MSG_Rpc.SUBMSG_CS_Rpc), onRpcProcess)
 }

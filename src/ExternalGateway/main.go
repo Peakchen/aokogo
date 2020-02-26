@@ -8,7 +8,7 @@ import (
 	"common/Define"
 	"common/Log"
 	"common/ado/dbStatistics"
-	"common/tcpNet"
+	"common/akNet"
 	"flag"
 )
 
@@ -22,11 +22,11 @@ func init() {
 func main() {
 	Log.FmtPrintf("start ExternalGateWay.")
 	externalgw := serverConfig.GExternalgwconfigConfig.Get()
-	newExternalServer := tcpNet.NewTcpServer(externalgw.Listenaddr,
+	newExternalServer := akNet.NewTcpServer(externalgw.Listenaddr,
 		externalgw.Pprofaddr,
 		Define.ERouteId_ER_ESG,
 		LogicMsg.ExternalGatewayMessageCallBack,
-		tcpNet.GClient2ServerSession)
+		akNet.GClient2ServerSession)
 
 	newExternalServer.Run()
 	dbStatistics.DBStatisticsStop()

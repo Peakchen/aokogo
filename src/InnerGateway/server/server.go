@@ -5,17 +5,17 @@ import (
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/Log"
-	"common/tcpNet"
+	"common/akNet"
 )
 
 func StartServer() {
 	Log.FmtPrintf("start InnerGateway server.")
 	Innergw := serverConfig.GInnergwconfigConfig.Get()
-	newInnerServer := tcpNet.NewTcpServer(Innergw.Listenaddr,
+	newInnerServer := akNet.NewTcpServer(Innergw.Listenaddr,
 		Innergw.Pprofaddr,
 		Define.ERouteId_ER_ISG,
 		LogicMsg.InnerGatewayMessageCallBack,
-		tcpNet.GServer2ServerSession)
+		akNet.GServer2ServerSession)
 
 	newInnerServer.Run()
 }

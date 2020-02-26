@@ -9,9 +9,9 @@ package rpc
 
 import (
 	"common/Log"
+	"common/akNet"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Rpc"
-	"common/tcpNet"
 	"encoding/json"
 	"reflect"
 )
@@ -53,7 +53,7 @@ func RegisterRpc(name string, funcName interface{}) {
 	@param1: session obj
 	@param2: module, func, data
 */
-func SendRpcMsg(session tcpNet.TcpSession, module, funcName string, data interface{}) {
+func SendRpcMsg(session akNet.TcpSession, module, funcName string, data interface{}) {
 	rsp := &MSG_Rpc.CS_Rpc_Req{}
 	rsp.Rpcmodule = module
 	rsp.Rpcfunc = funcName
