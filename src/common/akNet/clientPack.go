@@ -62,7 +62,7 @@ func (this *ClientProtocol) PackAction(Output []byte) (err error) {
 
 	binary.LittleEndian.PutUint32(Output[pos:], this.length)
 	pos += 4
-	Log.FmtPrintln("client PackAction-> data len: ", this.length)
+	//Log.FmtPrintln("client PackAction-> data len: ", this.length)
 	copy(Output[pos:], this.data)
 	err = nil
 	return
@@ -81,7 +81,7 @@ func (this *ClientProtocol) PackAction4Client(Output []byte) (err error) {
 
 	binary.LittleEndian.PutUint32(Output[pos:], this.length)
 	pos += 4
-	Log.FmtPrintln("client PackAction4Client-> data len: ", this.length)
+	//Log.FmtPrintln("client PackAction4Client-> data len: ", this.length)
 	copy(Output[pos:], this.data)
 	err = nil
 	return
@@ -125,7 +125,7 @@ func (this *ClientProtocol) SetCmd(mainid, subid uint16, data []byte) {
 	this.subid = subid
 	this.data = data
 	this.length = uint32(len(data))
-	Log.FmtPrintf("[client] mainid: %v, subid: %v, data len: %v.", mainid, subid, this.length)
+	//Log.FmtPrintf("[client] mainid: %v, subid: %v, data len: %v.", mainid, subid, this.length)
 }
 
 func (this *ClientProtocol) Clean() {

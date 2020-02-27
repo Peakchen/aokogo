@@ -15,7 +15,7 @@ func onUserBind(key string, req *MSG_Login.CS_UserBind_Req) (succ bool, err erro
 }
 
 func onUserRegister(session akNet.TcpSession, req *MSG_Login.CS_UserRegister_Req) (succ bool, err error) {
-	Log.FmtPrintf("[onUserRegister] identify: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.GetIdentify(), req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
+	Log.FmtPrintf("[onUserRegister] name: %v, identify: %v, Account: %v, Passwd: %v, DeviceSerial: %v, DeviceName: %v.", session.GetModuleName(), session.GetIdentify(), req.Account, req.Passwd, req.DeviceSerial, req.DeviceName)
 	rsp := &MSG_Login.SC_UserRegister_Rsp{}
 	rsp.Ret = MSG_Login.ErrorCode_Success
 

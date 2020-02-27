@@ -5,8 +5,8 @@ package akNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
-
 	"fmt"
 	"net"
 	"sync/atomic"
@@ -45,7 +45,10 @@ type SvrTcpSession struct {
 	//src point
 	RegPoint Define.ERouteId
 	//person StrIdentify
-	StrIdentify string
+	StrIdentify       string
+	heartBeatDeadline int64
+	//
+	Name string
 }
 
 func NewSvrSession(addr string,
@@ -129,6 +132,38 @@ func (this *SvrTcpSession) recvloop(sw *sync.WaitGroup) {
 	}
 }
 
+func (this *SvrTcpSession) heartBeatloop(sw *sync.WaitGroup) {
+	defer func() {
+		sw.Done()
+	}()
+
+	ticker := time.NewTicker(time.Duration(cstCheckHeartBeatMonitorSec) * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-this.ctx.Done():
+			return
+		case <-ticker.C:
+			if this.heartBeatDeadline == 0 {
+				continue
+			}
+
+			var disconnectionSec int
+			if this.RegPoint == 0 {
+				disconnectionSec = cstClientDisconnectionSec
+			} else {
+				disconnectionSec = cstSvrDisconnectionSec
+			}
+
+			if time.Now().Unix()-this.heartBeatDeadline >= int64(disconnectionSec) {
+				//close connection...
+				this.close(sw)
+				this.heartBeatDeadline = 0
+			}
+		}
+	}
+}
+
 func (this *SvrTcpSession) WriteMessage(data []byte) (succ bool) {
 	if !this.isAlive || len(data) == 0 {
 		return
@@ -138,7 +173,7 @@ func (this *SvrTcpSession) WriteMessage(data []byte) (succ bool) {
 
 	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//send...
-	Log.FmtPrintln("[server] begin send response message to client, message length: ", len(data))
+	//Log.FmtPrintln("[server] begin send response message to client, message length: ", len(data))
 	_, err := this.conn.Write(data)
 	if err != nil {
 		Log.FmtPrintln("send data fail, err: ", err)
@@ -149,9 +184,14 @@ func (this *SvrTcpSession) WriteMessage(data []byte) (succ bool) {
 }
 
 func (this *SvrTcpSession) readMessage() (succ bool) {
-	defer stacktrace.Catchcrash()
+	defer func() {
+		this.Unlock()
+		stacktrace.Catchcrash()
+	}()
 
+	this.Lock()
 	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
+	var responseCliented bool
 	if this.RegPoint == 0 {
 		succ = UnPackExternalMsg(this.conn, this.pack)
 		if !succ {
@@ -164,6 +204,9 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 			return
 		}
 		this.StrIdentify = this.pack.GetIdentify()
+		if this.SvrType == Define.ERouteId_ER_ESG {
+			responseCliented = true
+		}
 	}
 
 	var route Define.ERouteId
@@ -174,7 +217,7 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 		route = Define.ERouteId_ER_ISG
 		this.RegPoint = Define.ERouteId_ER_ISG
 		this.Push(Define.ERouteId_ER_ISG) //外网关加入内网关session
-		RegisterMessageRet(this, uint16(Define.ERouteId_ER_ESG))
+		RegisterMessageRet(this)
 		succ = true
 		return
 	}
@@ -196,9 +239,9 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 
 	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) && mainID != uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
 		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
-		Log.FmtPrintf("[server] Route (%v), StrIdentify: %v.", route, this.StrIdentify)
+		//Log.FmtPrintf("[server] Route (%v), StrIdentify: %v.", route, this.StrIdentify)
 		if this.SvrType == Define.ERouteId_ER_ESG {
-			succ = externalRouteAct(route, this)
+			succ = externalRouteAct(route, this, responseCliented)
 		} else {
 			succ = innerMsgRouteAct(ESessionType_Server, route, mainID, this.pack.GetSrcMsg())
 		}
@@ -215,14 +258,17 @@ func (this *SvrTcpSession) GetPack() (obj IMessagePack) {
 func (this *SvrTcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.isAlive = true
 	atomic.AddUint64(&this.SessionID, 1)
-	Log.FmtPrintln("[server] handle new session: ", this.SessionID)
-	sw.Add(2)
+	//Log.FmtPrintln("[server] handle new session: ", this.SessionID)
+	sw.Add(3)
 	go this.recvloop(sw)
 	go this.sendloop(sw)
+	go this.heartBeatloop(sw)
+
+	this.Name = fmt.Sprintf("server_%v_%v", GetModuleDef(this.SvrType), this.SessionID)
 }
 
 func (this *SvrTcpSession) Push(RegPoint Define.ERouteId) {
-	Log.FmtPrintf("[server] push new sesson, reg point: %v.", RegPoint)
+	//Log.FmtPrintf("[server] push new sesson, reg point: %v.", RegPoint)
 	this.RegPoint = RegPoint
 	GServer2ServerSession.AddSession(this.RemoteAddr, this)
 }
@@ -242,7 +288,7 @@ func (this *SvrTcpSession) Offline() {
 
 func (this *SvrTcpSession) SendMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
-		err = fmt.Errorf("[server] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		err = fmt.Errorf("[server] send msg session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return false, err
 	}
@@ -257,7 +303,7 @@ func (this *SvrTcpSession) SendMsg(mainid, subid uint16, msg proto.Message) (suc
 
 func (this *SvrTcpSession) SendSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
-		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		err = fmt.Errorf("[server] send svr session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return false, err
 	}
@@ -303,4 +349,16 @@ func (this *SvrTcpSession) GetRemoteAddr() string {
 
 func (this *SvrTcpSession) IsUser() bool {
 	return this.RegPoint == 0
+}
+
+func (this *SvrTcpSession) RefreshHeartBeat(mainid, subid uint16) bool {
+	if mainid == uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
+		subid == uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat) {
+		this.heartBeatDeadline = time.Now().Unix()
+	}
+	return true
+}
+
+func (this *SvrTcpSession) GetModuleName() string {
+	return this.Name
 }

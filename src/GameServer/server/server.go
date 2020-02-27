@@ -10,6 +10,7 @@ import (
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/HotUpdate"
+	"common/ado/dbStatistics"
 	"common/akNet"
 	"flag"
 	"syscall"
@@ -19,6 +20,7 @@ func init() {
 	var CfgPath string
 	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
 	serverConfig.LoadSvrAllConfig(CfgPath)
+	dbStatistics.InitDBStatistics()
 	LogicMsg.Init()
 	rpc.Init()
 }
@@ -44,4 +46,5 @@ func StartServer() {
 		nil)
 
 	gameSvr.Run()
+	dbStatistics.DBStatisticsStop()
 }

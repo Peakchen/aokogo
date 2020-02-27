@@ -30,4 +30,5 @@ message CS_ServerRegister_Req
 message SC_ServerRegister_Rsp
 {
     ErrorCode Ret = 1; //返回码
+    string Identify = 2; //服务器标识
 }

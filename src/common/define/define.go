@@ -5,13 +5,6 @@ import (
 	"net/http"
 )
 
-const (
-	LoginServerHost    string = "0.0.0.0:51001"
-	ExternalServerHost string = "0.0.0.0:51001"
-	InnerServerHost    string = "0.0.0.0:19000"
-	GameServerHost     string = "127.0.0.1:19000"
-)
-
 type ERouteId int32
 
 const (

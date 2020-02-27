@@ -48,6 +48,8 @@ type ClientTcpSession struct {
 	RegPoint Define.ERouteId
 	//person StrIdentify
 	StrIdentify string
+	//
+	Name string
 }
 
 func NewClientSession(addr string,
@@ -109,7 +111,7 @@ func (this *ClientTcpSession) heartbeatloop(sw *sync.WaitGroup) {
 			if this.RegPoint == 0 || len(this.StrIdentify) == 0 {
 				continue
 			}
-			sendHeartBeat(this, uint16(this.SvrType))
+			sendHeartBeat(this)
 		}
 	}
 }
@@ -159,7 +161,7 @@ func (this *ClientTcpSession) WriteMessage(data []byte) (succ bool) {
 
 	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
 	//send...
-	Log.FmtPrintln("[client] begin send response message to server, message length: ", len(data))
+	//Log.FmtPrintln("[client] begin send response message to server, message length: ", len(data))
 	_, err := this.conn.Write(data)
 	if err != nil {
 		Log.FmtPrintln("send data fail, err: ", err)
@@ -170,7 +172,12 @@ func (this *ClientTcpSession) WriteMessage(data []byte) (succ bool) {
 }
 
 func (this *ClientTcpSession) readMessage() (succ bool) {
-	defer stacktrace.Catchcrash()
+	defer func() {
+		this.Unlock()
+		stacktrace.Catchcrash()
+	}()
+
+	this.Lock()
 
 	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
 	if len(this.StrIdentify) == 0 &&
@@ -208,7 +215,7 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) &&
 		mainID != uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
 		(this.SvrType == Define.ERouteId_ER_ISG) {
-		Log.FmtPrintf("[client] StrIdentify: %v.", this.StrIdentify)
+		//Log.FmtPrintf("[client] StrIdentify: %v.", this.StrIdentify)
 		succ = innerMsgRouteAct(ESessionType_Client, route, mainID, this.pack.GetSrcMsg())
 	} else {
 		succ = this.checkmsgProc(route) //路由消息回调处理
@@ -242,7 +249,7 @@ func (this *ClientTcpSession) checkHeartBeatRet() (exist bool) {
 }
 
 func (this *ClientTcpSession) checkmsgProc(route Define.ERouteId) (succ bool) {
-	Log.FmtPrintf("recv response, route: %v.", route)
+	//Log.FmtPrintf("recv response, route: %v.", route)
 	bRegister := this.checkRegisterRet(route)
 	bHeartBeat := checkHeartBeatRet(this.pack)
 	if bRegister || bHeartBeat {
@@ -266,10 +273,12 @@ func (this *ClientTcpSession) HandleSession(sw *sync.WaitGroup) {
 	go this.recvloop(sw)
 	go this.sendloop(sw)
 	go this.heartbeatloop(sw)
+
+	this.Name = fmt.Sprintf("client_%v_%v", GetModuleDef(this.SvrType), this.SessionID)
 }
 
 func (this *ClientTcpSession) Push(RegPoint Define.ERouteId) {
-	Log.FmtPrintf("[client] push new sesson, reg point: %v.", RegPoint)
+	//Log.FmtPrintf("[client] push new sesson, reg point: %v.", RegPoint)
 	this.RegPoint = RegPoint
 	GServer2ServerSession.AddSession(this.RemoteAddr, this)
 }
@@ -289,7 +298,7 @@ func (this *ClientTcpSession) Offline() {
 
 func (this *ClientTcpSession) SendMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
-		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		err = fmt.Errorf("[client] send msg session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return succ, err
 	}
@@ -304,7 +313,7 @@ func (this *ClientTcpSession) SendMsg(mainid, subid uint16, msg proto.Message) (
 
 func (this *ClientTcpSession) SendSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
-		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		err = fmt.Errorf("[client] send svr session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return false, err
 	}
@@ -350,4 +359,12 @@ func (this *ClientTcpSession) GetRemoteAddr() string {
 
 func (this *ClientTcpSession) IsUser() bool {
 	return this.RegPoint == 0
+}
+
+func (this *ClientTcpSession) RefreshHeartBeat(mainid, subid uint16) bool {
+	return true
+}
+
+func (this *ClientTcpSession) GetModuleName() string {
+	return this.Name
 }

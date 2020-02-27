@@ -72,6 +72,8 @@ type TcpSession interface {
 	Alive() bool
 	GetPack() (obj IMessagePack)
 	IsUser() bool
+	RefreshHeartBeat(mainid, subid uint16) bool
+	GetModuleName() string
 }
 
 // after dial connect todo action.
@@ -114,7 +116,10 @@ const (
 )
 
 const (
-	cstKeepLiveHeartBeatSec = 10
+	cstKeepLiveHeartBeatSec     = 180 //180 3min
+	cstCheckHeartBeatMonitorSec = cstKeepLiveHeartBeatSec / 2
+	cstSvrDisconnectionSec      = 3 * cstKeepLiveHeartBeatSec //s
+	cstClientDisconnectionSec   = 6 * cstKeepLiveHeartBeatSec //s
 )
 
 const (
@@ -132,3 +137,26 @@ const (
 	//offline session
 	maxOfflineSize = 1024
 )
+
+var (
+	_svrDefs = map[Define.ERouteId]string{
+		Define.ERouteId_ER_ESG:        "ExternalGateway",
+		Define.ERouteId_ER_ISG:        "InnerGateway",
+		Define.ERouteId_ER_DB:         "DB",
+		Define.ERouteId_ER_BigWorld:   "BigWorld",
+		Define.ERouteId_ER_Login:      "Login",
+		Define.ERouteId_ER_SmallWorld: "SmallWorld",
+		Define.ERouteId_ER_DBProxy:    "DBProxy",
+		Define.ERouteId_ER_Game:       "Game",
+		Define.ERouteId_ER_Client:     "Client",
+		Define.ERouteId_ER_Max:        "Max",
+	}
+)
+
+func GetModuleDef(routeid Define.ERouteId) string {
+	name, ok := _svrDefs[routeid]
+	if !ok {
+		name = "Unknow"
+	}
+	return name
+}

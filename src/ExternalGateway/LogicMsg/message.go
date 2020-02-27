@@ -33,11 +33,11 @@ func onSvrRegister(session akNet.TcpSession, req *MSG_Server.CS_ServerRegister_R
 
 	msgfmt += "\n"
 	Log.FmtPrintln("message context: ", msgfmt)
-	return akNet.RegisterMessageRet(session, uint16(Define.ERouteId_ER_ESG))
+	return akNet.RegisterMessageRet(session)
 }
 
 func onHeartBeat(session akNet.TcpSession, req *MSG_HeartBeat.CS_HeartBeat_Req) (succ bool, err error) {
-	return akNet.ResponseHeartBeat(session, uint16(req.SvrPoint))
+	return akNet.ResponseHeartBeat(session)
 }
 
 func init() {

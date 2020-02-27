@@ -14,9 +14,7 @@ import (
 	white code log print for normal log.
 */
 func NormalStackLog() (stacklog string) {
-	stacklog = string(debug.Stack())
-	Log.FmtPrintln("stack trace: ", stacklog)
-	return
+	return string(debug.Stack())
 }
 
 /*

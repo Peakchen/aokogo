@@ -97,9 +97,10 @@ func GetAllMessageIDs() (msgs []uint32) {
 	return
 }
 
-func RegisterMessageRet(session TcpSession, ServerType uint16) (succ bool, err error) {
+func RegisterMessageRet(session TcpSession) (succ bool, err error) {
 	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
 	rsp.Ret = MSG_Server.ErrorCode_Success
+	rsp.Identify = session.GetModuleName()
 	return session.SendMsg(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_SC_ServerRegister), rsp)
 }
 
@@ -116,12 +117,20 @@ func SpecialLoginMsgFilter(main, sub uint16) (ok bool) {
 	return
 }
 
-func sendHeartBeat(session TcpSession, ServerType uint16) (succ bool, err error) {
+func sendHeartBeat(session TcpSession) (succ bool, err error) {
+	if !session.Alive() {
+		err = fmt.Errorf("session heartbeat disconnection, can not send.")
+		return
+	}
 	rsp := &MSG_HeartBeat.CS_HeartBeat_Req{}
 	return session.SendSvrMsg(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat), rsp)
 }
 
-func ResponseHeartBeat(session TcpSession, ServerType uint16) (succ bool, err error) {
+func ResponseHeartBeat(session TcpSession) (succ bool, err error) {
+	if !session.Alive() {
+		err = fmt.Errorf("session heartbeat disconnection, can not response.")
+		return
+	}
 	rsp := &MSG_HeartBeat.SC_HeartBeat_Rsp{}
 	return session.SendSvrMsg(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat), rsp)
 }
@@ -130,7 +139,7 @@ func checkHeartBeatRet(pack IMessagePack) (exist bool) {
 	mainID, subID := pack.GetMessageID()
 	if mainID == uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
 		uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat) == subID {
-		Log.FmtPrintf("<heart beat> RemoteAddr: %v.", pack.GetRemoteAddr())
+		//Log.FmtPrintf("<heart beat> RemoteAddr: %v.", pack.GetRemoteAddr())
 		exist = true
 	}
 	return
@@ -141,9 +150,15 @@ func msgCallBack(sessionobj TcpSession) (succ bool) {
 	protocolPack := sessionobj.GetPack()
 	msg, cb, unpackerr, exist := protocolPack.UnPackData()
 	if unpackerr != nil || !exist {
-		Log.FmtPrintln("[client] unpack data err: ", unpackerr)
+		Log.FmtPrintln("unpack data, ModuleName: %v, reg point: %v, err: %v.", sessionobj.GetModuleName(), sessionobj.GetRegPoint(), unpackerr)
 		return
 	}
+
+	// record db operation stack log.
+	mainid, subid := protocolPack.GetMessageID()
+	sessionobj.RefreshHeartBeat(mainid, subid)
+	identify := protocolPack.GetIdentify()
+	dbStatistics.DBMsgStatistics(identify, mainid, subid)
 
 	params := []reflect.Value{
 		reflect.ValueOf(sessionobj),
@@ -157,10 +172,6 @@ func msgCallBack(sessionobj TcpSession) (succ bool) {
 		Log.FmtPrintln("[client] message return err: ", reterr.(error).Error())
 	}
 
-	// record db operation stack log.
-	mainid, subid := protocolPack.GetMessageID()
-	identify := protocolPack.GetIdentify()
-	dbStatistics.DBMsgStatistics(identify, mainid, subid)
 	return
 }
 
@@ -176,7 +187,7 @@ func UnPackExternalMsg(c *net.TCPConn, pack IMessagePack) (succ bool) {
 		if err.Error() == "EOF" {
 			succ = true
 		} else {
-			Log.FmtPrintln("read data fail, err: ", err, readn)
+			Log.FmtPrintln("pack External msg read data fail, err: ", err, readn)
 		}
 		return
 	}
@@ -219,12 +230,12 @@ func UnPackInnerMsg(c *net.TCPConn, pack IMessagePack) (succ bool) {
 		if err.Error() == "EOF" {
 			succ = true
 		} else {
-			Log.FmtPrintln("read data fail, err: ", err, readn)
+			Log.FmtPrintln("pack Inner message read data fail, err: ", err, readn)
 		}
 		return
 	}
 
-	Log.FmtPrintln("identify not empty, read data: ", len(packLenBuf))
+	//Log.FmtPrintln("identify not empty, read data: ", len(packLenBuf))
 	packlen := binary.LittleEndian.Uint32(packLenBuf[EnMessage_SvrDataPackLen:EnMessage_SvrNoDataLen])
 	if packlen > maxMessageSize {
 		Log.FmtPrintln("error receiving packLen:", packlen)
@@ -262,19 +273,19 @@ func innerMsgRouteAct(pointType ESessionType, route Define.ERouteId, mainID uint
 		Log.FmtPrintln("inner game rpc route.")
 		session = GServer2ServerSession.GetSession(Define.ERouteId_ER_Game)
 	} else {
-		if ESessionType_Client == pointType {
+		if route != 0 && pointType == ESessionType_Client {
 			//内网转发外网路由请求至xxx服务器 gateway route external message to some one server.
-			Log.FmtPrintf("inner route requst message, route: %v.", route)
+			//Log.FmtPrintf("inner route requst message, route: %v.", route)
 			session = GServer2ServerSession.GetSession(Define.ERouteId(route))
 		} else {
 			// 内网转发xxx服务器消息至外网 gateway route some one server message to external gateway.
-			Log.FmtPrintln("inner route respnse message.")
+			//Log.FmtPrintln("inner route respnse message.")
 			session = GServer2ServerSession.GetSession(Define.ERouteId_ER_ESG)
 		}
 	}
 
 	if session == nil {
-		Log.FmtPrintf("can not find session from inner gateway, mainID: %v.", mainID)
+		Log.Error("can not find session from inner gateway, mainID: %v.", mainID)
 		return
 	}
 
@@ -290,7 +301,7 @@ func innerMsgRouteAct(pointType ESessionType, route Define.ERouteId, mainID uint
 func sendInnerSvr(obj TcpSession) (succ bool) {
 	session := GServer2ServerSession.GetSession(Define.ERouteId_ER_ISG)
 	if session == nil {
-		Log.FmtPrintf("[request] can not find session inner route from external gateway.")
+		Log.Error("[request] can not find session inner route from external gateway.")
 		return
 	}
 
@@ -303,7 +314,7 @@ func sendInnerSvr(obj TcpSession) (succ bool) {
 	out := make([]byte, EnMessage_SvrNoDataLen+int(obj.GetPack().GetDataLen()))
 	err := obj.GetPack().PackAction(out)
 	if err != nil {
-		Log.FmtPrintln("unpack action err: ", err)
+		Log.Error("unpack action err: ", err)
 		return
 	}
 
@@ -316,7 +327,7 @@ func sendUserClient(obj TcpSession) (succ bool) {
 	Log.FmtPrintln("external response, addr: ", obj.GetPack().GetRemoteAddr(), len(obj.GetPack().GetRemoteAddr()))
 	session := GClient2ServerSession.GetSessionByIdentify(obj.GetPack().GetRemoteAddr())
 	if session == nil {
-		Log.FmtPrintf("[response user client] can not find session route from external gateway.")
+		Log.Error("[response user client] can not find session route from external gateway.")
 		return
 	}
 
@@ -329,7 +340,7 @@ func sendUserClient(obj TcpSession) (succ bool) {
 	out := make([]byte, EnMessage_NoDataLen+int(obj.GetPack().GetDataLen()))
 	err := obj.GetPack().PackAction4Client(out)
 	if err != nil {
-		Log.FmtPrintln("[response user client] unpack action err: ", err)
+		Log.Error("[response user client] unpack action err: ", err)
 		return
 	}
 
@@ -340,9 +351,9 @@ func sendUserClient(obj TcpSession) (succ bool) {
 /*
 	外网关路由 external gateway for message route (request and response).
 */
-func externalRouteAct(route Define.ERouteId, obj TcpSession) (succ bool) {
+func externalRouteAct(route Define.ERouteId, obj TcpSession, responseCliented bool) (succ bool) {
 	//客户端请求消息 receive user client message.
-	if Define.ERouteId(route) != Define.ERouteId_ER_ISG {
+	if Define.ERouteId(route) != Define.ERouteId_ER_ISG && false == responseCliented {
 		Log.FmtPrintf("external request, route: %v, StrIdentify: %v.", route, obj.GetIdentify())
 		// add session.
 		GClient2ServerSession.AddSession(obj.GetRemoteAddr(), obj)

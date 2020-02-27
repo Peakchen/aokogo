@@ -64,7 +64,7 @@ func (this *ServerProtocol) PackAction(Output []byte) (err error) {
 	pos += 4
 
 	copy(Output[pos:], this.data)
-	Log.FmtPrintln("server PackAction-> data len: ", this.length, len(Output))
+	//Log.FmtPrintln("server PackAction-> data len: ", this.length, len(Output))
 	return
 }
 
@@ -81,7 +81,7 @@ func (this *ServerProtocol) PackAction4Client(Output []byte) (err error) {
 
 	binary.LittleEndian.PutUint32(Output[pos:], this.length)
 	pos += 4
-	Log.FmtPrintln("PackAction4Client PackAction-> data len: ", this.length)
+	//Log.FmtPrintln("PackAction4Client PackAction-> data len: ", this.length)
 	copy(Output[pos:], this.data)
 	return
 }
@@ -131,7 +131,7 @@ func (this *ServerProtocol) SetCmd(mainid, subid uint16, data []byte) {
 	this.subid = subid
 	this.data = data
 	this.length = uint32(len(data))
-	Log.FmtPrintf("[server] SetCmd mainid: %v, subid: %v, data len: %v.", mainid, subid, this.length)
+	//Log.FmtPrintf("[server] SetCmd mainid: %v, subid: %v, data len: %v.", mainid, subid, this.length)
 }
 
 func (this *ServerProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error) {
@@ -201,7 +201,7 @@ func (this *ServerProtocol) UnPackMsg4Client(InData []byte) (pos int, err error)
 	pos += 4
 
 	datalen := utls.SliceBytesLength(InData)
-	Log.FmtPrintln("server UnPackMsg4Client-> len: ", this.length, datalen)
+	//Log.FmtPrintln("server UnPackMsg4Client-> len: ", this.length, datalen)
 	if datalen < int(pos+int(this.length)) {
 		err = fmt.Errorf("server  mainid: %v, subid: %v; err: InData len: %v, pos: %v, data len: %v.", this.mainid, this.subid, len(InData), pos, this.length)
 		return
@@ -209,7 +209,7 @@ func (this *ServerProtocol) UnPackMsg4Client(InData []byte) (pos int, err error)
 
 	this.data = InData[pos : pos+int(this.length)]
 	this.srcdata = InData[:]
-	Log.FmtPrintf("message head: mainid: %v, subid: %v, srcdata len: %v.", this.mainid, this.subid, len(this.srcdata))
+	//Log.FmtPrintf("message head: mainid: %v, subid: %v, srcdata len: %v.", this.mainid, this.subid, len(this.srcdata))
 	return pos, nil
 }
 
@@ -248,7 +248,7 @@ func (this *ServerProtocol) UnPackMsg4Svr(InData []byte) (pos int, err error) {
 		pos += int(remoteAddrlength)
 	}
 
-	Log.FmtPrintln("server UnPackMsg4Svr-> len: ", this.length)
+	//Log.FmtPrintln("server UnPackMsg4Svr-> len: ", this.length)
 	this.length = binary.LittleEndian.Uint32(InData[pos:])
 	pos += 4
 
@@ -257,7 +257,7 @@ func (this *ServerProtocol) UnPackMsg4Svr(InData []byte) (pos int, err error) {
 		return
 	}
 
-	Log.FmtPrintf("message head: mainid: %v, subid: %v.", this.mainid, this.subid)
+	//Log.FmtPrintf("message head: mainid: %v, subid: %v.", this.mainid, this.subid)
 	this.data = InData[pos : pos+int(this.length)]
 	this.srcdata = InData[:]
 	return pos, nil

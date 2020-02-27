@@ -17,17 +17,15 @@ func FmtPrintf(src string, params ...interface{}) {
 	}
 
 	fmt.Println(dst)
-	//WriteLog(EnLogType_Info, "[Info]", dst)
 }
 
 func FmtPrintln(params ...interface{}) {
 	content := make([]interface{}, 0, len(params)+1)
-	content = append(content, time.Now().Format(public.CstTimeFmt)+" ")
+	content = append(content, time.Now().Format(public.CstTimeFmt))
 	if len(params) > 0 {
 		content = append(content, params...)
 	}
 	fmt.Println(content...)
-	//WriteLog(EnLogType_Info, "[Info]", "", content...)
 }
 
 func RetError(context string, params ...interface{}) error {

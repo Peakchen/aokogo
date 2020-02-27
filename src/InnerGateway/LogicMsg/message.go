@@ -36,6 +36,7 @@ func onSvrRegister(session akNet.TcpSession, req *MSG_Server.CS_ServerRegister_R
 
 	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
 	rsp.Ret = MSG_Server.ErrorCode_Success
+	rsp.Identify = session.GetModuleName()
 	return session.SendInnerMsg(session.GetIdentify(),
 		uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_SC_ServerRegister),
@@ -43,7 +44,7 @@ func onSvrRegister(session akNet.TcpSession, req *MSG_Server.CS_ServerRegister_R
 }
 
 func onHeartBeat(session akNet.TcpSession, req *MSG_HeartBeat.CS_HeartBeat_Req) (succ bool, err error) {
-	return akNet.ResponseHeartBeat(session, uint16(req.SvrPoint))
+	return akNet.ResponseHeartBeat(session)
 }
 
 func init() {

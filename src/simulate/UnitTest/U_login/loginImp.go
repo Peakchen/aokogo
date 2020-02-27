@@ -53,7 +53,7 @@ func UserLogin(item *U_config.TSimulateLoginBase) {
 		return
 	}
 
-	req := &MSG_Login.CS_UserRegister_Req{}
+	req := &MSG_Login.CS_Login_Req{}
 	req.Account = item.Username
 	req.Passwd = item.Passwd
 	req.DeviceSerial = "456"

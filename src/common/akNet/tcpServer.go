@@ -87,7 +87,7 @@ func (this *TcpServer) loop(ctx context.Context, sw *sync.WaitGroup) {
 		default:
 			c, err := this.listener.AcceptTCP()
 			if err != nil || c == nil {
-				Log.FmtPrintf("can not accept tcp.")
+				Log.Error("can not accept tcp.")
 				continue
 			}
 
@@ -127,9 +127,9 @@ func (this *TcpServer) online() {
 }
 
 func (this *TcpServer) offline(offs *SvrTcpSession) {
-	this.person--
-	// rpc notify person offline...
+	// notify person offline...
 	if offs.IsUser() {
+		this.person--
 		ntf := &MSG_Player.CS_LeaveServer_Req{}
 		_, err := offs.GetPack().PackMsg(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_LeaveServer), ntf)
 		if err != nil {
