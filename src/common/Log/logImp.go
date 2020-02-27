@@ -3,6 +3,7 @@ package Log
 // add by stefan
 
 import (
+	"common/aktime"
 	"common/public"
 	"common/utls"
 	"context"
@@ -75,13 +76,13 @@ func initLogFile(logtype string, aokoLog *TAokoLog) {
 	filename := utls.GetExeFileName()
 	switch logtype {
 	case EnLogType_Info:
-		RealFileName = fmt.Sprintf("./logInfo/%v_Info_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(public.CstTimeDate))
+		RealFileName = fmt.Sprintf("./logInfo/%v_Info_No%v_%v.log", filename, aokoLog.FileNo, aktime.Now().Local().Format(public.CstTimeDate))
 	case EnLogType_Error:
-		RealFileName = fmt.Sprintf("./logError/%v_Error_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(public.CstTimeDate))
+		RealFileName = fmt.Sprintf("./logError/%v_Error_No%v_%v.log", filename, aokoLog.FileNo, aktime.Now().Local().Format(public.CstTimeDate))
 	case EnLogType_Fail:
-		RealFileName = fmt.Sprintf("./logFail/%v_Fail_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(public.CstTimeDate))
+		RealFileName = fmt.Sprintf("./logFail/%v_Fail_No%v_%v.log", filename, aokoLog.FileNo, aktime.Now().Local().Format(public.CstTimeDate))
 	case EnLogType_Debug:
-		RealFileName = fmt.Sprintf("./logDebug/%v_Debug_No%v_%v.log", filename, aokoLog.FileNo, time.Now().Local().Format(public.CstTimeDate))
+		RealFileName = fmt.Sprintf("./logDebug/%v_Debug_No%v_%v.log", filename, aokoLog.FileNo, aktime.Now().Local().Format(public.CstTimeDate))
 	default:
 
 	}
@@ -133,30 +134,30 @@ func run(aokoLog *TAokoLog) {
 }
 
 func Error(args ...interface{}) {
-	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
+	timeFormat := aktime.Now().Local().Format(public.CstTimeFmt)
 	format := "time: " + timeFormat + ", Info: %v."
 	WriteLog(EnLogType_Error, "[Error]\t", format, args)
 }
 
 func ErrorIDCard(identify string, args ...interface{}) {
 	format := fmt.Sprintf("identify: %v, %v.", identify, args)
-	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
+	timeFormat := aktime.Now().Local().Format(public.CstTimeFmt)
 	WriteLog(EnLogType_Error, "[Error]\t", timeFormat, format)
 }
 
 func ErrorModule(data public.IDBCache, args ...interface{}) {
 	format := fmt.Sprintf("main: %v, sub: %v, identify: %v, %v.", data.MainModel(), data.SubModel(), data.Identify(), args)
-	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
+	timeFormat := aktime.Now().Local().Format(public.CstTimeFmt)
 	WriteLog(EnLogType_Error, "[Error]\t", timeFormat, format)
 }
 
 func Info(format string, args ...interface{}) {
-	timeFormat := time.Now().Local().Format(public.CstTimeFmt)
+	timeFormat := aktime.Now().Local().Format(public.CstTimeFmt)
 	WriteLog(EnLogType_Info, "[Info]\t", timeFormat+format, args)
 }
 
 func Fail(args ...interface{}) {
-	format := time.Now().Local().Format(public.CstTimeFmt)
+	format := aktime.Now().Local().Format(public.CstTimeFmt)
 	WriteLog(EnLogType_Fail, "[Fail]\t", format, args)
 }
 

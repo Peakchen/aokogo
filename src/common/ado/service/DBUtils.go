@@ -5,6 +5,7 @@ package service
 import (
 	"common/ado"
 	"common/public"
+	"github.com/gomodule/redigo/redis"
 )
 
 /*
@@ -81,4 +82,8 @@ func (this *TDBProvider) GetAcc(usrName string, Output public.IDBCache) (err err
 func (this *TDBProvider) DBGetSome(Output public.IDBCache) (err error) {
 	// has no func need.
 	return nil
+}
+
+func (this *TDBProvider) GetRedisConn() redis.Conn {
+	return this.rconn.RedPool.Get()
 }

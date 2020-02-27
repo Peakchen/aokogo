@@ -5,13 +5,13 @@ package akNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/aktime"
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"fmt"
 	"net"
 	"sync/atomic"
 	"time"
-
 	//"common/S2SMessage"
 	"common/stacktrace"
 	"context"
@@ -155,7 +155,7 @@ func (this *SvrTcpSession) heartBeatloop(sw *sync.WaitGroup) {
 				disconnectionSec = cstSvrDisconnectionSec
 			}
 
-			if time.Now().Unix()-this.heartBeatDeadline >= int64(disconnectionSec) {
+			if aktime.Now().Unix()-this.heartBeatDeadline >= int64(disconnectionSec) {
 				//close connection...
 				this.close(sw)
 				this.heartBeatDeadline = 0
@@ -171,7 +171,7 @@ func (this *SvrTcpSession) WriteMessage(data []byte) (succ bool) {
 
 	defer stacktrace.Catchcrash()
 
-	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
+	this.conn.SetWriteDeadline(aktime.Now().Add(writeWait))
 	//send...
 	//Log.FmtPrintln("[server] begin send response message to client, message length: ", len(data))
 	_, err := this.conn.Write(data)
@@ -190,7 +190,7 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 	}()
 
 	this.Lock()
-	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
+	//this.conn.SetReadDeadline(aktime.Now().Add(pongWait))
 	var responseCliented bool
 	if this.RegPoint == 0 {
 		succ = UnPackExternalMsg(this.conn, this.pack)
@@ -354,7 +354,7 @@ func (this *SvrTcpSession) IsUser() bool {
 func (this *SvrTcpSession) RefreshHeartBeat(mainid, subid uint16) bool {
 	if mainid == uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
 		subid == uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat) {
-		this.heartBeatDeadline = time.Now().Unix()
+		this.heartBeatDeadline = aktime.Now().Unix()
 	}
 	return true
 }

@@ -4,6 +4,7 @@ package main
 
 import (
 	"ExternalGateway/LogicMsg"
+	"ExternalGateway/ado"
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/Log"
@@ -21,6 +22,7 @@ func init() {
 
 func main() {
 	Log.FmtPrintf("start ExternalGateWay.")
+	ado.StartDBSerice("ExternalGateWay")
 	externalgw := serverConfig.GExternalgwconfigConfig.Get()
 	newExternalServer := akNet.NewTcpServer(externalgw.Listenaddr,
 		externalgw.Pprofaddr,

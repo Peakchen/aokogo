@@ -43,6 +43,10 @@ func (this *TClusterDBProvider) Start(Server string) {
 	this.runDBloop(Server)
 }
 
+func (this *TClusterDBProvider) GetRedisConn() redis.Conn {
+	return this.redConn.RedPool.Get()
+}
+
 func (this *TClusterDBProvider) Exit() {
 	if this.mgoConn != nil {
 		this.mgoConn.Exit()

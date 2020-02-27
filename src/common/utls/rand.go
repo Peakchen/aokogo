@@ -3,8 +3,8 @@ package utls
 // add by stefan
 
 import (
+	"common/aktime"
 	"math/rand"
-	"time"
 )
 
 /*
@@ -12,7 +12,7 @@ import (
 */
 
 func init() {
-	t := time.Now().Unix()
+	t := aktime.Now().Unix()
 	s := rand.NewSource(t)
 	rand.New(s).Seed(t)
 }

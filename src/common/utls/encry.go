@@ -4,6 +4,7 @@ package utls
 
 import (
 	"bytes"
+	"common/aktime"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/des"
@@ -18,7 +19,6 @@ import (
 	"io"
 	mrand "math/rand"
 	"net"
-	"time"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -107,10 +107,10 @@ func HashNonEncryption(s string) uint32 {
 func GetHashSeed() int64 {
 	mac_adr := GetMacAddrs()
 	if len(mac_adr) == 0 {
-		return time.Now().UnixNano()
+		return aktime.Now().UnixNano()
 	}
 
-	t := time.Now().UnixNano() // int64
+	t := aktime.Now().UnixNano() // int64
 	return int64(HashNonEncryption(fmt.Sprintf("%d %s", t, mac_adr)))
 }
 
@@ -237,7 +237,7 @@ func GetMd5String(s string) string {
 func GetRandString(length int) string {
 	bytes := []byte("0123456789abcdefghijklmnopqrstuvwxyz")
 	result := []byte{}
-	r := mrand.New(mrand.NewSource(time.Now().UnixNano()))
+	r := mrand.New(mrand.NewSource(aktime.Now().UnixNano()))
 	for i := 0; i < length; i++ {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}

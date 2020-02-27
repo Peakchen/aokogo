@@ -7,6 +7,7 @@ package Cache
 */
 
 import (
+	"common/aktime"
 	"container/list"
 	"sync"
 	"time"
@@ -27,7 +28,7 @@ type TCache struct {
 func (this *TCache) Set(key string, data interface{}) {
 	d := &TCacheContent{
 		key:      key,
-		deadtime: time.Now().Unix() + this.td,
+		deadtime: aktime.Now().Unix() + this.td,
 	}
 	this.cl.PushBack(d)
 	this.c.Store(key, data)
@@ -68,7 +69,7 @@ func (this *TCache) loopcheck() {
 			}
 			e := this.cl.Front()
 			data := e.Value.(*TCacheContent)
-			if data.deadtime > time.Now().Unix() {
+			if data.deadtime > aktime.Now().Unix() {
 				continue
 			}
 			this.cl.Remove(e)

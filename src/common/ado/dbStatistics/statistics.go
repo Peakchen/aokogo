@@ -8,6 +8,7 @@ package dbStatistics
 import (
 	"bytes"
 	"common/Log"
+	"common/aktime"
 	"common/public"
 	"common/stacktrace"
 	"common/utls"
@@ -16,7 +17,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type TModelStatistics struct {
@@ -64,7 +64,7 @@ func (this *TDBStatistics) Init() {
 		}
 	}
 
-	fileName := fmt.Sprintf("./DBStatisticsLog/%v_DBStatistics_%v.log", exename, time.Now().Local().Format(public.CstTimeDate))
+	fileName := fmt.Sprintf("./DBStatisticsLog/%v_DBStatistics_%v.log", exename, aktime.Now().Local().Format(public.CstTimeDate))
 	filehandle, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		Log.Error("can not create db statistics log file, err：", err)
@@ -142,7 +142,7 @@ func DBOperStatistics(identify, model string) {
 	}
 
 	modelStatistics = append(modelStatistics, &TModelStatistics{
-		strTime:  time.Now().Local().Format(public.CstTimeFmt),
+		strTime:  aktime.Now().Local().Format(public.CstTimeFmt),
 		stacklog: buff,
 	})
 	modeldata[model] = modelStatistics

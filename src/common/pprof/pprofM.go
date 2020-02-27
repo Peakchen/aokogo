@@ -3,6 +3,7 @@ package pprof
 // add by stefan 20190606 16:12
 import (
 	"common/Log"
+	"common/aktime"
 	"fmt"
 	"os"
 	"path"
@@ -11,7 +12,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
 	//"log"
 	"context"
 	"sync"
@@ -89,7 +89,7 @@ func (this *TPProfMgr) loop() {
 }
 
 func Newpprof(file string) (retfile string) {
-	timeformat := time.Now().Format("2006-01-02")
+	timeformat := aktime.Now().Format("2006-01-02")
 	retfile = timeformat + "_" + file
 	execpath, err := os.Executable()
 	if err != nil {

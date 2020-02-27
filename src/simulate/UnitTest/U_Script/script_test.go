@@ -4,12 +4,12 @@ import (
 	"common/Config/serverConfig"
 	"common/Log"
 	"common/RedisConn"
+	"common/aktime"
 	"fmt"
+	"github.com/gomodule/redigo/redis"
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -36,7 +36,7 @@ func TestScript(t *testing.T) {
 
 	c := redisconn.RedPool.Get()
 	// To test fall back in Do, we make script unique by adding comment with current time.
-	script := fmt.Sprintf("--%d\nreturn {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}", time.Now().UnixNano())
+	script := fmt.Sprintf("--%d\nreturn {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}", aktime.Now().UnixNano())
 	s := redis.NewScript(2, script)
 	reply := []interface{}{[]byte("key1"), []byte("key2"), []byte("arg1"), []byte("arg2")}
 

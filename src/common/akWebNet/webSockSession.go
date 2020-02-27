@@ -5,6 +5,7 @@ package tcpWebNet
 import (
 	//"bytes"
 
+	"common/aktime"
 	"log"
 	"net/http"
 	"time"
@@ -63,8 +64,8 @@ func (c *TWebsocketSession) recvloop() {
 	}()
 
 	c.conn.SetReadLimit(maxMessageSize)
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	c.conn.SetReadDeadline(aktime.Now().Add(pongWait))
+	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(aktime.Now().Add(pongWait)); return nil })
 
 	for {
 		mt, message, err := c.conn.ReadMessage()
@@ -107,7 +108,7 @@ func (c *TWebsocketSession) sendloop() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.conn.SetWriteDeadline(aktime.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -131,7 +132,7 @@ func (c *TWebsocketSession) sendloop() {
 				return
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.conn.SetWriteDeadline(aktime.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}

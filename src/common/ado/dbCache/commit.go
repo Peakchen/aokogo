@@ -39,8 +39,8 @@ func GetDBCache() *TDBCache {
 
 func (this *TDBCache) loadOrAddUser(identify string) (modeldata map[string]*TModelOper) {
 	modeldata = nil
-	value, loaded := this.users.LoadOrStore(identify, map[string]*TModelOper{})
-	if !loaded {
+	value, _ := this.users.LoadOrStore(identify, make(map[string]*TModelOper, 0))
+	if value == nil {
 		Log.Error("can not load cache model.")
 		return
 	}

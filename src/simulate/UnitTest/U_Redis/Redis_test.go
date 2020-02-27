@@ -12,6 +12,8 @@ import (
 	//"github.com/globalsign/mgo/bson"
 	"github.com/gomodule/redigo/redis"
 	//"encoding/json"
+	"common/Log"
+	"strconv"
 )
 
 /*
@@ -65,6 +67,43 @@ func Test1(t *testing.T) {
 
 	outdata2, err := redis.String(c.Do("HGET", "myh", "testval"))
 	t.Log("Do(HGET, key) data: ", outdata2)
+	return
+}
+
+func Test2(t *testing.T) {
+	t.Log("[Test2] start.")
+
+	c, err := DialDefaultServer()
+	if err != nil {
+		t.Errorf("connect database err: %v.", err)
+		return
+	}
+
+	defer c.Close()
+	data, err := c.Do("TIME")
+	if err != nil {
+		t.Errorf("redis get time err: %v.", err)
+		return
+	}
+
+	var (
+		t1 int64
+		t2 int64
+	)
+	for idx, item := range data.([]interface{}) {
+		t, err := strconv.Atoi(string(item.([]byte)))
+		if err != nil {
+			continue
+		}
+
+		if idx == 0 {
+			t1 += int64(t)
+		} else {
+			t2 += int64(t) * 1e3
+		}
+	}
+
+	Log.FmtPrintf("now time: %v.", time.Unix(int64(t1), t2))
 	return
 }
 

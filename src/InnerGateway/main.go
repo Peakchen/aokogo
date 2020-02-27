@@ -2,6 +2,7 @@
 package main
 
 import (
+	"InnerGateway/ado"
 	"InnerGateway/client"
 	"InnerGateway/server"
 	"common/Config/serverConfig"
@@ -28,6 +29,7 @@ func startInnerGW() {
 
 func main() {
 	Log.FmtPrintf("start InnerGateway.")
+	ado.StartDBSerice("InnerGateway")
 	startInnerGW()
 	dbStatistics.DBStatisticsStop()
 }

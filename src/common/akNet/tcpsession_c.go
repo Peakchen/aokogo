@@ -5,6 +5,7 @@ package akNet
 import (
 	"common/Define"
 	"common/Log"
+	"common/aktime"
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
@@ -13,7 +14,6 @@ import (
 	"net"
 	"sync/atomic"
 	"time"
-
 	//"common/S2SMessage"
 	"context"
 	"sync"
@@ -159,7 +159,7 @@ func (this *ClientTcpSession) WriteMessage(data []byte) (succ bool) {
 
 	defer stacktrace.Catchcrash()
 
-	this.conn.SetWriteDeadline(time.Now().Add(writeWait))
+	this.conn.SetWriteDeadline(aktime.Now().Add(writeWait))
 	//send...
 	//Log.FmtPrintln("[client] begin send response message to server, message length: ", len(data))
 	_, err := this.conn.Write(data)
@@ -179,7 +179,7 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 
 	this.Lock()
 
-	//this.conn.SetReadDeadline(time.Now().Add(pongWait))
+	//this.conn.SetReadDeadline(aktime.Now().Add(pongWait))
 	if len(this.StrIdentify) == 0 &&
 		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
 		succ = UnPackExternalMsg(this.conn, this.pack)

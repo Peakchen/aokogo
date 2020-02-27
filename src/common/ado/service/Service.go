@@ -29,7 +29,7 @@ func (this *TDBProvider) StartDBService(Server string, upcb public.UpdateDBCache
 	this.mconn = MgoConn.NewMgoConn(Server, mgocfg.Username, mgocfg.Passwd, mgocfg.Host)
 }
 
-func (this *TDBProvider) GetRedisConn() *RedisConn.TAokoRedis {
+func (this *TDBProvider) GetAkRedis() *RedisConn.TAokoRedis {
 	return this.rconn
 }
 
