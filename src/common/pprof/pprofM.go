@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"reflect"
 	"runtime/pprof"
 	"strings"
-	"syscall"
 	"time"
 	//"log"
+	"common/utls"
 	"context"
 	"sync"
 )
@@ -103,15 +102,18 @@ func Newpprof(file string) (retfile string) {
 }
 
 func checkcreateTempDir() {
-	err := os.Mkdir("pprof", os.ModePerm)
+	exepath := utls.GetExeFilePath()
+	filepath := exepath + "/pprof"
+	exist, err := utls.IsPathExisted(filepath)
 	if err != nil {
-		if reflect.TypeOf(err) != reflect.TypeOf(&os.PathError{}) {
-			Log.FmtPrintln("err dir type: ", reflect.TypeOf(err))
-			return
-		}
-		perror := err.(*os.PathError)
-		if perror.Err != syscall.ERROR_ALREADY_EXISTS {
-			Log.FmtPrintf("pprof mkdir fail, dir: %v, errcode: %v, err: %v.\n", perror.Err, err.Error())
+		panic("check path exist err: " + err.Error())
+		return
+	}
+
+	if false == exist {
+		err = os.Mkdir(filepath, os.ModePerm)
+		if err != nil {
+			panic("log mkdir fail, err: " + err.Error())
 			return
 		}
 	}

@@ -1,3 +1,5 @@
+// +build windows
+
 package utls
 
 // add by stefan

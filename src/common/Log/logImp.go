@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"reflect"
 	"runtime/debug"
 	"sync"
 	"syscall"
@@ -87,29 +86,18 @@ func initLogFile(logtype string, aokoLog *TAokoLog) {
 
 	}
 
-	err := os.Remove(PathDir)
+	exepath := utls.GetExeFilePath()
+	filepath := exepath + "/" + PathDir
+	exist, err := utls.IsPathExisted(filepath)
 	if err != nil {
-		if reflect.TypeOf(err) != reflect.TypeOf(&os.PathError{}) {
-			fmt.Println("err dir type: ", reflect.TypeOf(err))
-			return
-		}
-		perror := err.(*os.PathError)
-		if perror.Err != syscall.ENOENT &&
-			perror.Err != syscall.ERROR_DIR_NOT_EMPTY {
-			fmt.Printf("Remove log dir fail, dir: %v, errcode: %v, err: %v.\n", PathDir, perror.Err, err.Error())
-			return
-		}
+		panic("check path exist err: " + err.Error())
+		return
 	}
 
-	err = os.Mkdir(PathDir, os.ModePerm)
-	if err != nil {
-		if reflect.TypeOf(err) != reflect.TypeOf(&os.PathError{}) {
-			fmt.Println("err dir type: ", reflect.TypeOf(err))
-			return
-		}
-		perror := err.(*os.PathError)
-		if perror.Err != syscall.ERROR_ALREADY_EXISTS {
-			fmt.Printf("log mkdir fail, dir: %v, errcode: %v, err: %v.\n", PathDir, perror.Err, err.Error())
+	if false == exist {
+		err = os.Mkdir(filepath, os.ModePerm)
+		if err != nil {
+			panic("log mkdir fail, err: " + err.Error())
 			return
 		}
 	}

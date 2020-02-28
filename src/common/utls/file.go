@@ -171,6 +171,17 @@ func GetExeFilePath() (execpath string) {
 	return
 }
 
+func IsPathExisted(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
 func Json2Pb(strjson string, pb proto.Message) error {
 	return json.Unmarshal([]byte(strjson), &pb)
 }

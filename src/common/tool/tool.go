@@ -13,17 +13,6 @@ import (
 	//"syscall"
 )
 
-func GetExeFilePath() (execpath string) {
-	execpath, err := os.Executable()
-	if err != nil {
-		return
-	}
-	execpath = strings.Replace(execpath, "\\", "/", -1)
-	idx := strings.LastIndex(execpath, "/")
-	execpath = execpath[:idx]
-	return
-}
-
 //隐藏console
 func HideConsole() {
 	ShowConsoleAsync(w32.SW_HIDE)
