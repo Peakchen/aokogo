@@ -256,7 +256,6 @@ func (this *SvrTcpSession) GetPack() (obj IMessagePack) {
 func (this *SvrTcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.isAlive = true
 	atomic.AddUint64(&this.SessionID, 1)
-	//Log.FmtPrintln("[server] handle new session: ", this.SessionID)
 	sw.Add(3)
 	go this.recvloop(sw)
 	go this.sendloop(sw)

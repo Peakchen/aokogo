@@ -265,13 +265,12 @@ func (this *ClientTcpSession) GetPack() (obj IMessagePack) {
 func (this *ClientTcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.isAlive = true
 	atomic.AddUint64(&this.SessionID, 1)
-	Log.FmtPrintln("[client] handle new session: ", this.SessionID)
 	sw.Add(3)
 	go this.recvloop(sw)
 	go this.sendloop(sw)
 	go this.heartbeatloop(sw)
 
-	this.Name = fmt.Sprintf("client_%v", GetModuleDef(this.SvrType))
+	this.Name = fmt.Sprintf("client_%v", this.Name)
 }
 
 func (this *ClientTcpSession) Push(RegPoint Define.ERouteId) {
