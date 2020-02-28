@@ -227,7 +227,7 @@ func TripleEcbDesDecrypt(crypted, key []byte) ([]byte, error) {
 }
 
 // GetMd5String compute the md5 sum as string
-func GetMd5String(s string) string {
+func GetMd5String_V2(s string) string {
 	h := md5.New()
 	h.Write([]byte(s))
 	return hex.EncodeToString(h.Sum(nil))

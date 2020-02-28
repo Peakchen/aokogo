@@ -1,9 +1,13 @@
 # github.com/Shopify/sarama v1.26.1
 github.com/Shopify/sarama
+# github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d
+github.com/StackExchange/wmi
 # github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 github.com/axgle/mahonia
 # github.com/bsm/sarama-cluster v2.1.15+incompatible
 github.com/bsm/sarama-cluster
+# github.com/bwmarrin/snowflake v0.3.0
+github.com/bwmarrin/snowflake
 # github.com/coreos/etcd v3.3.18+incompatible
 github.com/coreos/etcd/client
 github.com/coreos/etcd/pkg/pathutil
@@ -29,6 +33,9 @@ github.com/globalsign/mgo
 github.com/globalsign/mgo/internal/json
 github.com/globalsign/mgo/internal/sasl
 github.com/globalsign/mgo/internal/scram
+# github.com/go-ole/go-ole v1.2.4
+github.com/go-ole/go-ole
+github.com/go-ole/go-ole/oleutil
 # github.com/golang/protobuf v1.3.3
 github.com/golang/protobuf/proto
 # github.com/golang/snappy v0.0.1
@@ -66,6 +73,8 @@ github.com/rcrowley/go-metrics
 github.com/samuel/go-zookeeper/zk
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
+# github.com/sony/sonyflake v1.0.0
+github.com/sony/sonyflake
 # github.com/zieckey/etcdsync v0.0.0-20180810020013-cd5b26bc05a1
 github.com/zieckey/etcdsync
 # golang.org/x/crypto v0.0.0-20200204104054-c9f3fb736b72 => github.com/golang/crypto v0.0.0-20190701094942-4def268fd1a4
@@ -74,6 +83,8 @@ golang.org/x/crypto/pbkdf2
 # golang.org/x/net v0.0.0-20200202094626-16171245cfb2 => github.com/golang/net v0.0.0-20190724013045-ca1201d0de80
 golang.org/x/net/proxy
 golang.org/x/net/internal/socks
+# golang.org/x/sys v0.0.0-20200122134326-e047566fdf82 => github.com/golang/sys v0.0.0-20190804053845-51ab0e2deafa
+golang.org/x/sys/windows
 # gopkg.in/jcmturner/aescts.v1 v1.0.1
 gopkg.in/jcmturner/aescts.v1
 # gopkg.in/jcmturner/dnsutils.v1 v1.0.1
