@@ -1,7 +1,6 @@
 package server
 
 import (
-	"InnerGateway/LogicMsg"
 	"common/Config/serverConfig"
 	"common/Define"
 	"common/Log"
@@ -14,8 +13,7 @@ func StartServer() {
 	newInnerServer := akNet.NewTcpServer(Innergw.Listenaddr,
 		Innergw.Pprofaddr,
 		Define.ERouteId_ER_ISG,
-		LogicMsg.InnerGatewayMessageCallBack,
-		akNet.GServer2ServerSession)
+		Innergw.Name)
 
 	newInnerServer.Run()
 }

@@ -150,7 +150,7 @@ func msgCallBack(sessionobj TcpSession) (succ bool) {
 	protocolPack := sessionobj.GetPack()
 	msg, cb, unpackerr, exist := protocolPack.UnPackData()
 	if unpackerr != nil || !exist {
-		Log.FmtPrintln("unpack data, ModuleName: %v, reg point: %v, err: %v.", sessionobj.GetModuleName(), sessionobj.GetRegPoint(), unpackerr)
+		Log.FmtPrintf("unpack data, ModuleName: %v, reg point: %v, err: %v.", sessionobj.GetModuleName(), sessionobj.GetRegPoint(), unpackerr)
 		return
 	}
 

@@ -14,8 +14,7 @@ func StartClient() {
 		Innergw.Pprofaddr,
 		Define.ERouteId_ER_ISG,
 		nil,
-		nil,
-		akNet.GClient2ServerSession)
+		Innergw.Name)
 
 	gameSvr.Run()
 }

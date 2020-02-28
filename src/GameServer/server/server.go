@@ -42,8 +42,7 @@ func StartServer() {
 		Gamecfg.Pprofaddr,
 		Define.ERouteId_ER_Game,
 		nil,
-		nil,
-		nil)
+		Gamecfg.Name)
 
 	gameSvr.Run()
 	dbStatistics.DBStatisticsStop()

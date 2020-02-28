@@ -24,6 +24,7 @@ type TGameconfig struct {
 	Listenaddr string
 	Zone       string
 	Pprofaddr  string
+	Name       string
 }
 
 type TGameconfigConfig struct {
@@ -34,6 +35,7 @@ type tArrGameconfig []*TGameconfigBase
 
 var (
 	GGameconfigConfig *TGameconfigConfig = &TGameconfigConfig{}
+	cstGameDef                           = "Game"
 )
 
 func init() {
@@ -81,6 +83,7 @@ func (this *TGameconfigConfig) DataRWAct(data interface{}) (errlist []string) {
 			Listenaddr: item.Listenaddr,
 			Zone:       item.Zone,
 			Pprofaddr:  item.Pprofaddr,
+			Name:       cstGameDef + "_" + strconv.Itoa(int(item.Id)),
 		}
 		break
 	}

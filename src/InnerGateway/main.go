@@ -2,6 +2,7 @@
 package main
 
 import (
+	"InnerGateway/LogicMsg"
 	"InnerGateway/ado"
 	"InnerGateway/client"
 	"InnerGateway/server"
@@ -17,6 +18,7 @@ func init() {
 	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
 	serverConfig.LoadSvrAllConfig(CfgPath)
 	dbStatistics.InitDBStatistics()
+	LogicMsg.Init()
 }
 
 func startInnerGW() {

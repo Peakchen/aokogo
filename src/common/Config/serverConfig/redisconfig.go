@@ -4,6 +4,7 @@ import (
 	"common/Config"
 	"fmt"
 	"path/filepath"
+	"strconv"
 )
 
 /*
@@ -17,6 +18,7 @@ type TRedisconfigBase struct {
 	Passwd        string `json:"Passwd"`
 	Sharedbindex  int32  `json:"ShareDBIndex"`
 	Pprofaddr     string `json:"PProfAddr"`
+	Name          string
 }
 
 type TRedisconfigConfig struct {
@@ -27,6 +29,7 @@ type tArrRedisconfig []*TRedisconfigBase
 
 var (
 	GRedisconfigConfig *TRedisconfigConfig = &TRedisconfigConfig{}
+	cstRedisDef                            = "Redis"
 )
 
 func init() {
@@ -67,6 +70,7 @@ func (this *TRedisconfigConfig) DataRWAct(data interface{}) (errlist []string) {
 	cfg := data.(*tArrRedisconfig)
 	errlist = []string{}
 	for _, item := range *cfg {
+		item.Name = cstRedisDef + "_" + strconv.Itoa(int(item.Id))
 		this.data = item
 		break
 	}

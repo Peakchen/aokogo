@@ -26,7 +26,6 @@ type TcpClient struct {
 	host      string
 	pprofAddr string
 	dialsess  *ClientTcpSession
-	cb        MessageCb
 	// person offline flag
 	off chan *ClientTcpSession
 	// person online
@@ -35,19 +34,17 @@ type TcpClient struct {
 	Adacb      AfterDialAct
 	mpobj      IMessagePack
 	SessionMgr IProcessConnSession
-	chmsg      chan []byte
+	procName   string
 }
 
-func NewClient(host, pprofAddr string, SvrType Define.ERouteId, cb MessageCb, Ada AfterDialAct, sessionMgr IProcessConnSession) *TcpClient {
+func NewClient(host, pprofAddr string, SvrType Define.ERouteId, Ada AfterDialAct, procName string) *TcpClient {
 	return &TcpClient{
-		host:       host,
-		pprofAddr:  pprofAddr,
-		cb:         cb,
-		SvrType:    SvrType,
-		Adacb:      Ada,
-		SessionMgr: sessionMgr,
-		off:        make(chan *ClientTcpSession, maxOfflineSize),
-		chmsg:      make(chan []byte, maxMessageSize),
+		host:      host,
+		pprofAddr: pprofAddr,
+		SvrType:   SvrType,
+		Adacb:     Ada,
+		off:       make(chan *ClientTcpSession, maxOfflineSize),
+		procName:  procName,
 	}
 }
 
@@ -88,7 +85,7 @@ func (this *TcpClient) connect(ctx context.Context, sw *sync.WaitGroup) (err err
 
 	Log.FmtPrintf("[----------client-----------] addr: %v, svrtype: %v.", c.RemoteAddr(), this.SvrType)
 	c.SetNoDelay(true)
-	this.dialsess = NewClientSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.mpobj)
+	this.dialsess = NewClientSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.off, this.mpobj, this.procName)
 	this.dialsess.HandleSession(sw)
 	this.afterDial()
 	return nil

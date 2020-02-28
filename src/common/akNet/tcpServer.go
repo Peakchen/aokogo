@@ -24,7 +24,6 @@ type TcpServer struct {
 	pprofAddr string
 	listener  *net.TCPListener
 	cancel    context.CancelFunc
-	cb        MessageCb
 	off       chan *SvrTcpSession
 	session   *SvrTcpSession
 	// person online
@@ -34,17 +33,17 @@ type TcpServer struct {
 	SessionMgr IProcessConnSession
 	// session id
 	SessionID uint64
+	procName  string
 }
 
-func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, cb MessageCb, sessionMgr IProcessConnSession) *TcpServer {
+func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, procName string) *TcpServer {
 	return &TcpServer{
-		host:       listenAddr,
-		pprofAddr:  pprofAddr,
-		cb:         cb,
-		SvrType:    SvrType,
-		SessionMgr: sessionMgr,
-		SessionID:  ESessionBeginNum,
-		off:        make(chan *SvrTcpSession, maxOfflineSize),
+		host:      listenAddr,
+		pprofAddr: pprofAddr,
+		procName:  procName,
+		SvrType:   SvrType,
+		SessionID: ESessionBeginNum,
+		off:       make(chan *SvrTcpSession, maxOfflineSize),
 	}
 }
 
@@ -95,7 +94,7 @@ func (this *TcpServer) loop(ctx context.Context, sw *sync.WaitGroup) {
 			c.SetKeepAlive(true)
 			atomic.AddUint64(&this.SessionID, 1)
 			Log.FmtPrintf("[server] accept connect here addr: %v, SessionID: %v.", c.RemoteAddr(), this.SessionID)
-			this.session = NewSvrSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.cb, this.off, this.pack)
+			this.session = NewSvrSession(c.RemoteAddr().String(), c, ctx, this.SvrType, this.off, this.pack, this.procName)
 			this.session.HandleSession(sw)
 			this.online()
 		}

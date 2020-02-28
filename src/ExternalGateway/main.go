@@ -18,6 +18,7 @@ func init() {
 	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
 	serverConfig.LoadSvrAllConfig(CfgPath)
 	dbStatistics.InitDBStatistics()
+	LogicMsg.Init()
 }
 
 func main() {
@@ -27,8 +28,7 @@ func main() {
 	newExternalServer := akNet.NewTcpServer(externalgw.Listenaddr,
 		externalgw.Pprofaddr,
 		Define.ERouteId_ER_ESG,
-		LogicMsg.ExternalGatewayMessageCallBack,
-		akNet.GClient2ServerSession)
+		externalgw.Name)
 
 	newExternalServer.Run()
 	dbStatistics.DBStatisticsStop()

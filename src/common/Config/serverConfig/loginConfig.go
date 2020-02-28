@@ -24,6 +24,7 @@ type TLoginconfig struct {
 	Listenaddr string
 	Zone       string
 	Pprofaddr  string
+	Name       string
 }
 
 type TLoginconfigConfig struct {
@@ -34,6 +35,7 @@ type tArrLoginconfig []*TLoginconfigBase
 
 var (
 	GLoginconfigConfig *TLoginconfigConfig = &TLoginconfigConfig{}
+	cstLoginDef                            = "Login"
 )
 
 func init() {
@@ -81,6 +83,7 @@ func (this *TLoginconfigConfig) DataRWAct(data interface{}) (errlist []string) {
 			Listenaddr: item.Listenaddr,
 			Zone:       item.Zone,
 			Pprofaddr:  item.Pprofaddr,
+			Name:       cstLoginDef + "_" + strconv.Itoa(int(item.Id)),
 		}
 		break
 	}

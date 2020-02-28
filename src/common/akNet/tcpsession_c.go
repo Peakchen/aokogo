@@ -34,8 +34,6 @@ type ClientTcpSession struct {
 	// send/recv
 	sw  sync.WaitGroup
 	ctx context.Context
-	// receive message call back
-	recvCb MessageCb
 	// person offline flag
 	off chan *ClientTcpSession
 	//message pack
@@ -56,20 +54,19 @@ func NewClientSession(addr string,
 	conn *net.TCPConn,
 	ctx context.Context,
 	SvrType Define.ERouteId,
-	newcb MessageCb,
 	off chan *ClientTcpSession,
-	pack IMessagePack) *ClientTcpSession {
+	pack IMessagePack,
+	procName string) *ClientTcpSession {
 	return &ClientTcpSession{
 		RemoteAddr: addr,
 		conn:       conn,
 		send:       make(chan []byte, maxMessageSize),
 		isAlive:    false,
 		ctx:        ctx,
-		recvCb:     newcb,
 		pack:       pack,
 		off:        off,
 		SvrType:    SvrType,
-		//StrIdentify: addr,
+		Name:       procName,
 	}
 }
 
@@ -274,7 +271,7 @@ func (this *ClientTcpSession) HandleSession(sw *sync.WaitGroup) {
 	go this.sendloop(sw)
 	go this.heartbeatloop(sw)
 
-	this.Name = fmt.Sprintf("client_%v_%v", GetModuleDef(this.SvrType), this.SessionID)
+	this.Name = fmt.Sprintf("client_%v", GetModuleDef(this.SvrType))
 }
 
 func (this *ClientTcpSession) Push(RegPoint Define.ERouteId) {

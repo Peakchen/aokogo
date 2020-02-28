@@ -4,6 +4,7 @@ import (
 	"common/Config"
 	"fmt"
 	"path/filepath"
+	"strconv"
 )
 
 /*
@@ -13,6 +14,7 @@ type TExternalgwconfigBase struct {
 	Id         int32  `json:"id"`
 	Listenaddr string `json:"ListenAddr"`
 	Pprofaddr  string `json:"PProfAddr"`
+	Name       string
 }
 
 type TExternalgwconfigConfig struct {
@@ -23,6 +25,7 @@ type tArrExternalgwconfig []*TExternalgwconfigBase
 
 var (
 	GExternalgwconfigConfig *TExternalgwconfigConfig = &TExternalgwconfigConfig{}
+	cstExternalDef                                   = "ExternalGateway"
 )
 
 func init() {
@@ -59,6 +62,7 @@ func (this *TExternalgwconfigConfig) DataRWAct(data interface{}) (errlist []stri
 	cfg := data.(*tArrExternalgwconfig)
 	this.data = &TExternalgwconfigBase{}
 	for _, item := range *cfg {
+		item.Name = cstExternalDef + "_" + strconv.Itoa(int(item.Id))
 		this.data = item
 		break
 	}

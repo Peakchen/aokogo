@@ -16,6 +16,7 @@ func init() {
 	flag.StringVar(&CfgPath, "serverconfig", "serverconfig", "default path for configuration files")
 	serverConfig.LoadSvrAllConfig(CfgPath)
 	dbStatistics.InitDBStatistics()
+	LogicMsg.Init()
 }
 
 func StartServer() {
@@ -26,9 +27,8 @@ func StartServer() {
 	gameSvr := akNet.NewClient(logincfg.Listenaddr,
 		logincfg.Pprofaddr,
 		Define.ERouteId_ER_Login,
-		LogicMsg.LoginMessageCallBack,
 		nil,
-		akNet.GClient2ServerSession)
+		logincfg.Name)
 
 	gameSvr.Run()
 	dbStatistics.DBStatisticsStop()

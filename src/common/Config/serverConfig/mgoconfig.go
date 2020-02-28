@@ -4,6 +4,7 @@ import (
 	"common/Config"
 	"fmt"
 	"path/filepath"
+	"strconv"
 )
 
 /*
@@ -18,6 +19,7 @@ type TMgoconfigBase struct {
 	Sharehost     string `json:"ShareHost"`
 	Sharepasswd   string `json:"SharePasswd"`
 	Pprofaddr     string `json:"PProfAddr"`
+	Name          string
 }
 
 type TMgoconfigConfig struct {
@@ -28,6 +30,7 @@ type tArrMgoconfig []*TMgoconfigBase
 
 var (
 	GMgoconfigConfig *TMgoconfigConfig = &TMgoconfigConfig{}
+	cstMgoDef                          = "mongo"
 )
 
 func init() {
@@ -73,6 +76,7 @@ func (this *TMgoconfigConfig) DataRWAct(data interface{}) (errlist []string) {
 	errlist = []string{}
 	this.data = &TMgoconfigBase{}
 	for _, item := range *cfg {
+		item.Name = cstMgoDef + "_" + strconv.Itoa(int(item.Id))
 		this.data = item
 		break
 	}

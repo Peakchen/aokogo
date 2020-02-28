@@ -26,6 +26,7 @@ type TInnergwconfig struct {
 	Zone        string
 	No          string
 	Pprofaddr   string
+	Name        string
 }
 
 type TInnergwconfigConfig struct {
@@ -36,6 +37,7 @@ type tArrInnergwconfig []*TInnergwconfigBase
 
 var (
 	GInnergwconfigConfig *TInnergwconfigConfig = &TInnergwconfigConfig{}
+	cstInnerGatewayDef                         = "InnerGateway"
 )
 
 func init() {
@@ -88,6 +90,7 @@ func (this *TInnergwconfigConfig) DataRWAct(data interface{}) (errlist []string)
 			Listenaddr:  item.Listenaddr,
 			Zone:        item.Zone,
 			Pprofaddr:   item.Pprofaddr,
+			Name:        cstInnerGatewayDef + "_" + strconv.Itoa(int(item.Id)),
 		}
 		break
 	}

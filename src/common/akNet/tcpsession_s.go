@@ -32,8 +32,6 @@ type SvrTcpSession struct {
 	// send/recv
 	sw  sync.WaitGroup
 	ctx context.Context
-	// receive message call back
-	recvCb MessageCb
 	// person offline flag
 	off chan *SvrTcpSession
 	//message pack
@@ -55,19 +53,19 @@ func NewSvrSession(addr string,
 	conn *net.TCPConn,
 	ctx context.Context,
 	SvrType Define.ERouteId,
-	newcb MessageCb,
 	off chan *SvrTcpSession,
-	pack IMessagePack) *SvrTcpSession {
+	pack IMessagePack,
+	procName string) *SvrTcpSession {
 	return &SvrTcpSession{
 		RemoteAddr: addr,
 		conn:       conn,
 		send:       make(chan []byte, maxMessageSize),
 		isAlive:    false,
 		ctx:        ctx,
-		recvCb:     newcb,
 		pack:       pack,
 		off:        off,
 		SvrType:    SvrType,
+		Name:       procName,
 	}
 }
 
@@ -264,7 +262,7 @@ func (this *SvrTcpSession) HandleSession(sw *sync.WaitGroup) {
 	go this.sendloop(sw)
 	go this.heartBeatloop(sw)
 
-	this.Name = fmt.Sprintf("server_%v_%v", GetModuleDef(this.SvrType), this.SessionID)
+	this.Name = fmt.Sprintf("server_%v", this.Name)
 }
 
 func (this *SvrTcpSession) Push(RegPoint Define.ERouteId) {

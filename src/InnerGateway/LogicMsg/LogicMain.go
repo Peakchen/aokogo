@@ -1,0 +1,5 @@
+package LogicMsg
+
+func Init() {
+
+}
