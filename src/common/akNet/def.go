@@ -67,7 +67,7 @@ type TcpSession interface {
 	SetIdentify(StrIdentify string)
 	SendSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	SendMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
-	SendInnerMsg(identify string, mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	SendInnerMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	WriteMessage(data []byte) (succ bool)
 	Alive() bool
 	GetPack() (obj IMessagePack)

@@ -323,15 +323,15 @@ func (this *ClientTcpSession) SendSvrMsg(mainid, subid uint16, msg proto.Message
 	return true, nil
 }
 
-func (this *ClientTcpSession) SendInnerMsg(identify string, mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+func (this *ClientTcpSession) SendInnerMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
 		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return false, err
 	}
 
-	if len(identify) > 0 {
-		this.pack.SetIdentify(identify)
+	if len(this.GetIdentify()) > 0 {
+		this.pack.SetIdentify(this.GetIdentify())
 	}
 
 	data, err := this.pack.PackMsg(mainid, subid, msg)
