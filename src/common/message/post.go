@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	//"fmt"
+	"common/Log"
 	"common/tool"
 	"io/ioutil"
 	"net/http"
@@ -14,14 +15,14 @@ import (
 func HttpPostJsonMsg(url string, src interface{}) {
 	data, err := json.Marshal(src)
 	if err != nil {
-		tool.MyFmtPrint_Error("json marshal data fail, err: ", err)
+		Log.Error("json marshal data fail, err: ", err)
 		return
 	}
 
 	buf := bytes.NewBuffer(data)
 	_, err = http.Post(url, jsonPostType, buf)
 	if err != nil {
-		tool.MyFmtPrint_Error("http post fail, err: ", err)
+		Log.Error("http post fail, err: ", err)
 		return
 	}
 }
@@ -29,7 +30,7 @@ func HttpPostJsonMsg(url string, src interface{}) {
 func HttpPostXMLMsg(url string, src interface{}) {
 	data, err := json.Marshal(src)
 	if err != nil {
-		tool.MyFmtPrint_Error("json marshal data fail, err: ", err)
+		Log.Error("json marshal data fail, err: ", err)
 		return
 	}
 
@@ -37,7 +38,7 @@ func HttpPostXMLMsg(url string, src interface{}) {
 	client := &http.Client{}
 	reqest, err := http.NewRequest("POST", url, buf)
 	if err != nil {
-		tool.MyFmtPrint_Error("NewRequest data fail, err: ", err)
+		Log.Error("NewRequest data fail, err: ", err)
 		return
 	}
 
@@ -50,23 +51,23 @@ func HttpPostXMLMsg(url string, src interface{}) {
 	resp, err := client.Do(reqest)
 	cookies := resp.Cookies()
 	for _, cookie := range cookies {
-		tool.MyFmtPrint_Error("cookie:", cookie)
+		Log.Error("cookie:", cookie)
 	}
 	defer resp.Body.Close()
 
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		tool.MyFmtPrint_Error("ReadAll data fail, err: ", err)
+		Log.Error("ReadAll data fail, err: ", err)
 		return
 	}
 
 }
 
 func HttpResponse(w http.ResponseWriter, headcontent []*THttpResponseHead, statusCode int, src string) {
-	tool.MyFmtPrint_Info("response: ", statusCode, len([]rune(src)))
+	Log.FmtPrintln("response: ", statusCode, len([]rune(src)))
 	// data, err := json.Marshal(src)
 	// if err != nil {
-	// 	tool.MyFmtPrint_Error("json marshal data fail, err: ", err)
+	// 	Log.Error("json marshal data fail, err: ", err)
 	// 	return
 	// }
 
@@ -78,6 +79,6 @@ func HttpResponse(w http.ResponseWriter, headcontent []*THttpResponseHead, statu
 	w.WriteHeader(statusCode)
 	_, err := w.Write([]byte(src))
 	if err != nil {
-		tool.MyFmtPrint_Error("write post fail.")
+		Log.Error("write post fail.")
 	}
 }

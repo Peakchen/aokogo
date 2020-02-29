@@ -10,28 +10,9 @@ import (
 	"strconv"
 	"strings"
 	//"runtime"
+	"common/Log"
 	//"syscall"
 )
-
-//隐藏console
-func HideConsole() {
-	ShowConsoleAsync(w32.SW_HIDE)
-}
-
-//显示console
-func ShowConsole() {
-	ShowConsoleAsync(w32.SW_SHOW)
-}
-
-func ShowConsoleAsync(commandShow uintptr) {
-	console := w32.GetConsoleWindow()
-	if console != 0 {
-		_, consoleProcID := w32.GetWindowThreadProcessId(console)
-		if w32.GetCurrentProcessId() == consoleProcID {
-			w32.ShowWindowAsync(console, commandShow)
-		}
-	}
-}
 
 func CheckPortUsed(port int) bool {
 	args := []string{"cmd", "/c", "netstat", "-an", "|", "findstr", strconv.Itoa(port)}
@@ -42,11 +23,10 @@ func CheckPortUsed(port int) bool {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		MyFmtPrint_Info(err.Error() + ": " + stderr.String())
+		Log.Error(err.Error() + ": " + stderr.String())
 		return false
 	}
 
-	MyFmtPrint_Info("Result: " + out.String())
 	return true
 }
 
@@ -70,16 +50,15 @@ func CmdHide() {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		MyFmtPrint_Info(err.Error() + ": " + stderr.String())
+		Log.Error(err.Error() + ": " + stderr.String())
 		return
 	}
 
 	err = os.Remove("hide.vbs")
 	if err != nil {
-		MyFmtPrint_Info(err.Error())
+		Log.Error(err.Error())
 		return
 	}
-	MyFmtPrint_Info("Result: " + out.String())
 }
 
 func BatHide(param []string) {
@@ -109,14 +88,13 @@ func BatHide(param []string) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		MyFmtPrint_Info(err.Error() + ": " + stderr.String())
+		Log.Error(err.Error() + ": " + stderr.String())
 		return
 	}
 
 	err = os.Remove("hide.bat")
 	if err != nil {
-		MyFmtPrint_Info(err.Error())
+		Log.Error(err.Error())
 		return
 	}
-	MyFmtPrint_Info("Result: " + out.String())
 }

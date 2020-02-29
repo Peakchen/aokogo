@@ -3,8 +3,8 @@ package utls
 import (
 	"common/aktime"
 	"fmt"
-    "github.com/sony/sonyflake"
-    "strconv"
+	"github.com/sony/sonyflake"
+	"strconv"
 )
 
 func getMachineID_linux() (uint16, error) {
