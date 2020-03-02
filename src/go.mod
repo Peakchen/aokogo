@@ -51,13 +51,13 @@ require (
 	github.com/zieckey/etcdsync v0.0.0-20180810020013-cd5b26bc05a1
 	go.etcd.io/bbolt v1.3.3 // indirect
 	go.uber.org/zap v1.14.0 // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200122134326-e047566fdf82
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20200225123651-fc8f55426688 // indirect
 	google.golang.org/grpc v1.27.1 // indirect
 	gopkg.in/redsync.v1 v1.0.1
 	sigs.k8s.io/yaml v1.2.0 // indirect
-
 )
 
 replace (
