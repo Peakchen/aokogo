@@ -40,9 +40,10 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
-	github.com/prometheus/client_golang v1.4.1 // indirect
+	github.com/prometheus/client_golang v1.4.1
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/satori/go.uuid v1.2.0
+	github.com/shirou/gopsutil v2.20.2+incompatible
 	github.com/soheilhy/cmux v0.1.4 // indirect
 	github.com/sony/sonyflake v1.0.0
 	github.com/stvp/tempredis v0.0.0-20181119212430-b82af8480203 // indirect
