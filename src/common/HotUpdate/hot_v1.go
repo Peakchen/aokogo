@@ -20,7 +20,7 @@ var (
 )
 
 func RunHotUpdateCheck(svrSignal *TServerHotUpdateInfo) {
-	chsignal := make(chan os.Signal)
+	chsignal := make(chan os.Signal, 1)
 	//listen sign: ctrl+c, kill, user1, user2...
 	//SIGUSR1,SIGUSR2 for linux.
 	signal.Notify(chsignal, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT /*, syscall.SIGUSR1, syscall.SIGUSR2*/)
