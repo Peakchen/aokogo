@@ -29,12 +29,11 @@ type TcpClient struct {
 	// person offline flag
 	off chan *ClientTcpSession
 	// person online
-	person     int32
-	SvrType    Define.ERouteId
-	Adacb      AfterDialAct
-	mpobj      IMessagePack
-	SessionMgr IProcessConnSession
-	procName   string
+	person   int32
+	SvrType  Define.ERouteId
+	Adacb    AfterDialAct
+	mpobj    IMessagePack
+	procName string
 }
 
 func NewClient(host, pprofAddr string, SvrType Define.ERouteId, Ada AfterDialAct, procName string) *TcpClient {
@@ -181,16 +180,4 @@ func (this *TcpClient) afterDial() {
 
 func (this *TcpClient) SessionType() (st ESessionType) {
 	return ESessionType_Client
-}
-
-func (this *TcpClient) RemoveSession(session *ClientTcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-
-	if session.RegPoint != Define.ERouteId_ER_Invalid {
-		this.SessionMgr.RemoveSession(session.RemoteAddr)
-	} else {
-		this.SessionMgr.RemoveSession(session.StrIdentify)
-	}
 }

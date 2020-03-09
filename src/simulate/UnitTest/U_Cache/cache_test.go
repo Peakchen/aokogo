@@ -3,12 +3,12 @@ package U_Cache
 import (
 	"common/Cache"
 	"common/Log"
-	"testing"
-	"time"
-	"golang.org/x/sync/singleflight"
 	"fmt"
+	"golang.org/x/sync/singleflight"
 	"sync"
 	"sync/atomic"
+	"testing"
+	"time"
 )
 
 var (
@@ -29,7 +29,7 @@ func TestCacheDealLine(t *testing.T) {
 	Log.FmtPrintln("[DealLine] cache temp data: ", Cache.GetTempData(ck))
 }
 
-func TestSingleLight(t *testing.T){
+func TestSingleLight(t *testing.T) {
 	var g singleflight.Group
 	v, err, _ := g.Do("key", func() (interface{}, error) {
 		return "bar", nil

@@ -27,10 +27,9 @@ type TcpServer struct {
 	off       chan *SvrTcpSession
 	session   *SvrTcpSession
 	// person online
-	person     int32
-	SvrType    Define.ERouteId
-	pack       IMessagePack
-	SessionMgr IProcessConnSession
+	person  int32
+	SvrType Define.ERouteId
+	pack    IMessagePack
 	// session id
 	SessionID uint64
 	procName  string
@@ -151,19 +150,6 @@ func (this *TcpServer) Exit(sw *sync.WaitGroup) {
 
 func (this *TcpServer) SessionType() (st ESessionType) {
 	return ESessionType_Server
-}
-
-func (this *TcpServer) RemoveSession(session *SvrTcpSession) {
-	if this.SessionMgr == nil {
-		return
-	}
-
-	if session.RegPoint != Define.ERouteId_ER_Invalid {
-		this.SessionMgr.RemoveSession(session.RemoteAddr)
-	} else {
-		this.SessionMgr.RemoveSession(session.StrIdentify)
-	}
-
 }
 
 func checkError(err error) {
