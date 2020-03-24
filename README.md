@@ -19,6 +19,8 @@
   - Support stack record statistics of database operations after message reception  
   - Config Hot Update   
   - Server time synchronization mechanism  
+  - prometheus and prafana minitor data  
+  - Multi-node from external network gateway to multi-node from internal network gateway, newly added data distribution center by consul (Planning)   
   - Continually updated...
 ***
 
