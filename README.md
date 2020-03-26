@@ -1,5 +1,5 @@
 # Welcome to the aokogo!  
-# aokogo is a simple game framework  
+# aokogo is a simple game framework for CG (card game).
 
 ![](https://i.imgur.com/OUFzKJB.jpg)
 
