@@ -1,18 +1,18 @@
 package U_mongo
 
 import (
-	"testing"
+	"common/Log"
+	"common/MgoConn"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"common/MgoConn"
-	"common/Log"
+	"testing"
 )
 
-func TestNormal(t *testing.T){
+func TestNormal(t *testing.T) {
 	var (
 		Username string
-		Passwd string
-		Host string
+		Passwd   string
+		Host     string
 	)
 	mgoobj := MgoConn.NewMgoConn("test", Username, Passwd, Host)
 	session, err := mgoobj.GetMgoSession()
@@ -21,5 +21,4 @@ func TestNormal(t *testing.T){
 		return
 	}
 
-	
 }

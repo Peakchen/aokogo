@@ -1,7 +1,7 @@
 package datastatistics
 
 /*
-	for Gauge 
+	for Gauge
 */
 
 import (
@@ -10,13 +10,13 @@ import (
 )
 
 type AKGauge struct {
-	obj *prometheus.GaugeVec
-	titles	[]string
+	obj    *prometheus.GaugeVec
+	titles []string
 }
 
-func NewAKGauge()*AKGauge{
+func NewAKGauge() *AKGauge {
 	return &AKGauge{
-		obj: nil,
+		obj:    nil,
 		titles: []string{},
 	}
 }
@@ -25,14 +25,14 @@ var (
 	_akgauge *AKGauge
 )
 
-func GetAKGauge()*AKGauge{
+func GetAKGauge() *AKGauge {
 	if _akgauge == nil {
 		_akgauge = NewAKGauge()
 	}
 	return _akgauge
 }
 
-func (this *AKGauge) Init(strName, strHelp string, titles []string){
+func (this *AKGauge) Init(strName, strHelp string, titles []string) {
 	this.obj = prometheus.NewGaugeVec(prometheus.CounterOpts{
 		Name: strName,
 		Help: strHelp,
@@ -41,7 +41,7 @@ func (this *AKGauge) Init(strName, strHelp string, titles []string){
 	prometheus.MustRegister(this.obj)
 }
 
-func (this *AKGauge) DoSet(title string, val float64)(err error){
+func (this *AKGauge) DoSet(title string, val float64) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -50,7 +50,7 @@ func (this *AKGauge) DoSet(title string, val float64)(err error){
 	this.obj.WithLabelValues(title).Set(val)
 }
 
-func (this *AKGauge) DoInc(title string)(err error){
+func (this *AKGauge) DoInc(title string) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -58,7 +58,7 @@ func (this *AKGauge) DoInc(title string)(err error){
 	this.obj.WithLabelValues(title).Inc()
 }
 
-func (this *AKGauge) DoDec(title string)(err error){
+func (this *AKGauge) DoDec(title string) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -66,7 +66,7 @@ func (this *AKGauge) DoDec(title string)(err error){
 	this.obj.WithLabelValues(title).Dec()
 }
 
-func (this *AKGauge) DoAdd(title string, val float64)(err error){
+func (this *AKGauge) DoAdd(title string, val float64) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -75,7 +75,7 @@ func (this *AKGauge) DoAdd(title string, val float64)(err error){
 	return
 }
 
-func (this *AKGauge) DoSub(title string, val float64)(err error){
+func (this *AKGauge) DoSub(title string, val float64) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -84,6 +84,6 @@ func (this *AKGauge) DoSub(title string, val float64)(err error){
 	return
 }
 
-func RegGauge(model string){
+func RegGauge(model string) {
 	http.Handle("/"+model, promhttp.Handler())
 }

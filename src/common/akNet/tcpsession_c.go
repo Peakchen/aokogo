@@ -292,14 +292,14 @@ func (this *ClientTcpSession) Offline() {
 
 }
 
-func (this *ClientTcpSession) SendMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+func (this *ClientTcpSession) SendSvrClientMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
 		err = fmt.Errorf("[client] send msg session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return succ, err
 	}
 
-	data, err := this.pack.PackMsg4Client(mainid, subid, msg)
+	data, err := this.pack.PackClientMsg(mainid, subid, msg)
 	if err != nil {
 		return succ, err
 	}
@@ -307,14 +307,14 @@ func (this *ClientTcpSession) SendMsg(mainid, subid uint16, msg proto.Message) (
 	return true, nil
 }
 
-func (this *ClientTcpSession) SendSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+func (this *ClientTcpSession) SendInnerSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
 		err = fmt.Errorf("[client] send svr session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
 		return false, err
 	}
 
-	data, err := this.pack.PackMsg(mainid, subid, msg)
+	data, err := this.pack.PackInnerMsg(mainid, subid, msg)
 	if err != nil {
 		return succ, err
 	}
@@ -322,7 +322,7 @@ func (this *ClientTcpSession) SendSvrMsg(mainid, subid uint16, msg proto.Message
 	return true, nil
 }
 
-func (this *ClientTcpSession) SendInnerMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+func (this *ClientTcpSession) SendInnerClientMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
 	if !this.isAlive {
 		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
 		Log.FmtPrintln("send msg err: ", err)
@@ -333,7 +333,30 @@ func (this *ClientTcpSession) SendInnerMsg(mainid, subid uint16, msg proto.Messa
 		this.pack.SetIdentify(this.GetIdentify())
 	}
 
-	data, err := this.pack.PackMsg(mainid, subid, msg)
+	this.pack.SetPostType(MsgPostType_Single)
+
+	data, err := this.pack.PackInnerMsg(mainid, subid, msg)
+	if err != nil {
+		return succ, err
+	}
+	this.SetSendCache(data)
+	return true, nil
+}
+
+func (this *ClientTcpSession) SendInnerBroadcastMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error) {
+	if !this.isAlive {
+		err = fmt.Errorf("[client] session disconnection, mainid: %v, subid: %v.", mainid, subid)
+		Log.FmtPrintln("send msg err: ", err)
+		return false, err
+	}
+
+	if len(this.GetIdentify()) > 0 {
+		this.pack.SetIdentify(this.GetIdentify())
+	}
+
+	this.pack.SetPostType(MsgPostType_Broadcast)
+
+	data, err := this.pack.PackInnerMsg(mainid, subid, msg)
 	if err != nil {
 		return succ, err
 	}

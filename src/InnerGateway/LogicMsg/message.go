@@ -37,7 +37,7 @@ func onSvrRegister(session akNet.TcpSession, req *MSG_Server.CS_ServerRegister_R
 	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
 	rsp.Ret = MSG_Server.ErrorCode_Success
 	rsp.Identify = session.GetModuleName()
-	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
+	return session.SendInnerClientMsg(uint16(MSG_MainModule.MAINMSG_SERVER),
 		uint16(MSG_Server.SUBMSG_SC_ServerRegister),
 		rsp)
 }

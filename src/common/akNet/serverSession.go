@@ -71,6 +71,10 @@ func (this *TSvr2SvrSession) GetSessionByIdentify(key interface{}) (session TcpS
 	return
 }
 
+func (this *TSvr2SvrSession) GetAllSession() (sessions sync.Map) {
+	return this.s2sSession
+}
+
 func init() {
 	GServer2ServerSession = &TSvr2SvrSession{}
 }

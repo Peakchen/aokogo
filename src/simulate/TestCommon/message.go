@@ -38,7 +38,7 @@ func NewModule(host, module string) *TModuleCommon {
 
 func (this *TModuleCommon) PushMsg(mainid, subid uint16, msg proto.Message) {
 	this.clientPack.SetIdentify(this.host)
-	buff, err := this.clientPack.PackMsg4Client(mainid, subid, msg)
+	buff, err := this.clientPack.PackClientMsg(mainid, subid, msg)
 	if err != nil {
 		Log.Error(err)
 		return

@@ -59,6 +59,10 @@ func (this *TClient2ServerSession) GetSessionByIdentify(key interface{}) (sessio
 	return this.GetSession(key)
 }
 
+func (this *TClient2ServerSession) GetAllSession() (sessions sync.Map) {
+	return this.c2sSession
+}
+
 func init() {
 	GClient2ServerSession = &TClient2ServerSession{}
 }

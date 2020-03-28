@@ -4,6 +4,7 @@ import (
 	"common/Define"
 	"net"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -21,8 +22,8 @@ type IMessagePack interface {
 	GetMessageID() (mainID uint16, subID uint16)
 	Clean()
 	SetCmd(mainid, subid uint16, data []byte)
-	PackMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error)
-	PackMsg4Client(mainid, subid uint16, msg proto.Message) (out []byte, err error)
+	PackInnerMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error)
+	PackClientMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error)
 	GetSrcMsg() (data []byte)
 	SetIdentify(identify string)
 	GetIdentify() string
@@ -30,6 +31,8 @@ type IMessagePack interface {
 	GetDataLen() (datalen uint32)
 	SetRemoteAddr(addr string)
 	GetRemoteAddr() (addr string)
+	SetPostType(pt uint16)
+	GetPostType() (pt uint16)
 }
 
 /*
@@ -41,14 +44,14 @@ type IMessagePack interface {
 2字节   |2字节   |  2字节  | 4字节  | 包体
 */
 const (
-	//EnMessage_RoutePoint    = 2  //转发位置
-	EnMessage_MainIDPackLen = 2 //主命令
-	EnMessage_SubIDPackLen  = 2 //次命令
-	EnMessage_DataPackLen   = 4 //真实数据长度 (转发位置+主命令+次命令)
-	EnMessage_NoDataLen     = 8 //非data数据长度(包体之前的)->(转发位置+主命令+次命令+datalen)
+	EnMessage_MainIDPackLen = 2  //主命令
+	EnMessage_SubIDPackLen  = 2  //次命令
+	EnMessage_PostType      = 2  //发送类型
+	EnMessage_DataPackLen   = 6  //真实数据长度 (主命令+次命令+发送类型)
+	EnMessage_NoDataLen     = 10 //非data数据长度(包体之前的)->(主命令+次命令+发送类型+datalen)
 
-	EnMessage_SvrDataPackLen  = 48 //真实数据长度 (转发位置+主命令+次命令+ Identify长度 + Identify内容+RemoteAddr 长度+RemoteAddr 内容)
-	EnMessage_SvrNoDataLen    = 52 //非data数据长度(包体之前的)->(转发位置+主命令+次命令+ Identify长度 + Identify内容+datalen+RemoteAddr 长度+RemoteAddr 内容)
+	EnMessage_SvrDataPackLen  = 50 //真实数据长度 (主命令+次命令+发送类型+ Identify长度 + Identify内容+RemoteAddr 长度+RemoteAddr 内容)
+	EnMessage_SvrNoDataLen    = 54 //非data数据长度(包体之前的)->(主命令+次命令+发送类型+ Identify长度 + Identify内容+datalen+RemoteAddr 长度+RemoteAddr 内容)
 	EnMessage_IdentifyEixst   = 1  //Identify 长度
 	EnMessage_IdentifyLen     = 21 //Identify 内容
 	EnMessage_RemoteAddrEixst = 1  //RemoteAddr 长度
@@ -65,9 +68,10 @@ type TcpSession interface {
 	SetSendCache(data []byte)
 	Push(RegPoint Define.ERouteId)
 	SetIdentify(StrIdentify string)
-	SendSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
-	SendMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
-	SendInnerMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	SendInnerSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	SendSvrClientMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	SendInnerClientMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
+	SendInnerBroadcastMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	WriteMessage(data []byte) (succ bool)
 	Alive() bool
 	GetPack() (obj IMessagePack)
@@ -96,6 +100,7 @@ type IProcessConnSession interface {
 	AddSession(key interface{}, session TcpSession)
 	GetSession(key interface{}) (session TcpSession)
 	GetSessionByIdentify(key interface{}) (session TcpSession)
+	GetAllSession() (sessions sync.Map)
 }
 
 type ESessionType int8
@@ -160,3 +165,9 @@ func GetModuleDef(routeid Define.ERouteId) string {
 	}
 	return name
 }
+
+// message Post type
+const (
+	MsgPostType_Single    = uint16(1)
+	MsgPostType_Broadcast = uint16(2)
+)

@@ -1,10 +1,8 @@
 package datastatistics
 
-
 /*
-	for Summary 
+	for Summary
 */
-
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,13 +10,13 @@ import (
 )
 
 type AKSummary struct {
-	obj *prometheus.SummaryVec
-	titles	[]string
+	obj    *prometheus.SummaryVec
+	titles []string
 }
 
-func NewAKSummary()*AKSummary{
+func NewAKSummary() *AKSummary {
 	return &AKSummary{
-		obj: nil,
+		obj:    nil,
 		titles: []string{},
 	}
 }
@@ -27,14 +25,14 @@ var (
 	_akSummary *AKSummary
 )
 
-func GetAKSummary()*AKSummary{
+func GetAKSummary() *AKSummary {
 	if _akSummary == nil {
 		_akSummary = NewAKSummary()
 	}
 	return _akSummary
 }
 
-func (this *AKSummary) Init(strName, strHelp string, titles []string){
+func (this *AKSummary) Init(strName, strHelp string, titles []string) {
 	this.obj = prometheus.NewSummaryVec(prometheus.CounterOpts{
 		Name: strName,
 		Help: strHelp,
@@ -43,7 +41,7 @@ func (this *AKSummary) Init(strName, strHelp string, titles []string){
 	prometheus.MustRegister(this.obj)
 }
 
-func (this *AKSummary) DoObserve(title string, val float64)(err error){
+func (this *AKSummary) DoObserve(title string, val float64) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -52,6 +50,6 @@ func (this *AKSummary) DoObserve(title string, val float64)(err error){
 	return
 }
 
-func RegSummary(model string){
+func RegSummary(model string) {
 	http.Handle("/"+model, promhttp.Handler())
 }

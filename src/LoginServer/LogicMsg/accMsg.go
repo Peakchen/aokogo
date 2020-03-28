@@ -32,7 +32,7 @@ func onUserRegister(session akNet.TcpSession, req *MSG_Login.CS_UserRegister_Req
 
 	session.SetIdentify(acc.Identify())
 
-	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
+	return session.SendInnerClientMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_UserRegister),
 		rsp)
 }
@@ -54,7 +54,7 @@ func onUserLogin(session akNet.TcpSession, req *MSG_Login.CS_Login_Req) (succ bo
 		rsp.Ret = MSG_Login.ErrorCode_UserNotExistOrPasswdErr
 	}
 	session.SetIdentify(acc.Identify())
-	return session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
+	return session.SendInnerClientMsg(uint16(MSG_MainModule.MAINMSG_LOGIN),
 		uint16(MSG_Login.SUBMSG_SC_Login),
 		rsp)
 }

@@ -25,6 +25,7 @@ type ClientProtocol struct {
 	srcdata    []byte
 	identify   string
 	remoteAddr string
+	postType   uint16
 }
 
 func (this *ClientProtocol) PackAction(Output []byte) (err error) {
@@ -36,6 +37,9 @@ func (this *ClientProtocol) PackAction(Output []byte) (err error) {
 	pos += 2
 
 	binary.LittleEndian.PutUint16(Output[pos:], this.subid)
+	pos += 2
+
+	binary.LittleEndian.PutUint16(Output[pos:], this.postType)
 	pos += 2
 
 	if len(this.identify) == 0 {
@@ -70,13 +74,14 @@ func (this *ClientProtocol) PackAction(Output []byte) (err error) {
 
 func (this *ClientProtocol) PackAction4Client(Output []byte) (err error) {
 	var pos int
-	// binary.LittleEndian.PutUint16(Output[pos:], this.routepoint)
-	// pos += 2
 
 	binary.LittleEndian.PutUint16(Output[pos:], this.mainid)
 	pos += 2
 
 	binary.LittleEndian.PutUint16(Output[pos:], this.subid)
+	pos += 2
+
+	binary.LittleEndian.PutUint16(Output[pos:], this.postType)
 	pos += 2
 
 	binary.LittleEndian.PutUint32(Output[pos:], this.length)
@@ -135,7 +140,7 @@ func (this *ClientProtocol) Clean() {
 	this.subid = 0
 }
 
-func (this *ClientProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error) {
+func (this *ClientProtocol) PackInnerMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		err = Log.RetError("client proto marshal fail, data: %v.", err)
@@ -148,7 +153,7 @@ func (this *ClientProtocol) PackMsg(mainid, subid uint16, msg proto.Message) (ou
 	return
 }
 
-func (this *ClientProtocol) PackMsg4Client(mainid, subid uint16, msg proto.Message) (out []byte, err error) {
+func (this *ClientProtocol) PackClientMsg(mainid, subid uint16, msg proto.Message) (out []byte, err error) {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		err = Log.RetError("client for reg proto marshal fail, data: %v.", err)
@@ -186,6 +191,14 @@ func (this *ClientProtocol) GetRemoteAddr() (addr string) {
 	return
 }
 
+func (this *ClientProtocol) SetPostType(pt uint16) {
+	this.postType = pt
+}
+
+func (this *ClientProtocol) GetPostType() (pt uint16) {
+	return this.postType
+}
+
 func (this *ClientProtocol) UnPackMsg4Client(InData []byte) (pos int, err error) {
 	defer stacktrace.Catchcrash()
 
@@ -196,6 +209,9 @@ func (this *ClientProtocol) UnPackMsg4Client(InData []byte) (pos int, err error)
 	pos += 2
 
 	this.subid = binary.LittleEndian.Uint16(InData[pos:])
+	pos += 2
+
+	this.postType = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
 	this.length = binary.LittleEndian.Uint32(InData[pos:])
@@ -221,6 +237,9 @@ func (this *ClientProtocol) UnPackMsg4Svr(InData []byte) (pos int, err error) {
 	pos += 2
 
 	this.subid = binary.LittleEndian.Uint16(InData[pos:])
+	pos += 2
+
+	this.postType = binary.LittleEndian.Uint16(InData[pos:])
 	pos += 2
 
 	datalen := utls.SliceBytesLength(InData)

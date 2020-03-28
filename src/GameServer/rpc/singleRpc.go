@@ -63,7 +63,7 @@ func SendRpcMsg(session akNet.TcpSession, module, funcName string, data interfac
 		return
 	}
 	rsp.Data = dst
-	session.SendInnerMsg(uint16(MSG_MainModule.MAINMSG_RPC),
+	session.SendInnerClientMsg(uint16(MSG_MainModule.MAINMSG_RPC),
 		uint16(MSG_Rpc.SUBMSG_CS_Rpc),
 		rsp)
 }

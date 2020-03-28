@@ -163,7 +163,7 @@ func (this *TcpClient) sendRegisterMsg() {
 	req.ServerType = int32(this.SvrType)
 	req.Msgs = GetAllMessageIDs()
 	Log.FmtPrintln("register context: ", req.Msgs)
-	buff, err := this.mpobj.PackMsg4Client(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_CS_ServerRegister), req)
+	buff, err := this.mpobj.PackClientMsg(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_CS_ServerRegister), req)
 	if err != nil {
 		Log.Error(err)
 		return

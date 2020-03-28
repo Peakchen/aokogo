@@ -129,7 +129,7 @@ func (this *TcpServer) offline(offs *SvrTcpSession) {
 	if offs.IsUser() {
 		this.person--
 		ntf := &MSG_Player.CS_LeaveServer_Req{}
-		_, err := offs.GetPack().PackMsg(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_LeaveServer), ntf)
+		_, err := offs.GetPack().PackInnerMsg(uint16(MSG_MainModule.MAINMSG_PLAYER), uint16(MSG_Player.SUBMSG_CS_LeaveServer), ntf)
 		if err != nil {
 			Log.Error(err)
 			return

@@ -101,7 +101,7 @@ func RegisterMessageRet(session TcpSession) (succ bool, err error) {
 	rsp := &MSG_Server.SC_ServerRegister_Rsp{}
 	rsp.Ret = MSG_Server.ErrorCode_Success
 	rsp.Identify = session.GetModuleName()
-	return session.SendMsg(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_SC_ServerRegister), rsp)
+	return session.SendSvrClientMsg(uint16(MSG_MainModule.MAINMSG_SERVER), uint16(MSG_Server.SUBMSG_SC_ServerRegister), rsp)
 }
 
 func SpecialLoginMsgFilter(main, sub uint16) (ok bool) {
@@ -123,7 +123,7 @@ func sendHeartBeat(session TcpSession) (succ bool, err error) {
 		return
 	}
 	rsp := &MSG_HeartBeat.CS_HeartBeat_Req{}
-	return session.SendSvrMsg(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat), rsp)
+	return session.SendInnerSvrMsg(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_CS_HeartBeat), rsp)
 }
 
 func ResponseHeartBeat(session TcpSession) (succ bool, err error) {
@@ -132,7 +132,7 @@ func ResponseHeartBeat(session TcpSession) (succ bool, err error) {
 		return
 	}
 	rsp := &MSG_HeartBeat.SC_HeartBeat_Rsp{}
-	return session.SendSvrMsg(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat), rsp)
+	return session.SendInnerSvrMsg(uint16(MSG_MainModule.MAINMSG_HEARTBEAT), uint16(MSG_HeartBeat.SUBMSG_SC_HeartBeat), rsp)
 }
 
 func checkHeartBeatRet(pack IMessagePack) (exist bool) {
@@ -324,19 +324,6 @@ func sendInnerSvr(obj TcpSession) (succ bool) {
 
 // send message for user from external gateway.
 func sendUserClient(obj TcpSession) (succ bool) {
-	Log.FmtPrintln("external response, addr: ", obj.GetPack().GetRemoteAddr(), len(obj.GetPack().GetRemoteAddr()))
-	session := GClient2ServerSession.GetSessionByIdentify(obj.GetPack().GetRemoteAddr())
-	if session == nil {
-		Log.Error("[response user client] can not find session route from external gateway.")
-		return
-	}
-
-	if !session.Alive() {
-		GClient2ServerSession.RemoveSession(session.GetRemoteAddr())
-		Log.FmtPrintln("c2s session not alive, addr: ", session.GetRemoteAddr())
-		return
-	}
-
 	out := make([]byte, EnMessage_NoDataLen+int(obj.GetPack().GetDataLen()))
 	err := obj.GetPack().PackAction4Client(out)
 	if err != nil {
@@ -344,7 +331,31 @@ func sendUserClient(obj TcpSession) (succ bool) {
 		return
 	}
 
-	succ = session.WriteMessage(out)
+	Log.FmtPrintln("external response, addr: ", obj.GetPack().GetRemoteAddr(), len(obj.GetPack().GetRemoteAddr()))
+	if obj.GetPack().GetPostType() == MsgPostType_Single {
+		session := GClient2ServerSession.GetSessionByIdentify(obj.GetPack().GetRemoteAddr())
+		if session == nil {
+			Log.Error("[response user client] can not find session route from external gateway.")
+			return
+		}
+
+		if !session.Alive() {
+			GClient2ServerSession.RemoveSession(session.GetRemoteAddr())
+			Log.FmtPrintln("c2s session not alive, addr: ", session.GetRemoteAddr())
+			return
+		}
+		succ = session.WriteMessage(out)
+	} else {
+		allsession := GClient2ServerSession.GetAllSession()
+		allsession.Range(func(key, value interface{}) bool {
+			if value != nil {
+				sess := value.(TcpSession)
+				sess.WriteMessage(out)
+			}
+			return true
+		})
+	}
+
 	return
 }
 

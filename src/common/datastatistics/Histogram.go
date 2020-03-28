@@ -1,7 +1,7 @@
 package datastatistics
 
 /*
-	for Histogram 
+	for Histogram
 */
 
 import (
@@ -10,13 +10,13 @@ import (
 )
 
 type AKHistogram struct {
-	obj *prometheus.HistogramVec
-	titles	[]string
+	obj    *prometheus.HistogramVec
+	titles []string
 }
 
-func NewAKHistogram()*AKHistogram{
+func NewAKHistogram() *AKHistogram {
 	return &AKHistogram{
-		obj: nil,
+		obj:    nil,
 		titles: []string{},
 	}
 }
@@ -25,14 +25,14 @@ var (
 	_akHistogram *AKHistogram
 )
 
-func GetAKHistogram()*AKHistogram{
+func GetAKHistogram() *AKHistogram {
 	if _akHistogram == nil {
 		_akHistogram = NewAKHistogram()
 	}
 	return _akHistogram
 }
 
-func (this *AKHistogram) Init(strName, strHelp string, titles []string){
+func (this *AKHistogram) Init(strName, strHelp string, titles []string) {
 	this.obj = prometheus.NewHistogramVec(prometheus.CounterOpts{
 		Name: strName,
 		Help: strHelp,
@@ -41,7 +41,7 @@ func (this *AKHistogram) Init(strName, strHelp string, titles []string){
 	prometheus.MustRegister(this.obj)
 }
 
-func (this *AKHistogram) DoObserve(title string, val float64)(err error){
+func (this *AKHistogram) DoObserve(title string, val float64) (err error) {
 	err = IsExistStatisticsTitle(this.titles, title)
 	if err != nil {
 		return
@@ -50,8 +50,6 @@ func (this *AKHistogram) DoObserve(title string, val float64)(err error){
 	return
 }
 
-func RegHistogram(model string){
+func RegHistogram(model string) {
 	http.Handle("/"+model, promhttp.Handler())
 }
-
-
