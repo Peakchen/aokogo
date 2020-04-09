@@ -5,13 +5,14 @@ package AsyncLock
 
 import (
 	"github.com/samuel/go-zookeeper/zk"
-	"net"
+	//"net"
 	"time"
+	"sync"
 )
 
 var (
-	zkconn   *net.Conn
-	_zklocks = map[string]*zk.Lock{}
+	zkconn   *zk.Conn
+	_zklocks  sync.Map
 )
 
 //ip -> ip:port
@@ -29,16 +30,18 @@ func AddZKLock(key, Name string) (succ bool) {
 	if err := zl.Lock(); err != nil {
 		panic(err)
 	}
+
 	succ = true
-	_zklocks[lockKey] = zl
+	_zklocks.Store(lockKey, zl)
 	return
 }
 
 func ReleaseZKLock(key, Name string) {
 	lockKey := key + ":" + Name
-	lock, exist := _zklocks[lockKey]
-	if exist {
+	data, exist := _zklocks.Load(lockKey)
+	if exist && data != nil{
+		lock := data.(*zk.Lock)
 		lock.Unlock()
-		delete(_zklocks, lockKey)
+		_zklocks.Delete(lockKey)
 	}
 }
