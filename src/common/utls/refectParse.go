@@ -87,3 +87,12 @@ func setFloatField(value string, bitSize int, field reflect.Value) error {
 	}
 	return err
 }
+
+/*
+	out with ptr type and some one detail type.
+	v that is unknow value.
+*/
+func parseVal(v interface{}, out interface{}){
+	refv := reflect.ValueOf(v)
+	reflect.ValueOf(out).Elem().Set(refv)
+}
