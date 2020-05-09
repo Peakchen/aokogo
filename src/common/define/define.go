@@ -1,5 +1,5 @@
 // add by stefan
-package Define
+package define
 
 import (
 	"net/http"

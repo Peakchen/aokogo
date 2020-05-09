@@ -4571,7 +4571,7 @@ func (iter *Iter) getMore() {
 }
 
 func (iter *Iter) getMoreCmd() *queryOp {
-	// TODO: Define the query statically in the Iter type, next to getMoreOp.
+	// TODO: define the query statically in the Iter type, next to getMoreOp.
 	nameDot := strings.Index(iter.op.collection, ".")
 	if nameDot < 0 {
 		panic("invalid query collection name: " + iter.op.collection)

@@ -2,9 +2,9 @@ package client
 
 import (
 	"common/Config/serverConfig"
-	"common/Define"
 	"common/Log"
 	"common/akNet"
+	"common/define"
 )
 
 func StartClient() {
@@ -12,7 +12,7 @@ func StartClient() {
 	Innergw := serverConfig.GInnergwconfigConfig.Get()
 	gameSvr := akNet.NewClient(Innergw.Connectaddr,
 		Innergw.Pprofaddr,
-		Define.ERouteId_ER_ISG,
+		define.ERouteId_ER_ISG,
 		nil,
 		Innergw.Name)
 

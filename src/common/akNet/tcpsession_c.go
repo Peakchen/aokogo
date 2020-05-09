@@ -3,9 +3,9 @@
 package akNet
 
 import (
-	"common/Define"
 	"common/Log"
 	"common/aktime"
+	"common/define"
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
@@ -19,7 +19,7 @@ import (
 	"sync"
 
 	"github.com/golang/protobuf/proto"
-	//. "common/Define"
+	//. "common/define"
 )
 
 type ClientTcpSession struct {
@@ -41,9 +41,9 @@ type ClientTcpSession struct {
 	// session id
 	SessionID uint64
 	//Dest point
-	SvrType Define.ERouteId
+	SvrType define.ERouteId
 	//src point
-	RegPoint Define.ERouteId
+	RegPoint define.ERouteId
 	//person StrIdentify
 	StrIdentify string
 	//
@@ -53,7 +53,7 @@ type ClientTcpSession struct {
 func NewClientSession(addr string,
 	conn *net.TCPConn,
 	ctx context.Context,
-	SvrType Define.ERouteId,
+	SvrType define.ERouteId,
 	off chan *ClientTcpSession,
 	pack IMessagePack,
 	procName string) *ClientTcpSession {
@@ -178,7 +178,7 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 
 	//this.conn.SetReadDeadline(aktime.Now().Add(pongWait))
 	if len(this.StrIdentify) == 0 &&
-		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
+		(this.SvrType == define.ERouteId_ER_ESG || this.SvrType == define.ERouteId_ER_ISG) {
 		succ = UnPackExternalMsg(this.conn, this.pack)
 		if !succ {
 			return
@@ -192,7 +192,7 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 		this.StrIdentify = this.pack.GetIdentify()
 	}
 
-	var route Define.ERouteId
+	var route define.ERouteId
 	mainID, _ := this.pack.GetMessageID()
 	if (mainID == uint16(MSG_MainModule.MAINMSG_SERVER) ||
 		mainID == uint16(MSG_MainModule.MAINMSG_LOGIN)) && len(this.StrIdentify) == 0 {
@@ -204,14 +204,14 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 	}
 
 	if mainID == uint16(MSG_MainModule.MAINMSG_LOGIN) {
-		route = Define.ERouteId_ER_Login
+		route = define.ERouteId_ER_Login
 	} else if mainID >= uint16(MSG_MainModule.MAINMSG_PLAYER) {
-		route = Define.ERouteId_ER_Game
+		route = define.ERouteId_ER_Game
 	}
 
 	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) &&
 		mainID != uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
-		(this.SvrType == Define.ERouteId_ER_ISG) {
+		(this.SvrType == define.ERouteId_ER_ISG) {
 		//Log.FmtPrintf("[client] StrIdentify: %v.", this.StrIdentify)
 		succ = innerMsgRouteAct(ESessionType_Client, route, mainID, this.pack.GetSrcMsg())
 	} else {
@@ -220,15 +220,15 @@ func (this *ClientTcpSession) readMessage() (succ bool) {
 	return
 }
 
-func (this *ClientTcpSession) checkRegisterRet(route Define.ERouteId) (exist bool) {
+func (this *ClientTcpSession) checkRegisterRet(route define.ERouteId) (exist bool) {
 	mainID, subID := this.pack.GetMessageID()
 	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) &&
 		uint16(MSG_Server.SUBMSG_SC_ServerRegister) == subID {
 		this.StrIdentify = this.RemoteAddr
-		if this.SvrType == Define.ERouteId_ER_ISG {
-			this.Push(Define.ERouteId_ER_ESG)
+		if this.SvrType == define.ERouteId_ER_ISG {
+			this.Push(define.ERouteId_ER_ESG)
 		} else {
-			this.Push(Define.ERouteId_ER_ISG)
+			this.Push(define.ERouteId_ER_ISG)
 		}
 
 		exist = true
@@ -245,7 +245,7 @@ func (this *ClientTcpSession) checkHeartBeatRet() (exist bool) {
 	return
 }
 
-func (this *ClientTcpSession) checkmsgProc(route Define.ERouteId) (succ bool) {
+func (this *ClientTcpSession) checkmsgProc(route define.ERouteId) (succ bool) {
 	//Log.FmtPrintf("recv response, route: %v.", route)
 	bRegister := this.checkRegisterRet(route)
 	bHeartBeat := checkHeartBeatRet(this.pack)
@@ -273,7 +273,7 @@ func (this *ClientTcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.Name = fmt.Sprintf("client_%v", this.Name)
 }
 
-func (this *ClientTcpSession) Push(RegPoint Define.ERouteId) {
+func (this *ClientTcpSession) Push(RegPoint define.ERouteId) {
 	//Log.FmtPrintf("[client] push new sesson, reg point: %v.", RegPoint)
 	this.RegPoint = RegPoint
 	GServer2ServerSession.AddSession(this.RemoteAddr, this)
@@ -368,7 +368,7 @@ func (this *ClientTcpSession) GetIdentify() string {
 	return this.StrIdentify
 }
 
-func (this *ClientTcpSession) GetRegPoint() (RegPoint Define.ERouteId) {
+func (this *ClientTcpSession) GetRegPoint() (RegPoint define.ERouteId) {
 	return this.RegPoint
 }
 

@@ -2,7 +2,7 @@ package U_config
 
 import (
 	"common/Config"
-	"common/Define"
+	"common/define"
 	"common/utls"
 	"fmt"
 )
@@ -15,10 +15,10 @@ type TSimulateLoginBase struct {
 	Passwd      string               `json:"passwd"`
 	Register    int32                `json:"register"`
 	Login       int32                `json:"login"`
-	List        Define.Int32Array    `json:"list"`
-	List2D      Define.Int32Array2D  `json:"list2D"`
-	Property    Define.Property      `json:"property"`
-	PropertyArr Define.PropertyArray `json:"propertylist"`
+	List        define.Int32Array    `json:"list"`
+	List2D      define.Int32Array2D  `json:"list2D"`
+	Property    define.Property      `json:"property"`
+	PropertyArr define.PropertyArray `json:"propertylist"`
 }
 
 const (

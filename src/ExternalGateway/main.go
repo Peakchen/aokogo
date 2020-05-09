@@ -6,10 +6,10 @@ import (
 	"ExternalGateway/LogicMsg"
 	"ExternalGateway/ado"
 	"common/Config/serverConfig"
-	"common/Define"
 	"common/Log"
 	"common/ado/dbStatistics"
 	"common/akNet"
+	"common/define"
 	"flag"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	externalgw := serverConfig.GExternalgwconfigConfig.Get()
 	newExternalServer := akNet.NewTcpServer(externalgw.Listenaddr,
 		externalgw.Pprofaddr,
-		Define.ERouteId_ER_ESG,
+		define.ERouteId_ER_ESG,
 		externalgw.Name)
 
 	newExternalServer.Run()

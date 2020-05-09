@@ -5,14 +5,14 @@ package httpExService
 import (
 	"net/http"
 	//"fmt"
-	Define "common/define"
+	define "common/define"
 	"encoding/json"
 	"log"
 	"strings"
 	"time"
 )
 
-func StartHttpService(addr string, handler Define.HandlerFunc) {
+func StartHttpService(addr string, handler define.HandlerFunc) {
 	log.Printf("http addr: %s.", addr)
 	server := &http.Server{
 		Addr:           addr,

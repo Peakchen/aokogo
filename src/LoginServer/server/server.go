@@ -4,10 +4,10 @@ import (
 	"LoginServer/LogicMsg"
 	"LoginServer/dbo"
 	"common/Config/serverConfig"
-	"common/Define"
 	"common/Log"
 	"common/ado/dbStatistics"
 	"common/akNet"
+	"common/define"
 	"flag"
 )
 
@@ -26,7 +26,7 @@ func StartServer() {
 	dbo.StartDBSerice(server)
 	gameSvr := akNet.NewClient(logincfg.Listenaddr,
 		logincfg.Pprofaddr,
-		Define.ERouteId_ER_Login,
+		define.ERouteId_ER_Login,
 		nil,
 		logincfg.Name)
 

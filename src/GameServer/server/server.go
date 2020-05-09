@@ -8,10 +8,10 @@ import (
 	"GameServer/rpc"
 	"common/Config/LogicConfig"
 	"common/Config/serverConfig"
-	"common/Define"
 	"common/HotUpdate"
 	"common/ado/dbStatistics"
 	"common/akNet"
+	"common/define"
 	"flag"
 	"syscall"
 )
@@ -40,7 +40,7 @@ func StartServer() {
 	})
 	gameSvr := akNet.NewClient(Gamecfg.Listenaddr,
 		Gamecfg.Pprofaddr,
-		Define.ERouteId_ER_Game,
+		define.ERouteId_ER_Game,
 		nil,
 		Gamecfg.Name)
 

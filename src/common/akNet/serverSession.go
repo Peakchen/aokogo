@@ -3,7 +3,7 @@ package akNet
 // add by stefan
 
 import (
-	"common/Define"
+	"common/define"
 	"common/utls"
 	"sync"
 )
@@ -43,7 +43,7 @@ func (this *TSvr2SvrSession) GetSession(key interface{}) (session TcpSession) {
 	)
 	this.s2sSession.Range(func(k, v interface{}) bool {
 		cs := v.(TcpSession)
-		if cs.GetRegPoint() == key.(Define.ERouteId) && cs.Alive() {
+		if cs.GetRegPoint() == key.(define.ERouteId) && cs.Alive() {
 			sessions = append(sessions, cs)
 		}
 		return true

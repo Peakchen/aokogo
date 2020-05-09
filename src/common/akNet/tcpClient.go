@@ -4,8 +4,8 @@ package akNet
 // add by stefan
 
 import (
-	"common/Define"
 	"common/Log"
+	"common/define"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
 	"common/pprof"
@@ -30,13 +30,13 @@ type TcpClient struct {
 	off chan *ClientTcpSession
 	// person online
 	person   int32
-	SvrType  Define.ERouteId
+	SvrType  define.ERouteId
 	Adacb    AfterDialAct
 	mpobj    IMessagePack
 	procName string
 }
 
-func NewClient(host, pprofAddr string, SvrType Define.ERouteId, Ada AfterDialAct, procName string) *TcpClient {
+func NewClient(host, pprofAddr string, SvrType define.ERouteId, Ada AfterDialAct, procName string) *TcpClient {
 	return &TcpClient{
 		host:      host,
 		pprofAddr: pprofAddr,

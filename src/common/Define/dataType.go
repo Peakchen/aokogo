@@ -1,4 +1,4 @@
-package Define
+package define
 
 /*
 	add by stefan

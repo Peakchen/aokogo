@@ -2,9 +2,9 @@ package server
 
 import (
 	"common/Config/serverConfig"
-	"common/Define"
 	"common/Log"
 	"common/akNet"
+	"common/define"
 )
 
 func StartServer() {
@@ -12,7 +12,7 @@ func StartServer() {
 	Innergw := serverConfig.GInnergwconfigConfig.Get()
 	newInnerServer := akNet.NewTcpServer(Innergw.Listenaddr,
 		Innergw.Pprofaddr,
-		Define.ERouteId_ER_ISG,
+		define.ERouteId_ER_ISG,
 		Innergw.Name)
 
 	newInnerServer.Run()

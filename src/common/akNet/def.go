@@ -1,7 +1,7 @@
 package akNet
 
 import (
-	"common/Define"
+	"common/define"
 	"net"
 	"reflect"
 	"sync"
@@ -63,10 +63,10 @@ type MessageCb func(c net.Conn, mainID uint16, subID uint16, msg proto.Message)
 
 type TcpSession interface {
 	GetRemoteAddr() string
-	GetRegPoint() (RegPoint Define.ERouteId)
+	GetRegPoint() (RegPoint define.ERouteId)
 	GetIdentify() string
 	SetSendCache(data []byte)
-	Push(RegPoint Define.ERouteId)
+	Push(RegPoint define.ERouteId)
 	SetIdentify(StrIdentify string)
 	SendInnerSvrMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
 	SendSvrClientMsg(mainid, subid uint16, msg proto.Message) (succ bool, err error)
@@ -144,21 +144,21 @@ const (
 )
 
 var (
-	_svrDefs = map[Define.ERouteId]string{
-		Define.ERouteId_ER_ESG:        "ExternalGateway",
-		Define.ERouteId_ER_ISG:        "InnerGateway",
-		Define.ERouteId_ER_DB:         "DB",
-		Define.ERouteId_ER_BigWorld:   "BigWorld",
-		Define.ERouteId_ER_Login:      "Login",
-		Define.ERouteId_ER_SmallWorld: "SmallWorld",
-		Define.ERouteId_ER_DBProxy:    "DBProxy",
-		Define.ERouteId_ER_Game:       "Game",
-		Define.ERouteId_ER_Client:     "Client",
-		Define.ERouteId_ER_Max:        "Max",
+	_svrDefs = map[define.ERouteId]string{
+		define.ERouteId_ER_ESG:        "ExternalGateway",
+		define.ERouteId_ER_ISG:        "InnerGateway",
+		define.ERouteId_ER_DB:         "DB",
+		define.ERouteId_ER_BigWorld:   "BigWorld",
+		define.ERouteId_ER_Login:      "Login",
+		define.ERouteId_ER_SmallWorld: "SmallWorld",
+		define.ERouteId_ER_DBProxy:    "DBProxy",
+		define.ERouteId_ER_Game:       "Game",
+		define.ERouteId_ER_Client:     "Client",
+		define.ERouteId_ER_Max:        "Max",
 	}
 )
 
-func GetModuleDef(routeid Define.ERouteId) string {
+func GetModuleDef(routeid define.ERouteId) string {
 	name, ok := _svrDefs[routeid]
 	if !ok {
 		name = "Unknow"

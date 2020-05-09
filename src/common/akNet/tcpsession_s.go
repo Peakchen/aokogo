@@ -3,9 +3,9 @@
 package akNet
 
 import (
-	"common/Define"
 	"common/Log"
 	"common/aktime"
+	"common/define"
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"fmt"
@@ -17,7 +17,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"sync"
-	//. "common/Define"
+	//. "common/define"
 )
 
 type SvrTcpSession struct {
@@ -39,9 +39,9 @@ type SvrTcpSession struct {
 	// session id
 	SessionID uint64
 	//Dest point
-	SvrType Define.ERouteId
+	SvrType define.ERouteId
 	//src point
-	RegPoint Define.ERouteId
+	RegPoint define.ERouteId
 	//person StrIdentify
 	StrIdentify       string
 	heartBeatDeadline int64
@@ -52,7 +52,7 @@ type SvrTcpSession struct {
 func NewSvrSession(addr string,
 	conn *net.TCPConn,
 	ctx context.Context,
-	SvrType Define.ERouteId,
+	SvrType define.ERouteId,
 	off chan *SvrTcpSession,
 	pack IMessagePack,
 	procName string) *SvrTcpSession {
@@ -202,19 +202,19 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 			return
 		}
 		this.StrIdentify = this.pack.GetIdentify()
-		if this.SvrType == Define.ERouteId_ER_ESG {
+		if this.SvrType == define.ERouteId_ER_ESG {
 			responseCliented = true
 		}
 	}
 
-	var route Define.ERouteId
+	var route define.ERouteId
 	mainID, SubID := this.pack.GetMessageID()
 	Log.FmtPrintf("recv message: mainID: %v, subID: %v.", mainID, SubID)
 	if mainID == uint16(MSG_MainModule.MAINMSG_SERVER) &&
-		this.SvrType == Define.ERouteId_ER_ESG {
-		route = Define.ERouteId_ER_ISG
-		this.RegPoint = Define.ERouteId_ER_ISG
-		this.Push(Define.ERouteId_ER_ISG) //外网关加入内网关session
+		this.SvrType == define.ERouteId_ER_ESG {
+		route = define.ERouteId_ER_ISG
+		this.RegPoint = define.ERouteId_ER_ISG
+		this.Push(define.ERouteId_ER_ISG) //外网关加入内网关session
 		RegisterMessageRet(this)
 		succ = true
 		return
@@ -230,15 +230,15 @@ func (this *SvrTcpSession) readMessage() (succ bool) {
 	}
 
 	if mainID == uint16(MSG_MainModule.MAINMSG_LOGIN) {
-		route = Define.ERouteId_ER_Login
+		route = define.ERouteId_ER_Login
 	} else if mainID >= uint16(MSG_MainModule.MAINMSG_PLAYER) {
-		route = Define.ERouteId_ER_Game
+		route = define.ERouteId_ER_Game
 	}
 
 	if mainID != uint16(MSG_MainModule.MAINMSG_SERVER) && mainID != uint16(MSG_MainModule.MAINMSG_HEARTBEAT) &&
-		(this.SvrType == Define.ERouteId_ER_ESG || this.SvrType == Define.ERouteId_ER_ISG) {
+		(this.SvrType == define.ERouteId_ER_ESG || this.SvrType == define.ERouteId_ER_ISG) {
 		//Log.FmtPrintf("[server] Route (%v), StrIdentify: %v.", route, this.StrIdentify)
-		if this.SvrType == Define.ERouteId_ER_ESG {
+		if this.SvrType == define.ERouteId_ER_ESG {
 			succ = externalRouteAct(route, this, responseCliented)
 		} else {
 			succ = innerMsgRouteAct(ESessionType_Server, route, mainID, this.pack.GetSrcMsg())
@@ -264,7 +264,7 @@ func (this *SvrTcpSession) HandleSession(sw *sync.WaitGroup) {
 	this.Name = fmt.Sprintf("server_%v", this.Name)
 }
 
-func (this *SvrTcpSession) Push(RegPoint Define.ERouteId) {
+func (this *SvrTcpSession) Push(RegPoint define.ERouteId) {
 	//Log.FmtPrintf("[server] push new sesson, reg point: %v.", RegPoint)
 	this.RegPoint = RegPoint
 	GServer2ServerSession.AddSession(this.RemoteAddr, this)
@@ -359,7 +359,7 @@ func (this *SvrTcpSession) GetIdentify() string {
 	return this.StrIdentify
 }
 
-func (this *SvrTcpSession) GetRegPoint() (RegPoint Define.ERouteId) {
+func (this *SvrTcpSession) GetRegPoint() (RegPoint define.ERouteId) {
 	return this.RegPoint
 }
 

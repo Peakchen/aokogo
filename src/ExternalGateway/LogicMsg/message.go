@@ -3,9 +3,9 @@ package LogicMsg
 // add by stefan
 
 import (
-	"common/Define"
 	"common/Log"
 	"common/akNet"
+	"common/define"
 	"common/msgProto/MSG_HeartBeat"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Server"
@@ -25,7 +25,7 @@ func onSvrRegister(session akNet.TcpSession, req *MSG_Server.CS_ServerRegister_R
 		msgfmt string
 	)
 
-	session.Push(Define.ERouteId(req.ServerType))
+	session.Push(define.ERouteId(req.ServerType))
 	for _, id := range req.Msgs {
 		mainid, subid := akNet.DecodeCmd(uint32(id))
 		msgfmt += fmt.Sprintf("[mainid: %v, subid: %v]\t", mainid, subid)

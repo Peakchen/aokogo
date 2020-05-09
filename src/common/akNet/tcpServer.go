@@ -3,8 +3,8 @@
 package akNet
 
 import (
-	"common/Define"
 	"common/Log"
+	"common/define"
 	"common/msgProto/MSG_MainModule"
 	"common/msgProto/MSG_Player"
 	"common/pprof"
@@ -28,14 +28,14 @@ type TcpServer struct {
 	session   *SvrTcpSession
 	// person online
 	person  int32
-	SvrType Define.ERouteId
+	SvrType define.ERouteId
 	pack    IMessagePack
 	// session id
 	SessionID uint64
 	procName  string
 }
 
-func NewTcpServer(listenAddr, pprofAddr string, SvrType Define.ERouteId, procName string) *TcpServer {
+func NewTcpServer(listenAddr, pprofAddr string, SvrType define.ERouteId, procName string) *TcpServer {
 	return &TcpServer{
 		host:      listenAddr,
 		pprofAddr: pprofAddr,
