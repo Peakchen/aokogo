@@ -3,14 +3,14 @@
 // DO NOT EDIT!
 
 /*
-Package Define is a generated protocol buffer package.
+Package define is a generated protocol buffer package.
 
 It is generated from these files:
 	CommonMessage.proto
 
 It has these top-level messages:
 */
-package Define
+package define
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -76,7 +76,7 @@ func (x ERouteId) String() string {
 func (ERouteId) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 func init() {
-	proto.RegisterEnum("Define.ERouteId", ERouteId_name, ERouteId_value)
+	proto.RegisterEnum("define.ERouteId", ERouteId_name, ERouteId_value)
 }
 
 func init() { proto.RegisterFile("CommonMessage.proto", fileDescriptor0) }

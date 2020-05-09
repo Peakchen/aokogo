@@ -1,5 +1,5 @@
 syntax = "proto3";
-package Define;
+package define;
 
 enum ERouteId
 {

@@ -7,12 +7,12 @@
  */
 // GENERATED CODE -- DO NOT EDIT!
 
-goog.provide('proto.Define.ERouteId');
+goog.provide('proto.define.ERouteId');
 
 /**
  * @enum {number}
  */
-proto.Define.ERouteId = {
+proto.define.ERouteId = {
   ER_INVALID: 0,
   ER_ESG: 1,
   ER_ISG: 2,
