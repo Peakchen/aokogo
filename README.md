@@ -1,6 +1,8 @@
 # Welcome to the aokogo!  
 # aokogo is a simple game framework for CG (card game).
 
+![](https://img.shields.io/github/issues/Peakchen/aokogo)![](https://img.shields.io/github/forks/Peakchen/aokogo)![](https://img.shields.io/github/stars/Peakchen/aokogo)![](https://img.shields.io/github/license/Peakchen/aokogo)
+
 ![](https://i.imgur.com/OUFzKJB.jpg)
 
 ## Implementation part  
