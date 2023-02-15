@@ -25,7 +25,7 @@ require (
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/protobuf v1.3.3
+	github.com/golang/protobuf v1.4.3
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gonutz/ide v0.0.0-20180502124734-e9fc8c14ed56
 	github.com/google/btree v1.0.0 // indirect
@@ -36,11 +36,9 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.13.0 // indirect
 	github.com/jonboulle/clockwork v0.1.0 // indirect
 	github.com/klauspost/compress v1.10.1 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
-	github.com/prometheus/client_golang v1.4.1
+	github.com/prometheus/client_golang v1.11.1
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil v2.20.2+incompatible
@@ -52,8 +50,8 @@ require (
 	github.com/zieckey/etcdsync v0.0.0-20180810020013-cd5b26bc05a1
 	go.etcd.io/bbolt v1.3.3 // indirect
 	go.uber.org/zap v1.14.0 // indirect
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200122134326-e047566fdf82
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
+	golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20200225123651-fc8f55426688 // indirect
 	google.golang.org/grpc v1.27.1 // indirect
